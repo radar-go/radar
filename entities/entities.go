@@ -21,6 +21,8 @@ package entities
 
 import (
 	"time"
+
+	"github.com/radar-go/radar/entities/technology"
 )
 
 // Technology entity represents a technology used in one project, by one member
@@ -28,7 +30,7 @@ import (
 type Technology interface {
 	GetName() string
 	GetType() string
-	GetLevel() string
+	GetLevel() int
 }
 
 // Role entity defines the role that a member have in the organization
@@ -69,4 +71,9 @@ type Resource interface {
 
 	AddTechnology(newTechnology Technology)
 	AddRate(newRate float32)
+}
+
+// NewTechnology returns a new technology object.
+func NewTechnology(name, techType string, level int) Technology {
+	return technology.New(name, techType, level)
 }

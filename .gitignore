@@ -3,4 +3,4 @@
 /block*.log
 /cpu*.log
 /mem*.log
-/gotemplate.test
+/*.test
