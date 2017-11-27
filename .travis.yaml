@@ -1,0 +1,21 @@
+os: linux
+sudo: required
+language: go
+go:
+- 1.9
+
+before_install:
+- export GOROOT=$(go env GOROOT)
+
+install:
+- go get -u github.com/jstemmer/go-junit-report
+- sudo start-docker-daemon
+
+script:
+- make test | tee /dev/tty |  go-junit-report > junit-report.xml
+
+after_failure:
+  - reports-publisher
+
+after_success:
+  - reports-publisher
