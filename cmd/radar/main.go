@@ -1,7 +1,7 @@
 // Package main implements the radar command.
 package main
 
-/* Copyright (C) 2017 Pablo Alvarez de Sotomayor Posadillo <palvarez@ritho.net>
+/* Copyright (C) 2017 Radar-go team (see AUTHORS)
 
    This file is part of radar.
 
