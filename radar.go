@@ -1,7 +1,7 @@
 // Package radar implement the common elements of Radar
 package radar
 
-/* Copyright (C) 2017 Radar-go team (see AUTHORS)
+/* Copyright (C) 2017 Radar team (see AUTHORS)
 
    This file is part of radar.
 
