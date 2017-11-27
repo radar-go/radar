@@ -4,12 +4,14 @@ language: go
 go:
 - 1.9
 
+services:
+  - docker
+
 before_install:
 - export GOROOT=$(go env GOROOT)
 
 install:
 - go get -u github.com/jstemmer/go-junit-report
-- sudo start-docker-daemon
 
 script:
 - make test | tee /dev/tty |  go-junit-report > junit-report.xml
