@@ -48,7 +48,7 @@ func TestTechnology(t *testing.T) {
 }
 
 func initializeTests() []test {
-	t := make([]test, 10)
+	t := make([]test, 5)
 
 	t = append(t,
 		test{
@@ -100,7 +100,8 @@ func initializeTests() []test {
 				techType: "technique",
 				level:    1,
 			},
-		})
+		},
+	)
 
 	return t
 }

@@ -22,6 +22,7 @@ package entities
 import (
 	"time"
 
+	"github.com/radar-go/radar/entities/role"
 	"github.com/radar-go/radar/entities/technology"
 )
 
@@ -37,7 +38,9 @@ type Technology interface {
 // (developer, product owner, collaborator, ...)
 type Role interface {
 	GetTitle() string
-	GetExperience() time.Time
+	GetExperience() time.Duration
+
+	Finished(t time.Time) error
 }
 
 // Member entity represents a member of the organization (employee, partner,
@@ -73,7 +76,12 @@ type Resource interface {
 	AddRate(newRate float32)
 }
 
-// NewTechnology returns a new technology object.
+// NewTechnology returns a new Technology object.
 func NewTechnology(name, techType string, level int) Technology {
 	return technology.New(name, techType, level)
+}
+
+// NewRole returns a new Role object.
+func NewRole(title string, started, finished time.Time) Role {
+	return role.New(title, started, finished)
 }
