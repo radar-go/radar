@@ -1,4 +1,6 @@
-/* Copyright (C) 2017 Pablo Alvarez de Sotomayor Posadillo <palvarez@ritho.net>
+package main
+
+/* Copyright (C) 2017 Radar-go team (see AUTHORS)
 
    This file is part of radar.
 
@@ -15,7 +17,6 @@
    You should have received a copy of the GNU General Public License
    along with radar. If not, see <http://www.gnu.org/licenses/>.
 */
-package main
 
 import (
 	"testing"
