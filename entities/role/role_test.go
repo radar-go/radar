@@ -34,29 +34,29 @@ func TestRole(t *testing.T) {
 	tests := initializeTests()
 	for _, test := range tests {
 		role := New(test.title, test.started, test.finished)
-		if role.GetTitle() != test.expected.title {
-			t.Errorf("Expected: %s, Got %s", test.expected.title, role.GetTitle())
+		if role.Title() != test.expected.title {
+			t.Errorf("Expected: %s, Got %s", test.expected.title, role.Title())
 		}
 
 		if !test.expected.finished.IsZero() {
-			if role.GetExperience() != test.expected.finished.Sub(test.expected.started) {
+			if role.Experience() != test.expected.finished.Sub(test.expected.started) {
 				t.Errorf("Expected: %+v, Got %+v",
 					test.expected.finished.Sub(test.expected.started),
-					role.GetExperience())
+					role.Experience())
 			}
 		} else {
-			if role.GetExperience() <= 0 {
-				t.Errorf("Expected > 0, Got %+v", role.GetExperience())
+			if role.Experience() <= 0 {
+				t.Errorf("Expected > 0, Got %+v", role.Experience())
 			}
 		}
 
-		err := role.Finished(time.Now())
+		err := role.SetFinished(time.Now())
 		if err != nil {
 			t.Errorf("Unexpected error setting the finish time for the role: %+v", err)
 		}
 
-		if role.GetExperience() <= 0 {
-			t.Errorf("Expected > 0, Got %+v", role.GetExperience())
+		if role.Experience() <= 0 {
+			t.Errorf("Expected > 0, Got %+v", role.Experience())
 		}
 	}
 }

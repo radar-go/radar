@@ -1,5 +1,5 @@
-// Package entities contains the entities interface definitions.
-package entities
+// Package api defines the protocol for the member entity.
+package api
 
 /* Copyright (C) 2017 Radar team (see AUTHORS)
 
@@ -18,3 +18,24 @@ package entities
    You should have received a copy of the GNU General Public License
    along with radar. If not, see <http://www.gnu.org/licenses/>.
 */
+
+import (
+	role "github.com/radar-go/radar/entities/role"
+	technology "github.com/radar-go/radar/entities/technology/api"
+)
+
+// Member entity represents a member of the organization (employee, partner,
+// associate, ...) and his relation  with the rest of entities.
+type Member interface {
+	Name() string
+	Roles() []role.Role
+	CurrentRole() role.Role
+	Technologies() []technology.Technology
+
+	SetName(name string)
+	Equals(member Member) bool
+	AddRole(newRole role.Role)
+	AddTechnology(newTechnology technology.Technology)
+	DeleteRole(role role.Role) error
+	DeleteTechnology(tech technology.Technology) error
+}
