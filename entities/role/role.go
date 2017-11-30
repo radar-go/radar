@@ -21,6 +21,8 @@ package role
 import (
 	"errors"
 	"time"
+
+	"github.com/radar-go/radar/entities/role/api"
 )
 
 // Role represents a member role in the organization.
@@ -45,13 +47,18 @@ func New(title string, started, finished time.Time) *Role {
 	}
 }
 
-// GetTitle returns the title of the role.
-func (r *Role) GetTitle() string {
+// Title returns the title of the role.
+func (r *Role) Title() string {
 	return r.title
 }
 
-// GetExperience returns the time the member have been doing this Role.
-func (r *Role) GetExperience() time.Duration {
+// Started returns when the Role started to being applicable.
+func (r *Role) Started() time.Time {
+	return r.started
+}
+
+// Experience returns the time the member have been doing this Role.
+func (r *Role) Experience() time.Duration {
 	if !r.finished.IsZero() {
 		return r.finished.Sub(r.started)
 	}
@@ -59,12 +66,38 @@ func (r *Role) GetExperience() time.Duration {
 	return time.Since(r.started)
 }
 
-// Finished sets the finishing time for the Role.
-func (r *Role) Finished(t time.Time) error {
+// IsActive returns true if the Role is active and false otherwise.
+func (r *Role) IsActive() bool {
+	return r.finished.IsZero()
+}
+
+// SetTitle sets the title of the role.
+func (r *Role) SetTitle(title string) {
+	r.title = title
+}
+
+// SetStarted sets the starting time of the role.
+func (r *Role) SetStarted(t time.Time) error {
+	if !r.finished.IsZero() && t.After(r.finished) {
+		return errors.New("The finishing time for the role is before from the starting time")
+	}
+
+	r.started = t
+
+	return nil
+}
+
+// SetFinished sets the finishing time for the Role.
+func (r *Role) SetFinished(t time.Time) error {
 	if t.Before(r.started) {
 		return errors.New("The finishing time for the role is before from the starting time")
 	}
 
 	r.finished = t
 	return nil
+}
+
+// Equals check if two role objects are equals.
+func (r *Role) Equals(role api.Role) bool {
+	return r.Title() == role.Title()
 }

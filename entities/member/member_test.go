@@ -1,5 +1,4 @@
-// Package entities contains the entities interface definitions.
-package entities
+package member
 
 /* Copyright (C) 2017 Radar team (see AUTHORS)
 
@@ -18,3 +17,14 @@ package entities
    You should have received a copy of the GNU General Public License
    along with radar. If not, see <http://www.gnu.org/licenses/>.
 */
+
+import (
+	"testing"
+)
+
+func TestMember(t *testing.T) {
+	m := New("Ritho")
+	if m.Name() != "Ritho" {
+		t.Errorf("Expected Ritho, got %s", m.Name())
+	}
+}

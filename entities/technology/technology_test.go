@@ -33,16 +33,16 @@ func TestTechnology(t *testing.T) {
 	tests := initializeTests()
 	for _, test := range tests {
 		tech := New(test.name, test.techType, test.level)
-		if tech.GetName() != test.expected.name {
-			t.Errorf("Expected: %s, Got %s", test.expected.name, tech.GetName())
+		if tech.Name() != test.expected.name {
+			t.Errorf("Expected: %s, Got %s", test.expected.name, tech.Name())
 		}
 
-		if tech.GetType() != test.expected.techType {
-			t.Errorf("Expected: %s, Got %s", test.expected.techType, tech.GetType())
+		if tech.Type() != test.expected.techType {
+			t.Errorf("Expected: %s, Got %s", test.expected.techType, tech.Type())
 		}
 
-		if tech.GetLevel() != test.expected.level {
-			t.Errorf("Expected: %d, Got %d", test.expected.level, tech.GetLevel())
+		if tech.Level() != test.expected.level {
+			t.Errorf("Expected: %d, Got %d", test.expected.level, tech.Level())
 		}
 	}
 }

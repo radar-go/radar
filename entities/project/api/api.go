@@ -1,5 +1,5 @@
-// Package entities contains the entities interface definitions.
-package entities
+// Package api defines the protocol for the project entity.
+package api
 
 /* Copyright (C) 2017 Radar team (see AUTHORS)
 
@@ -18,3 +18,21 @@ package entities
    You should have received a copy of the GNU General Public License
    along with radar. If not, see <http://www.gnu.org/licenses/>.
 */
+
+import (
+	member "github.com/radar-go/radar/entities/member/api"
+	technology "github.com/radar-go/radar/entities/technology/api"
+)
+
+// Project entity represents a project done in the organization.
+type Project interface {
+	Name() string
+	Members() []member.Member
+	Technologies() []technology.Technology
+
+	SetName(name string)
+	AddMember(newMember member.Member)
+	AddTechnology(newTechnology technology.Technology)
+	DeleteMember(member member.Member) error
+	DeleteTechnology(tech technology.Technology) error
+}

@@ -1,5 +1,5 @@
-// Package entities contains the entities interface definitions.
-package entities
+// Package api defines the protocol for the resource entity.
+package api
 
 /* Copyright (C) 2017 Radar team (see AUTHORS)
 
@@ -18,3 +18,23 @@ package entities
    You should have received a copy of the GNU General Public License
    along with radar. If not, see <http://www.gnu.org/licenses/>.
 */
+
+import (
+	technology "github.com/radar-go/radar/entities/technology/api"
+)
+
+// Resource entity represents a resource to learn one or several technologies.
+type Resource interface {
+	Name() string
+	URL() string
+	Technologies() []technology.Technology
+	Rate() float32
+
+	SetName(name string)
+	SetURL(url string)
+
+	AddRate(newRate float32)
+	AddTechnology(newTechnology technology.Technology)
+	DeleteRate(rate float32) error
+	DeleteTechnology(tech technology.Technology) error
+}

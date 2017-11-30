@@ -19,6 +19,10 @@ package technology
    along with radar. If not, see <http://www.gnu.org/licenses/>.
 */
 
+import (
+	"github.com/radar-go/radar/entities/technology/api"
+)
+
 // Technology represents a technology used in a project, by an user or in a
 // resource.
 type Technology struct {
@@ -36,17 +40,37 @@ func New(name, techType string, level int) *Technology {
 	}
 }
 
-// GetName returns the name of the technology.
-func (t *Technology) GetName() string {
+// Name returns the name of the technology.
+func (t *Technology) Name() string {
 	return t.name
 }
 
-// GetType returns the type of the technology.
-func (t *Technology) GetType() string {
+// Type returns the type of the technology.
+func (t *Technology) Type() string {
 	return t.techType
 }
 
-// GetLevel returns the level of the technology.
-func (t *Technology) GetLevel() int {
+// Level returns the level of the technology.
+func (t *Technology) Level() int {
 	return t.level
+}
+
+// SetName sets the technology name.
+func (t *Technology) SetName(newName string) {
+	t.name = newName
+}
+
+// SetType sets the type of technology.
+func (t *Technology) SetType(newType string) {
+	t.techType = newType
+}
+
+// SetLevel sets the level of use of the technology.
+func (t *Technology) SetLevel(newLevel int) {
+	t.level = newLevel
+}
+
+// Equals check if two technology objects are equals or not.
+func (t *Technology) Equals(tech api.Technology) bool {
+	return t.Name() == tech.Name() && t.Type() == tech.Type()
 }
