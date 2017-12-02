@@ -27,7 +27,8 @@ type test struct {
 	title    string
 	started  time.Time
 	finished time.Time
-	expected Role
+	active   bool
+	expected *Role
 }
 
 func TestRole(t *testing.T) {
@@ -36,6 +37,10 @@ func TestRole(t *testing.T) {
 		role := New(test.title, test.started, test.finished)
 		if role.Title() != test.expected.title {
 			t.Errorf("Expected: %s, Got %s", test.expected.title, role.Title())
+		}
+
+		if role.IsActive() != test.active {
+			t.Errorf("Expected active to be %t, got %t", test.active, role.IsActive())
 		}
 
 		if !test.expected.finished.IsZero() {
@@ -50,7 +55,12 @@ func TestRole(t *testing.T) {
 			}
 		}
 
-		err := role.SetFinished(time.Now())
+		err := role.SetStarted(test.started)
+		if err != nil {
+			t.Errorf("Unexpected error setting the started time for the role: %+v", err)
+		}
+
+		err = role.SetFinished(time.Now())
 		if err != nil {
 			t.Errorf("Unexpected error setting the finish time for the role: %+v", err)
 		}
@@ -58,18 +68,26 @@ func TestRole(t *testing.T) {
 		if role.Experience() <= 0 {
 			t.Errorf("Expected > 0, Got %+v", role.Experience())
 		}
+
+		if !role.Equals(test.expected) {
+			t.Errorf("Expected '%s', got '%s'", test.expected.title, role.Title())
+		}
+
+		err = role.SetStarted(time.Now())
+		if err == nil {
+			t.Error("Expected to have an error setting the started role")
+		}
 	}
 }
 
 func initializeTests() []test {
-	t := make([]test, 5)
-
-	t = append(t,
+	return []test{
 		test{
 			title:    "Backend developer",
 			started:  time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC),
 			finished: time.Date(2011, time.November, 10, 23, 0, 0, 0, time.UTC),
-			expected: Role{
+			active:   false,
+			expected: &Role{
 				title:    "Backend developer",
 				started:  time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC),
 				finished: time.Date(2011, time.November, 10, 23, 0, 0, 0, time.UTC),
@@ -79,7 +97,8 @@ func initializeTests() []test {
 			title:    "Frontend developer",
 			started:  time.Date(2010, time.November, 10, 23, 0, 0, 0, time.UTC),
 			finished: time.Date(2012, time.September, 10, 23, 0, 0, 0, time.UTC),
-			expected: Role{
+			active:   false,
+			expected: &Role{
 				title:    "Frontend developer",
 				started:  time.Date(2010, time.November, 10, 23, 0, 0, 0, time.UTC),
 				finished: time.Date(2012, time.September, 10, 23, 0, 0, 0, time.UTC),
@@ -89,7 +108,8 @@ func initializeTests() []test {
 			title:    "Tech Lead",
 			started:  time.Date(2013, time.November, 10, 23, 0, 0, 0, time.UTC),
 			finished: time.Date(2016, time.April, 10, 23, 0, 0, 0, time.UTC),
-			expected: Role{
+			active:   false,
+			expected: &Role{
 				title:    "Tech Lead",
 				started:  time.Date(2013, time.November, 10, 23, 0, 0, 0, time.UTC),
 				finished: time.Date(2016, time.April, 10, 23, 0, 0, 0, time.UTC),
@@ -98,12 +118,11 @@ func initializeTests() []test {
 		test{
 			title:   "Manager",
 			started: time.Date(2014, time.November, 10, 23, 0, 0, 0, time.UTC),
-			expected: Role{
+			active:  true,
+			expected: &Role{
 				title:   "Manager",
 				started: time.Date(2014, time.November, 10, 23, 0, 0, 0, time.UTC),
 			},
 		},
-	)
-
-	return t
+	}
 }
