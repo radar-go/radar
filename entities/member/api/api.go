@@ -20,7 +20,8 @@ package api
 */
 
 import (
-	role "github.com/radar-go/radar/entities/role"
+	"github.com/radar-go/radar/entities/member"
+	role "github.com/radar-go/radar/entities/role/api"
 	technology "github.com/radar-go/radar/entities/technology/api"
 )
 
@@ -32,10 +33,19 @@ type Member interface {
 	CurrentRole() role.Role
 	Technologies() []technology.Technology
 
-	SetName(name string)
-	Equals(member Member) bool
-	AddRole(newRole role.Role)
-	AddTechnology(newTechnology technology.Technology)
-	DeleteRole(role role.Role) error
-	DeleteTechnology(tech technology.Technology) error
+	SetName(string)
+	Equals(interface{}) bool
+	AddRole(role.Role)
+	AddTechnology(technology.Technology)
+	DeleteRole(role.Role) error
+	DeleteTechnology(technology.Technology) error
+}
+
+// New creates a new Member object.
+func New(name string) Member {
+	member := &member.Member{}
+
+	member.SetName(name)
+
+	return member
 }

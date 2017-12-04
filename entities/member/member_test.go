@@ -20,11 +20,77 @@ package member
 
 import (
 	"testing"
+	"time"
+
+	role "github.com/radar-go/radar/entities/role/api"
+	technology "github.com/radar-go/radar/entities/technology/api"
 )
 
+type test struct {
+	name         string
+	roles        []role.Role
+	technologies []technology.Technology
+}
+
 func TestMember(t *testing.T) {
-	m := New("Ritho")
-	if m.Name() != "Ritho" {
-		t.Errorf("Expected Ritho, got %s", m.Name())
+	tests := initializeTests()
+	for _, test := range tests {
+		m := &Member{
+			name: test.name,
+		}
+
+		if m.Name() != test.name {
+			t.Errorf("Expected %s, got %s", test.name, m.Name())
+		}
+	}
+}
+
+func initializeTests() []test {
+	be, _ := role.New("Backend Developer",
+		time.Date(2015, time.September, 1, 0, 0, 0, 0, time.UTC),
+		time.Time{})
+	betl, _ := role.New("Backend Tech Lead",
+		time.Date(2017, time.August, 1, 0, 0, 0, 0, time.UTC),
+		time.Time{})
+	fe, _ := role.New("Frontend Developer",
+		time.Date(2012, time.September, 1, 0, 0, 0, 0, time.UTC),
+		time.Time{})
+	fetl, _ := role.New("Frontend Tech Lead",
+		time.Date(2017, time.August, 1, 0, 0, 0, 0, time.UTC),
+		time.Time{})
+
+	return []test{
+		test{
+			name: "Ritho",
+			roles: []role.Role{
+				be,
+				betl,
+			},
+			technologies: []technology.Technology{
+				technology.New("Golang", "Language", 1),
+				technology.New("C", "Language", 1),
+			},
+		},
+		test{
+			name: "Pepe",
+			roles: []role.Role{
+				fe,
+				fetl,
+			},
+			technologies: []technology.Technology{
+				technology.New("Javascript", "Language", 1),
+				technology.New("React", "Framework", 1),
+			},
+		},
+		test{
+			name:         "Lolailo",
+			roles:        []role.Role{},
+			technologies: []technology.Technology{},
+		},
+		test{
+			name:         "Lerele",
+			roles:        []role.Role{},
+			technologies: []technology.Technology{},
+		},
 	}
 }

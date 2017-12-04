@@ -22,7 +22,6 @@ package member
 import (
 	"fmt"
 
-	"github.com/radar-go/radar/entities/member/api"
 	role "github.com/radar-go/radar/entities/role/api"
 	technology "github.com/radar-go/radar/entities/technology/api"
 )
@@ -33,15 +32,6 @@ type Member struct {
 	name         string
 	roles        []role.Role
 	technologies []technology.Technology
-}
-
-// New creates a new Member object.
-func New(name string) *Member {
-	return &Member{
-		name:         name,
-		roles:        make([]role.Role, 0),
-		technologies: make([]technology.Technology, 0),
-	}
 }
 
 // Name returns the member name.
@@ -89,17 +79,34 @@ func (m *Member) SetName(name string) {
 }
 
 // Equals compares two member objects to check if they're the same one.
-func (m *Member) Equals(member api.Member) bool {
-	return m.Name() == member.Name()
+func (m *Member) Equals(member interface{}) bool {
+	switch member.(type) {
+	case Member:
+		comp := member.(Member)
+		return m.Name() == (&comp).Name()
+	case *Member:
+		comp := member.(*Member)
+		return m.Name() == comp.Name()
+	default:
+		return false
+	}
 }
 
 // AddRole adds a new role to the member.
 func (m *Member) AddRole(newRole role.Role) {
+	if m.roles == nil {
+		m.roles = make([]role.Role, 0)
+	}
+
 	m.roles = append(m.roles, newRole)
 }
 
 // AddTechnology adds a new technology to the known technologies of the member.
 func (m *Member) AddTechnology(newTechnology technology.Technology) {
+	if m.technologies == nil {
+		m.technologies = make([]technology.Technology, 0)
+	}
+
 	m.technologies = append(m.technologies, newTechnology)
 }
 
