@@ -31,7 +31,7 @@ type Resource struct {
 	name         string
 	url          string
 	technologies []technology.Technology
-	rates        []float32
+	rates        []float64
 }
 
 // Name obtains the name of the resource.
@@ -50,14 +50,16 @@ func (r *Resource) Technologies() []technology.Technology {
 }
 
 // Rate obtains the average rate of the resource.
-func (r *Resource) Rate() float32 {
-	var rate float32
+func (r *Resource) Rate() float64 {
+	rate := 0.0
 
-	for _, r := range r.rates {
-		rate += r
+	if len(r.rates) > 0 {
+		for _, r := range r.rates {
+			rate += r
+		}
+
+		rate /= float64(len(r.rates))
 	}
-
-	rate /= float32(len(r.rates))
 
 	return rate
 }
@@ -73,7 +75,7 @@ func (r *Resource) SetURL(url string) {
 }
 
 // AddRate adds a new rate to the resource.
-func (r *Resource) AddRate(newRate float32) {
+func (r *Resource) AddRate(newRate float64) {
 	r.rates = append(r.rates, newRate)
 }
 
@@ -83,7 +85,7 @@ func (r *Resource) AddTechnology(newTechnology technology.Technology) {
 }
 
 // DeleteRate deletes a rate from the resource.
-func (r *Resource) DeleteRate(rate float32) error {
+func (r *Resource) DeleteRate(rate float64) error {
 	for i, elem := range r.rates {
 		if elem == rate {
 			r.rates = append(r.rates[:i], r.rates[i+1:]...)
