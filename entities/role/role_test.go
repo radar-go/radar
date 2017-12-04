@@ -44,6 +44,11 @@ func TestRole(t *testing.T) {
 			t.Errorf("Expected: %s, Got %s", test.expected.title, role.Title())
 		}
 
+		role.SetTitle(test.title)
+		if role.Title() != test.expected.title {
+			t.Errorf("Expected: %s, Got %s", test.expected.title, role.Title())
+		}
+
 		if role.IsActive() != test.active {
 			t.Errorf("Expected active to be %t, got %t", test.active, role.IsActive())
 		}
@@ -81,6 +86,11 @@ func TestRole(t *testing.T) {
 		err = role.SetStarted(time.Now())
 		if err == nil {
 			t.Error("Expected to have an error setting the started role")
+		}
+
+		err = role.SetFinished(time.Date(2001, time.November, 10, 23, 0, 0, 0, time.UTC))
+		if err == nil {
+			t.Error("Expected error setting the finish time for the role")
 		}
 	}
 }
