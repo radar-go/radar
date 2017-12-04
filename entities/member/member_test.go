@@ -49,6 +49,14 @@ func TestMember(t *testing.T) {
 		if !m.Equals(m) {
 			t.Errorf("Expected %s member to be equals to %s", test.name, m.Name())
 		}
+
+		failMember := &Member{
+			name: test.name + "2",
+		}
+		if m.Equals(failMember) {
+			t.Errorf("Expected %s not to be equals to %s", failMember.Name(),
+				m.Name())
+		}
 	}
 }
 
@@ -100,6 +108,14 @@ func TestMemberRoles(t *testing.T) {
 			t.Errorf("Expected the current role to be %s, got %s", newRole.Title(),
 				currentRole.Title())
 		}
+
+		deleteRole, _ := role.New("Tech Lead",
+			time.Date(2015, time.September, 1, 0, 0, 0, 0, time.UTC),
+			time.Time{})
+		err = m.DeleteRole(deleteRole)
+		if err == nil {
+			t.Errorf("Expected error deleting the role %s", deleteRole.Title())
+		}
 	}
 }
 
@@ -136,6 +152,12 @@ func TestMemberTechnologies(t *testing.T) {
 		techs = m.Technologies()
 		if len(techs) != 1 {
 			t.Errorf("Expected 1 technologies, got %d", len(techs))
+		}
+
+		deleteTech := technology.New("Linux", "os", 1)
+		err = m.DeleteTechnology(deleteTech)
+		if err == nil {
+			t.Errorf("Expected error deleting the technology %s", deleteTech.Name())
 		}
 	}
 }
