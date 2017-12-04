@@ -27,9 +27,7 @@ import (
 )
 
 type test struct {
-	name         string
-	roles        []role.Role
-	technologies []technology.Technology
+	name string
 }
 
 func TestMember(t *testing.T) {
@@ -42,55 +40,119 @@ func TestMember(t *testing.T) {
 		if m.Name() != test.name {
 			t.Errorf("Expected %s, got %s", test.name, m.Name())
 		}
+
+		m.SetName(test.name)
+		if m.Name() != test.name {
+			t.Errorf("Expected %s, got %s", test.name, m.Name())
+		}
+
+		if !m.Equals(m) {
+			t.Errorf("Expected %s member to be equals to %s", test.name, m.Name())
+		}
+	}
+}
+
+func TestMemberRoles(t *testing.T) {
+	tests := initializeTests()
+	for _, test := range tests {
+		m := &Member{
+			name: test.name,
+		}
+
+		roles := m.Roles()
+		if len(roles) > 0 {
+			t.Errorf("Expected 0 roles, got %d", len(roles))
+		}
+
+		currentRole := m.CurrentRole()
+		if currentRole != nil {
+			t.Errorf("Expected the current role to be nil, got %s", currentRole.Title())
+		}
+
+		newRole, _ := role.New("Backend Developer",
+			time.Date(2015, time.September, 1, 0, 0, 0, 0, time.UTC),
+			time.Time{})
+
+		m.AddRole(newRole)
+		roles = m.Roles()
+		if len(roles) != 1 {
+			t.Errorf("Expected 1 roles, got %d", len(roles))
+		}
+
+		m.AddRole(newRole)
+		roles = m.Roles()
+		if len(roles) != 2 {
+			t.Errorf("Expected 2 roles, got %d", len(roles))
+		}
+
+		err := m.DeleteRole(newRole)
+		if err != nil {
+			t.Errorf("Unexpected error deleting the role: %+v", err)
+		}
+
+		roles = m.Roles()
+		if len(roles) != 1 {
+			t.Errorf("Expected 1 roles, got %d", len(roles))
+		}
+
+		currentRole = m.CurrentRole()
+		if !currentRole.Equals(newRole) {
+			t.Errorf("Expected the current role to be %s, got %s", newRole.Title(),
+				currentRole.Title())
+		}
+	}
+}
+
+func TestMemberTechnologies(t *testing.T) {
+	tests := initializeTests()
+	for _, test := range tests {
+		m := &Member{
+			name: test.name,
+		}
+
+		techs := m.Technologies()
+		if len(techs) > 0 {
+			t.Errorf("Expected 0 technologies, got %d", len(techs))
+		}
+
+		tech := technology.New("Golang", "Language", 1)
+		m.AddTechnology(tech)
+		techs = m.Technologies()
+		if len(techs) != 1 {
+			t.Errorf("Expected 1 technologies, got %d", len(techs))
+		}
+
+		m.AddTechnology(tech)
+		techs = m.Technologies()
+		if len(techs) != 2 {
+			t.Errorf("Expected 2 technologies, got %d", len(techs))
+		}
+
+		err := m.DeleteTechnology(tech)
+		if err != nil {
+			t.Errorf("Unexpected error deleting the technology: %+v", err)
+		}
+
+		techs = m.Technologies()
+		if len(techs) != 1 {
+			t.Errorf("Expected 1 technologies, got %d", len(techs))
+		}
 	}
 }
 
 func initializeTests() []test {
-	be, _ := role.New("Backend Developer",
-		time.Date(2015, time.September, 1, 0, 0, 0, 0, time.UTC),
-		time.Time{})
-	betl, _ := role.New("Backend Tech Lead",
-		time.Date(2017, time.August, 1, 0, 0, 0, 0, time.UTC),
-		time.Time{})
-	fe, _ := role.New("Frontend Developer",
-		time.Date(2012, time.September, 1, 0, 0, 0, 0, time.UTC),
-		time.Time{})
-	fetl, _ := role.New("Frontend Tech Lead",
-		time.Date(2017, time.August, 1, 0, 0, 0, 0, time.UTC),
-		time.Time{})
-
 	return []test{
 		test{
 			name: "Ritho",
-			roles: []role.Role{
-				be,
-				betl,
-			},
-			technologies: []technology.Technology{
-				technology.New("Golang", "Language", 1),
-				technology.New("C", "Language", 1),
-			},
 		},
 		test{
 			name: "Pepe",
-			roles: []role.Role{
-				fe,
-				fetl,
-			},
-			technologies: []technology.Technology{
-				technology.New("Javascript", "Language", 1),
-				technology.New("React", "Framework", 1),
-			},
 		},
 		test{
-			name:         "Lolailo",
-			roles:        []role.Role{},
-			technologies: []technology.Technology{},
+			name: "Lolailo",
 		},
 		test{
-			name:         "Lerele",
-			roles:        []role.Role{},
-			technologies: []technology.Technology{},
+			name: "Lerele",
 		},
 	}
 }
