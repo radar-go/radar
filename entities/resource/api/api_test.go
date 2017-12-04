@@ -1,4 +1,3 @@
-// Package api defines the protocol for the resource entity.
 package api
 
 /* Copyright (C) 2017 Radar team (see AUTHORS)
@@ -20,31 +19,18 @@ package api
 */
 
 import (
-	"github.com/radar-go/radar/entities/resource"
-	technology "github.com/radar-go/radar/entities/technology/api"
+	"testing"
 )
 
-// Resource entity represents a resource to learn one or several technologies.
-type Resource interface {
-	Name() string
-	URL() string
-	Technologies() []technology.Technology
-	Rate() float64
+func TestResource(t *testing.T) {
+	res := New("Clean Arquitecture", "https://safari.oreilly.com/clean_arquitecture")
 
-	SetName(name string)
-	SetURL(url string)
+	if res.Name() != "Clean Arquitecture" {
+		t.Errorf("Expected Clean Arquitecture, Got %s", res.Name())
+	}
 
-	AddRate(newRate float64)
-	AddTechnology(newTechnology technology.Technology)
-	DeleteRate(rate float64) error
-	DeleteTechnology(tech technology.Technology) error
-}
-
-// New creates a new Resource object.
-func New(name, url string) Resource {
-	res := &resource.Resource{}
-	res.SetName(name)
-	res.SetURL(url)
-
-	return res
+	if res.URL() != "https://safari.oreilly.com/clean_arquitecture" {
+		t.Errorf("Expected https://safari.oreilly.com/clean_arquitecture, Got %s",
+			res.URL())
+	}
 }
