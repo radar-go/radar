@@ -79,10 +79,6 @@ func TestRole(t *testing.T) {
 			t.Errorf("Expected > 0, Got %+v", role.Experience())
 		}
 
-		if !role.Equals(test.expected) {
-			t.Errorf("Expected '%s', got '%s'", test.expected.title, role.Title())
-		}
-
 		err = role.SetStarted(time.Now())
 		if err == nil {
 			t.Error("Expected to have an error setting the started role")
@@ -91,6 +87,34 @@ func TestRole(t *testing.T) {
 		err = role.SetFinished(time.Date(2001, time.November, 10, 23, 0, 0, 0, time.UTC))
 		if err == nil {
 			t.Error("Expected error setting the finish time for the role")
+		}
+
+		if !role.Equals(test.expected) {
+			t.Errorf("Expected '%s', got '%s'", test.expected.title, role.Title())
+		}
+
+		roleDifferent := &Role{
+			title:    test.title + "2",
+			started:  test.started,
+			finished: test.finished,
+		}
+		if role.Equals(roleDifferent) {
+			t.Errorf("Expected '%s' not to be equals to '%s'", role.Title(),
+				roleDifferent.Title())
+		}
+
+		roleSecondDifferent := Role{
+			title:    test.title + "2",
+			started:  test.started,
+			finished: test.finished,
+		}
+		if role.Equals(roleSecondDifferent) {
+			t.Errorf("Expected '%s' not to be equals to '%s'", role.Title(),
+				roleSecondDifferent.Title())
+		}
+
+		if role.Equals(2) {
+			t.Errorf("Expected '%s' not to be equals to 2", role.Title())
 		}
 	}
 }
