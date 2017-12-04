@@ -32,7 +32,11 @@ type test struct {
 func TestTechnology(t *testing.T) {
 	tests := initializeTests()
 	for _, test := range tests {
-		tech := New(test.name, test.techType, test.level)
+		tech := &Technology{
+			name:     test.name,
+			techType: test.techType,
+			level:    test.level,
+		}
 		if tech.Name() != test.expected.name {
 			t.Errorf("Expected: %s, Got %s", test.expected.name, tech.Name())
 		}

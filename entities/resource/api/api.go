@@ -20,6 +20,7 @@ package api
 */
 
 import (
+	"github.com/radar-go/radar/entities/resource"
 	technology "github.com/radar-go/radar/entities/technology/api"
 )
 
@@ -37,4 +38,13 @@ type Resource interface {
 	AddTechnology(newTechnology technology.Technology)
 	DeleteRate(rate float32) error
 	DeleteTechnology(tech technology.Technology) error
+}
+
+// New creates a new Resource object.
+func New(name, url string) Resource {
+	res := &resource.Resource{}
+	res.SetName(name)
+	res.SetURL(url)
+
+	return res
 }

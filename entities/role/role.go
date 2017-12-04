@@ -21,8 +21,6 @@ package role
 import (
 	"errors"
 	"time"
-
-	"github.com/radar-go/radar/entities/role/api"
 )
 
 // Role represents a member role in the organization.
@@ -30,21 +28,6 @@ type Role struct {
 	title    string
 	started  time.Time
 	finished time.Time
-}
-
-// New returns a new Role object.
-func New(title string, started, finished time.Time) *Role {
-	var finish time.Time
-
-	if !finished.IsZero() && finished.After(started) {
-		finish = finished
-	}
-
-	return &Role{
-		title:    title,
-		started:  started,
-		finished: finish,
-	}
 }
 
 // Title returns the title of the role.
@@ -89,6 +72,10 @@ func (r *Role) SetStarted(t time.Time) error {
 
 // SetFinished sets the finishing time for the Role.
 func (r *Role) SetFinished(t time.Time) error {
+	if t.IsZero() {
+		return nil
+	}
+
 	if t.Before(r.started) {
 		return errors.New("The finishing time for the role is before from the starting time")
 	}
@@ -98,6 +85,15 @@ func (r *Role) SetFinished(t time.Time) error {
 }
 
 // Equals check if two role objects are equals.
-func (r *Role) Equals(role api.Role) bool {
-	return r.Title() == role.Title()
+func (r *Role) Equals(role interface{}) bool {
+	switch role.(type) {
+	case *Role:
+		comp := role.(*Role)
+		return r.Title() == comp.Title()
+	case Role:
+		comp := role.(Role)
+		return r.Title() == (&comp).Title()
+	default:
+		return false
+	}
 }

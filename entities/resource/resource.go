@@ -34,14 +34,6 @@ type Resource struct {
 	rates        []float32
 }
 
-// New creates a new Resource object.
-func New(name, url string) *Resource {
-	return &Resource{
-		name: name,
-		url:  url,
-	}
-}
-
 // Name obtains the name of the resource.
 func (r *Resource) Name() string {
 	return r.name

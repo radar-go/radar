@@ -33,13 +33,6 @@ type Project struct {
 	technologies []technology.Technology
 }
 
-// New creates a new Project object.
-func New(name string) *Project {
-	return &Project{
-		name: name,
-	}
-}
-
 // Name returns the name of the project.
 func (p *Project) Name() string {
 	return p.name

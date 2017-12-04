@@ -21,6 +21,8 @@ package api
 
 import (
 	"time"
+
+	"github.com/radar-go/radar/entities/role"
 )
 
 // Role entity defines the role that a member have in the organization
@@ -30,9 +32,25 @@ type Role interface {
 	Started() time.Time
 	Experience() time.Duration
 	IsActive() bool
-	Equals(role Role) bool
+	Equals(role interface{}) bool
 
 	SetTitle(title string)
 	SetStarted(t time.Time) error
 	SetFinished(t time.Time) error
+}
+
+// New returns a new Role object.
+func New(title string, started, finished time.Time) (*role.Role, error) {
+	var err error
+
+	r := &role.Role{}
+	r.SetTitle(title)
+	err = r.SetStarted(started)
+	if err != nil {
+		return r, err
+	}
+
+	err = r.SetFinished(finished)
+
+	return r, err
 }

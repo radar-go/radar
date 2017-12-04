@@ -34,7 +34,12 @@ type test struct {
 func TestRole(t *testing.T) {
 	tests := initializeTests()
 	for _, test := range tests {
-		role := New(test.title, test.started, test.finished)
+		role := &Role{
+			title:    test.title,
+			started:  test.started,
+			finished: test.finished,
+		}
+
 		if role.Title() != test.expected.title {
 			t.Errorf("Expected: %s, Got %s", test.expected.title, role.Title())
 		}

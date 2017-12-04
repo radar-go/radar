@@ -19,6 +19,10 @@ package api
    along with radar. If not, see <http://www.gnu.org/licenses/>.
 */
 
+import (
+	"github.com/radar-go/radar/entities/technology"
+)
+
 // Technology entity represents a technology used in one project, by one member
 // or in one resource entity.
 type Technology interface {
@@ -30,5 +34,16 @@ type Technology interface {
 	SetType(newType string)
 	SetLevel(newLevel int)
 
-	Equals(tech Technology) bool
+	Equals(tech interface{}) bool
+}
+
+// New returns a new Technology object.
+func New(name, techType string, level int) Technology {
+	tech := &technology.Technology{}
+
+	tech.SetName(name)
+	tech.SetType(techType)
+	tech.SetLevel(level)
+
+	return tech
 }

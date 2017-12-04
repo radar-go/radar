@@ -21,6 +21,7 @@ package api
 
 import (
 	member "github.com/radar-go/radar/entities/member/api"
+	"github.com/radar-go/radar/entities/project"
 	technology "github.com/radar-go/radar/entities/technology/api"
 )
 
@@ -35,4 +36,12 @@ type Project interface {
 	AddTechnology(newTechnology technology.Technology)
 	DeleteMember(member member.Member) error
 	DeleteTechnology(tech technology.Technology) error
+}
+
+// New creates a new Project object.
+func New(name string) Project {
+	project := &project.Project{}
+	project.SetName(name)
+
+	return project
 }
