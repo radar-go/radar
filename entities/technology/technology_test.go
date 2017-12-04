@@ -41,6 +41,16 @@ func TestTechnology(t *testing.T) {
 			t.Errorf("Expected: %s, Got %s", test.expected.name, tech.Name())
 		}
 
+		tech.SetName(test.name)
+		if tech.Name() != test.expected.name {
+			t.Errorf("Expected: %s, Got %s", test.expected.name, tech.Name())
+		}
+
+		if tech.Type() != test.expected.techType {
+			t.Errorf("Expected: %s, Got %s", test.expected.techType, tech.Type())
+		}
+
+		tech.SetType(test.techType)
 		if tech.Type() != test.expected.techType {
 			t.Errorf("Expected: %s, Got %s", test.expected.techType, tech.Type())
 		}
@@ -48,13 +58,44 @@ func TestTechnology(t *testing.T) {
 		if tech.Level() != test.expected.level {
 			t.Errorf("Expected: %d, Got %d", test.expected.level, tech.Level())
 		}
+
+		tech.SetLevel(test.level)
+		if tech.Level() != test.expected.level {
+			t.Errorf("Expected: %d, Got %d", test.expected.level, tech.Level())
+		}
+
+		if !tech.Equals(tech) {
+			t.Errorf("Expected %s to be equal to %s", tech.Name(), tech.Name())
+		}
+
+		techDifferent := &Technology{
+			name:     test.name + "2",
+			techType: test.techType,
+			level:    test.level,
+		}
+		if tech.Equals(techDifferent) {
+			t.Errorf("Expected %s not to be equal to %s", tech.Name(),
+				techDifferent.Name())
+		}
+
+		techSecondDifferent := Technology{
+			name:     test.name + "2",
+			techType: test.techType,
+			level:    test.level,
+		}
+		if tech.Equals(techSecondDifferent) {
+			t.Errorf("Expected %s not to be equal to %s", tech.Name(),
+				techSecondDifferent.Name())
+		}
+
+		if tech.Equals(2) {
+			t.Errorf("Expected %s not to be equal to 2", tech.Name())
+		}
 	}
 }
 
 func initializeTests() []test {
-	t := make([]test, 5)
-
-	t = append(t,
+	return []test{
 		test{
 			name:     "golang",
 			techType: "language",
@@ -105,7 +146,5 @@ func initializeTests() []test {
 				level:    1,
 			},
 		},
-	)
-
-	return t
+	}
 }
