@@ -1,3 +1,4 @@
+// Package role implements the role entity.
 package role
 
 /* Copyright (C) 2017 Radar team (see AUTHORS)
