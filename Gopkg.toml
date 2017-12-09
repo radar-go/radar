@@ -1,0 +1,10 @@
+[[constraint]]
+  name = "github.com/golang/glog"
+
+[[constraint]]
+  name = "github.com/buaazp/fasthttprouter"
+  branch = "master"
+
+[[constraint]]
+  name = "github.com/valyala/fasthttp"
+  branch = "master"
