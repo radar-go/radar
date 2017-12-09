@@ -4,3 +4,6 @@
 /cpu*.log
 /mem*.log
 /*.test
+
+/Gopkg.lock
+/vendor

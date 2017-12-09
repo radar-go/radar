@@ -82,6 +82,7 @@ build: bin/$(ARCH)/$(BIN)
 
 bin/$(ARCH)/$(BIN): build-dirs
 	@echo "building: $@"
+	@if [ ! -d $(CURRENT_DIR)/vendors ]; then $(MAKE) update-vendors; fi
 	@docker run                                                            \
 	    -ti                                                                \
 	    --rm                                                               \
@@ -181,3 +182,6 @@ check-tests:
 	@+make check-block-tests
 	@echo "Mem tests"
 	@+make check-mem-tests
+
+update-vendors:
+	@dep ensure
