@@ -8,3 +8,9 @@
 [[constraint]]
   name = "github.com/valyala/fasthttp"
   branch = "master"
+
+[[constraint]]
+  name = "github.com/goware/emailx"
+
+[[constraint]]
+  name = "github.com/pkg/errors"
