@@ -21,6 +21,8 @@ package controller
 
 import (
 	"github.com/buaazp/fasthttprouter"
+	"github.com/golang/glog"
+	"github.com/valyala/fasthttp"
 )
 
 // Controller struct to manager the Radar API Controller.
@@ -38,6 +40,42 @@ func New() *Controller {
 	return c
 }
 
+// logPaths logs the requested path to the info log.
+func logPath(path []byte) {
+	glog.Infof("Request path: %s", path)
+}
+
 // register defines all the router paths the API implements.
 func (c *Controller) register() {
+	c.Router.HandleMethodNotAllowed = true
+	c.Router.NotFound = c.notFound
+	c.Router.MethodNotAllowed = c.methodNotAllowed
+	c.Router.PanicHandler = c.panic
+
+	c.Router.GET("/healthcheck", c.healthcheck)
+}
+
+// panic handles when the server have a fatal error.
+func (c *Controller) panic(ctx *fasthttp.RequestCtx, from interface{}) {
+	logPath(ctx.Path())
+	ctx.SetStatusCode(fasthttp.StatusBadRequest)
+}
+
+// methodNotAllowed handles the response when a method call is not allowed from
+// the client.
+func (c *Controller) methodNotAllowed(ctx *fasthttp.RequestCtx) {
+	logPath(ctx.Path())
+	ctx.SetStatusCode(fasthttp.StatusMethodNotAllowed)
+}
+
+// notFound handles the response when a path have not been found.
+func (c *Controller) notFound(ctx *fasthttp.RequestCtx) {
+	logPath(ctx.Path())
+	ctx.SetStatusCode(fasthttp.StatusNotFound)
+}
+
+// healthcheck handler.
+func (c *Controller) healthcheck(ctx *fasthttp.RequestCtx) {
+	logPath(ctx.Path())
+	ctx.SetStatusCode(fasthttp.StatusOK)
 }
