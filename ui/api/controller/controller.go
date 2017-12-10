@@ -61,7 +61,7 @@ func (c *Controller) register() {
 // panic handles when the server have a fatal error.
 func (c *Controller) panic(ctx *fasthttp.RequestCtx, from interface{}) {
 	logPath(ctx.Path())
-	ctx.SetStatusCode(fasthttp.StatusBadRequest)
+	ctx.SetStatusCode(fasthttp.StatusInternalServerError)
 	ctx.SetContentType("application/json; charset=utf-8")
 	ctx.SetBodyString(fmt.Sprintf(`{"error": "API fatal error calling %s"}`,
 		ctx.Path()))
@@ -92,4 +92,16 @@ func (c *Controller) healthcheck(ctx *fasthttp.RequestCtx) {
 	ctx.SetStatusCode(fasthttp.StatusOK)
 	ctx.SetContentType("application/json; charset=utf-8")
 	ctx.SetBodyString(`{"status": "ok"}`)
+}
+
+// internalServerError response
+func internalServerError(ctx *fasthttp.RequestCtx, msg string) {
+	ctx.SetStatusCode(fasthttp.StatusInternalServerError)
+	ctx.SetBodyString(fmt.Sprintf(`{"error":"%s"}`, msg))
+}
+
+// badRequest response
+func badRequest(ctx *fasthttp.RequestCtx, msg string) {
+	ctx.SetStatusCode(fasthttp.StatusBadRequest)
+	ctx.SetBodyString(fmt.Sprintf(`{"error":"%s"}`, msg))
 }
