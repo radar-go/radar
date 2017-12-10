@@ -48,7 +48,7 @@ func (a *API) Start() {
 		ReduceMemoryUsage: true,
 	}
 
-	glog.Infof("Starting server on port %d...", cfg.APIPort)
+	glog.Infof("Starting api on port %d...", cfg.APIPort)
 	err := server.ListenAndServe(fmt.Sprint(":", cfg.APIPort))
 	if err != nil {
 		glog.Exit(err)

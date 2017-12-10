@@ -20,9 +20,16 @@ package main
 */
 
 import (
-	"fmt"
+	"flag"
+
+	"github.com/radar-go/radar/ui/api"
 )
 
 func main() {
-	fmt.Println("hello, world")
+	/* Parse the arguments. */
+	flag.Parse()
+
+	/* Starts the radar API. */
+	a := api.New()
+	a.Start()
 }
