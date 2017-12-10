@@ -54,9 +54,11 @@ type uCases struct {
 
 // Register registers a new UseCase into the list of use cases.
 func Register(useCase UseCase) {
-	uc = &uCases{
-		ds:       datastore.New(),
-		useCases: make(map[string]UseCase),
+	if uc == nil {
+		uc = &uCases{
+			ds:       datastore.New(),
+			useCases: make(map[string]UseCase),
+		}
 	}
 
 	name := useCase.GetName()
