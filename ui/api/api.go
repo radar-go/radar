@@ -26,6 +26,7 @@ import (
 	"github.com/valyala/fasthttp"
 
 	"github.com/radar-go/radar/config"
+	"github.com/radar-go/radar/ui/api/controller"
 )
 
 // API structure to manage the Radar API.
@@ -40,9 +41,9 @@ func New() *API {
 // Start starts the Radar API.
 func (a *API) Start() {
 	cfg := config.New()
-	c := newController()
+	c := controller.New()
 	server := fasthttp.Server{
-		Handler:           fasthttp.CompressHandler(c.router.Handler),
+		Handler:           fasthttp.CompressHandler(c.Router.Handler),
 		ReadBufferSize:    1024 * 64,
 		WriteBufferSize:   1024 * 64,
 		ReduceMemoryUsage: true,

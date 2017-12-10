@@ -1,4 +1,5 @@
-package api
+// Package controller implements the Radar API controller.
+package controller
 
 /* Copyright (C) 2017 Radar team (see AUTHORS)
 
@@ -22,18 +23,21 @@ import (
 	"github.com/buaazp/fasthttprouter"
 )
 
-type controller struct {
-	router *fasthttprouter.Router
+// Controller struct to manager the Radar API Controller.
+type Controller struct {
+	Router *fasthttprouter.Router
 }
 
-func newController() *controller {
-	c := &controller{
-		router: fasthttprouter.New(),
+// New creates and return a new Controller object.
+func New() *Controller {
+	c := &Controller{
+		Router: fasthttprouter.New(),
 	}
 	c.register()
 
 	return c
 }
 
-func (c *controller) register() {
+// register defines all the router paths the API implements.
+func (c *Controller) register() {
 }
