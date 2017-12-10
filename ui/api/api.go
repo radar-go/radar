@@ -28,13 +28,16 @@ import (
 	"github.com/radar-go/radar/config"
 )
 
+// API structure to manage the Radar API.
 type API struct {
 }
 
+// New creates and returns a new API object.
 func New() *API {
 	return &API{}
 }
 
+// Start starts the Radar API.
 func (a *API) Start() {
 	cfg := config.New()
 	c := newController()
