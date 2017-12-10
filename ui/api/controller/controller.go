@@ -55,6 +55,7 @@ func (c *Controller) register() {
 	c.Router.PanicHandler = c.panic
 
 	c.Router.GET("/healthcheck", c.healthcheck)
+	c.Router.POST("/register", c.userRegistration)
 }
 
 // panic handles when the server have a fatal error.
