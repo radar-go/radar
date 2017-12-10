@@ -28,8 +28,19 @@ import (
 func TestCasesProvider(t *testing.T) {
 	var err error
 	var uCase UseCase
+
+	list := UseCaseList()
+	if len(list) != 1 {
+		t.Errorf("Expected the use case list to have 1 element, got %d", len(list))
+	}
+
 	uCase = register.New()
 	Register(uCase)
+
+	list = UseCaseList()
+	if len(list) != 1 {
+		t.Errorf("Expected the use case list to have 1 element, got %d", len(list))
+	}
 
 	uCase = &usecase.UseCase{
 		Name:      "usecase",
@@ -37,18 +48,18 @@ func TestCasesProvider(t *testing.T) {
 	}
 	Register(uCase)
 
-	uCase, err = GetUseCase("usecase")
+	list = UseCaseList()
+	if len(list) != 2 {
+		t.Errorf("Expected the use case list to have 2 elements, got %d", len(list))
+	}
+
+	_, err = GetUseCase("usecase")
 	if err != nil {
 		t.Errorf("Unexpected error getting the use case: %+v", err)
 	}
 
-	uCase, err = GetUseCase("usecaseFail")
+	_, err = GetUseCase("usecaseFail")
 	if err == nil {
 		t.Errorf("Expected error getting the use case did not happened")
-	}
-
-	list := UseCaseList()
-	if len(list) != 2 {
-		t.Errorf("Expected the use case list to have 2 elements, got %d", len(list))
 	}
 }
