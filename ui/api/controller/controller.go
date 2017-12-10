@@ -20,6 +20,8 @@ package controller
 */
 
 import (
+	"fmt"
+
 	"github.com/buaazp/fasthttprouter"
 	"github.com/golang/glog"
 	"github.com/valyala/fasthttp"
@@ -59,6 +61,9 @@ func (c *Controller) register() {
 func (c *Controller) panic(ctx *fasthttp.RequestCtx, from interface{}) {
 	logPath(ctx.Path())
 	ctx.SetStatusCode(fasthttp.StatusBadRequest)
+	ctx.SetContentType("application/json; charset=utf-8")
+	ctx.SetBodyString(fmt.Sprintf(`{"error": "API fatal error calling %s"}`,
+		ctx.Path()))
 }
 
 // methodNotAllowed handles the response when a method call is not allowed from
@@ -66,16 +71,24 @@ func (c *Controller) panic(ctx *fasthttp.RequestCtx, from interface{}) {
 func (c *Controller) methodNotAllowed(ctx *fasthttp.RequestCtx) {
 	logPath(ctx.Path())
 	ctx.SetStatusCode(fasthttp.StatusMethodNotAllowed)
+	ctx.SetContentType("application/json; charset=utf-8")
+	ctx.SetBodyString(fmt.Sprintf(`{"error": "Method not allowed calling %s"}`,
+		ctx.Path()))
 }
 
 // notFound handles the response when a path have not been found.
 func (c *Controller) notFound(ctx *fasthttp.RequestCtx) {
 	logPath(ctx.Path())
 	ctx.SetStatusCode(fasthttp.StatusNotFound)
+	ctx.SetContentType("application/json; charset=utf-8")
+	ctx.SetBodyString(fmt.Sprintf(`{"error": "Path %s not found"}`,
+		ctx.Path()))
 }
 
 // healthcheck handler.
 func (c *Controller) healthcheck(ctx *fasthttp.RequestCtx) {
 	logPath(ctx.Path())
 	ctx.SetStatusCode(fasthttp.StatusOK)
+	ctx.SetContentType("application/json; charset=utf-8")
+	ctx.SetBodyString(`{"status": "ok"}`)
 }
