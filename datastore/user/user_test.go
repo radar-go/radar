@@ -1,4 +1,3 @@
-// Package user implements the user data storage.
 package user
 
 /* Copyright (C) 2017 Radar team (see AUTHORS)
@@ -18,42 +17,3 @@ package user
    You should have received a copy of the GNU General Public License
    along with radar. If not, see <http://www.gnu.org/licenses/>.
 */
-
-import (
-	"errors"
-
-	"github.com/radar-go/radar/entities/member"
-)
-
-var userSeq int
-
-// ErrUserExists raised when the user already exists in the datastore.
-var ErrUserExists = errors.New("User already exists")
-
-// User represent an user in the data store.
-type User struct {
-	member.Member
-	id       int
-	email    string
-	password string
-}
-
-// New returns a new User object.
-func New(name, email, password string) *User {
-	userSeq++
-
-	usr := &User{
-		id:       userSeq,
-		email:    email,
-		password: password,
-	}
-
-	usr.SetName(name)
-
-	return usr
-}
-
-// ID returns the user id.
-func (u *User) ID() int {
-	return u.id
-}
