@@ -17,3 +17,27 @@ package user
    You should have received a copy of the GNU General Public License
    along with radar. If not, see <http://www.gnu.org/licenses/>.
 */
+
+import (
+	"testing"
+)
+
+func TestUser(t *testing.T) {
+	usr := New("name", "email", "password")
+
+	if usr.ID() != 1 {
+		t.Errorf("Expected user id 1, Got %d", usr.ID())
+	}
+
+	if usr.Name() != "name" {
+		t.Errorf("Expected name, got %s", usr.Name())
+	}
+
+	if usr.email != "email" {
+		t.Errorf("Expected email, Got %s", usr.email)
+	}
+
+	if usr.password != "password" {
+		t.Errorf("Expected password, Got %s", usr.password)
+	}
+}
