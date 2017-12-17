@@ -17,3 +17,74 @@ package usecase
    You should have received a copy of the GNU General Public License
    along with radar. If not, see <http://www.gnu.org/licenses/>.
 */
+
+import (
+	"bytes"
+	"testing"
+
+	"github.com/radar-go/radar/datastore"
+)
+
+func TestUseCase(t *testing.T) {
+	uc := &UseCase{
+		Name: "UseCase",
+	}
+
+	uc.SetDatastore(datastore.New())
+	if uc.GetName() != "UseCase" {
+		t.Errorf("Expected UseCase, Got %s", uc.GetName())
+	}
+
+	_, err := uc.Run()
+	if err == nil {
+		t.Error("Expected error running the use case")
+	}
+
+	err = uc.AddParam("param", 1)
+	if err == nil {
+		t.Error("Expected error adding a param")
+	}
+
+	params := map[string]interface{}{
+		"param1": 1,
+		"param2": 2,
+		"param3": 3,
+	}
+	err = uc.AddParams(params)
+	if err == nil {
+		t.Error("Expected error adding several params")
+	}
+
+	emptyParams := make(map[string]interface{})
+	err = uc.AddParams(emptyParams)
+	if err != nil {
+		t.Errorf("Unexpected error adding an empty map of params: %+v", err)
+	}
+}
+
+func TestResult(t *testing.T) {
+	res := &Result{
+		Message: "UseCase result",
+		Error:   "UseCase error",
+	}
+
+	jsonStr, err := res.String()
+	if err != nil {
+		t.Errorf("Unexpected error getting the result: %+v", err)
+	}
+
+	if jsonStr != `{"result":"UseCase result","error":"UseCase error"}` {
+		t.Errorf(`Expected {"result":"UseCase result","error":"UseCase error"}, got %s`,
+			jsonStr)
+	}
+
+	jsonBytes, err := res.Bytes()
+	if err != nil {
+		t.Errorf("Unexpected error getting the result: %+v", err)
+	}
+
+	if !bytes.Equal(jsonBytes, []byte(`{"result":"UseCase result","error":"UseCase error"}`)) {
+		t.Errorf(`Expected {"result":"UseCase result","error":"UseCase error"}, Got %s`,
+			jsonBytes)
+	}
+}
