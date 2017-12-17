@@ -21,6 +21,8 @@ package api
 
 import (
 	"fmt"
+	"net"
+	"time"
 
 	"github.com/golang/glog"
 	"github.com/valyala/fasthttp"
@@ -31,6 +33,7 @@ import (
 
 // API structure to manage the Radar API.
 type API struct {
+	listener net.Listener
 }
 
 // New creates and returns a new API object.
@@ -39,7 +42,8 @@ func New() *API {
 }
 
 // Start starts the Radar API.
-func (a *API) Start() {
+func (a *API) Start() error {
+	var err error
 	cfg := config.New()
 	c := controller.New()
 	server := fasthttp.Server{
@@ -49,9 +53,24 @@ func (a *API) Start() {
 		ReduceMemoryUsage: true,
 	}
 
-	glog.Infof("Starting api on port %d...", cfg.APIPort)
-	err := server.ListenAndServe(fmt.Sprint(":", cfg.APIPort))
+	a.listener, err = net.Listen("tcp4", fmt.Sprint(":", cfg.APIPort))
 	if err != nil {
-		glog.Exit(err)
+		return err
 	}
+
+	glog.Infof("Starting api on port %d...", cfg.APIPort)
+	return server.Serve(a.listener)
+}
+
+// Stop stops the API.
+func (a *API) Stop() error {
+	var err error
+
+	if a.listener != nil {
+		err = a.listener.Close()
+		time.Sleep(time.Second)
+		a.listener = nil
+	}
+
+	return err
 }
