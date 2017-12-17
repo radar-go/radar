@@ -22,6 +22,8 @@ package main
 import (
 	"flag"
 
+	"github.com/golang/glog"
+
 	"github.com/radar-go/radar/ui/api"
 )
 
@@ -31,5 +33,8 @@ func main() {
 
 	/* Starts the radar API. */
 	a := api.New()
-	a.Start()
+	err := a.Start()
+	if err != nil {
+		glog.Exit(err)
+	}
 }
