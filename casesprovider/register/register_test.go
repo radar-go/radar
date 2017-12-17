@@ -32,7 +32,7 @@ func TestRegister(t *testing.T) {
 		t.Errorf("Expected Use Case name to be UserRegister, got %s", uc.Name)
 	}
 
-	uc.Datastore = datastore.New()
+	uc.SetDatastore(datastore.New())
 	err := uc.AddParam("name", "Ritho")
 	if err != nil {
 		t.Errorf("Unexpected error adding an ad param to the use case: %+v", err)
