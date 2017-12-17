@@ -20,18 +20,12 @@ package register
 */
 
 import (
+	"encoding/json"
 	"fmt"
 
+	"github.com/radar-go/radar/casesprovider/errors"
 	"github.com/radar-go/radar/casesprovider/usecase"
 )
-
-// New creates and returns a new register use case object.
-func New() *UseCase {
-	uc := &UseCase{}
-	uc.Name = "UserRegister"
-
-	return uc
-}
 
 // UseCase for the user registration.
 type UseCase struct {
@@ -47,38 +41,46 @@ type Result struct {
 	UserID int `json:"id,omitempty"`
 }
 
+// New creates and returns a new register use case object.
+func New() *UseCase {
+	uc := &UseCase{}
+	uc.Name = "UserRegister"
+
+	return uc
+}
+
 // AddParam adds a new ad param to the use case.
 func (uc *UseCase) AddParam(name string, value interface{}) error {
 	switch name {
 	case "name":
 		name, ok := value.(string)
 		if !ok {
-			return fmt.Errorf("Param name is not from the right type")
+			return errors.ErrParamType
 		} else if len(name) == 0 {
-			return fmt.Errorf("Param name is not present or empty")
+			return errors.ErrParamEmpty
 		}
 
 		uc.userName = name
 	case "email":
 		email, ok := value.(string)
 		if !ok {
-			return fmt.Errorf("Param email is not from the right type")
+			return errors.ErrParamType
 		} else if len(email) == 0 {
-			return fmt.Errorf("Param email is not present or empty")
+			return errors.ErrParamEmpty
 		}
 
 		uc.email = email
 	case "password":
 		passwd, ok := value.(string)
 		if !ok {
-			return fmt.Errorf("Param password is not from the right type")
+			return errors.ErrParamType
 		} else if len(passwd) == 0 {
-			return fmt.Errorf("Param password is not present or empty")
+			return errors.ErrParamEmpty
 		}
 
 		uc.password = passwd
 	default:
-		return fmt.Errorf("Unknown parameter %s for the use case %s", name, uc.Name)
+		return errors.ErrParamUnknown
 	}
 
 	return nil
@@ -98,4 +100,19 @@ func (uc *UseCase) Run() (usecase.ResultPrinter, error) {
 	}
 
 	return res, err
+}
+
+// Bytes returns the use case result in string format.
+func (r *Result) String() (string, error) {
+	res, err := json.Marshal(r)
+	if err != nil {
+		return "{}", err
+	}
+
+	return fmt.Sprintf("%s", res), err
+}
+
+// Bytes returns the use case result in []bytes format.
+func (r *Result) Bytes() ([]byte, error) {
+	return json.Marshal(r)
 }
