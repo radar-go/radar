@@ -20,8 +20,6 @@ package datastore
 */
 
 import (
-	"fmt"
-
 	"github.com/goware/emailx"
 	"github.com/pkg/errors"
 
@@ -49,7 +47,7 @@ func (d *Datastore) UserRegistration(name, email, password string) (int, error) 
 
 	_, ok := d.users[cleanEmail]
 	if ok {
-		return 0, fmt.Errorf("User %s already exists", cleanEmail)
+		return 0, errors.Wrap(user.ErrUserExists, cleanEmail)
 	}
 
 	usr := user.New(name, email, password)
