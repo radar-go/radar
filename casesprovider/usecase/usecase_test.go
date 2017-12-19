@@ -63,18 +63,17 @@ func TestUseCase(t *testing.T) {
 }
 
 func TestResult(t *testing.T) {
-	res := &Result{
-		Message: "UseCase result",
-		Error:   "UseCase error",
-	}
+	res := NewResult()
+	res.Res["result"] = "UseCase result"
+	res.Res["error"] = "UseCase error"
 
 	jsonStr, err := res.String()
 	if err != nil {
 		t.Errorf("Unexpected error getting the result: %+v", err)
 	}
 
-	if jsonStr != `{"result":"UseCase result","error":"UseCase error"}` {
-		t.Errorf(`Expected {"result":"UseCase result","error":"UseCase error"}, got %s`,
+	if jsonStr != `{"error":"UseCase error","result":"UseCase result"}` {
+		t.Errorf(`Expected {"error":"UseCase error","result":"UseCase result"}, got %s`,
 			jsonStr)
 	}
 
@@ -83,8 +82,8 @@ func TestResult(t *testing.T) {
 		t.Errorf("Unexpected error getting the result: %+v", err)
 	}
 
-	if !bytes.Equal(jsonBytes, []byte(`{"result":"UseCase result","error":"UseCase error"}`)) {
-		t.Errorf(`Expected {"result":"UseCase result","error":"UseCase error"}, Got %s`,
+	if !bytes.Equal(jsonBytes, []byte(`{"error":"UseCase error","result":"UseCase result"}`)) {
+		t.Errorf(`Expected {"error":"UseCase error","result":"UseCase result"}9, Got %s`,
 			jsonBytes)
 	}
 }

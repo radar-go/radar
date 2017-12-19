@@ -50,8 +50,8 @@ func TestUserControllerMissingParamsError(t *testing.T) {
 		t.Errorf("Expected 400, Got %d", ctx.Response.StatusCode())
 	}
 
-	if !bytes.Equal(ctx.Response.Body(), []byte(`{"error":"Missing the parameters for the user registration."}`)) {
-		t.Errorf(`Expected {"error":"Missing the parameters for the user registration."}, Got %s`,
+	if !bytes.Equal(ctx.Response.Body(), []byte(`{"error":"Unable to get the request body."}`)) {
+		t.Errorf(`Expected {"error":"Unable to get the request body."}, Got %s`,
 			ctx.Response.Body())
 	}
 }
@@ -101,8 +101,8 @@ func TestUserControllerSuccess(t *testing.T) {
 		t.Errorf("Expected 200, Got %d", ctx.Response.StatusCode())
 	}
 
-	if !bytes.Equal(ctx.Response.Body(), []byte(`{"result":"User registered successfully","id":1}`)) {
-		t.Errorf(`Expected {"result":"User registered successfully","id":1}, Got %s`,
+	if !bytes.Equal(ctx.Response.Body(), []byte(`{"id":1,"result":"User registered successfully"}`)) {
+		t.Errorf(`Expected {"id":1,"result":"User registered successfully"}, Got %s`,
 			ctx.Response.Body())
 	}
 }

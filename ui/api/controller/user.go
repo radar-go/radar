@@ -28,55 +28,50 @@ import (
 	"github.com/radar-go/radar/casesprovider"
 )
 
+func (c *Controller) checkRequestHeaders(ctx *fasthttp.RequestCtx) error {
+	ct := ctx.Request.Header.Peek("Content-Type")
+	if !bytes.Contains(ct, []byte("application/json")) {
+		badRequest(ctx, "Expected json format for the request.")
+		return fmt.Errorf("Expected json format for the request")
+	}
+
+	return nil
+}
+
 func (c *Controller) userRegistration(ctx *fasthttp.RequestCtx) {
 	logPath(ctx.Path())
 	ctx.SetContentType("application/json; charset=utf-8")
 
-	ct := ctx.Request.Header.Peek("Content-Type")
-	if !bytes.Contains(ct, []byte("application/json")) {
-		badRequest(ctx, "Expected json format for the request.")
+	err := c.checkRequestHeaders(ctx)
+	if err != nil {
 		return
 	}
 
 	body := ctx.PostBody()
 	if len(body) == 0 {
-		badRequest(ctx, "Missing the parameters for the user registration.")
+		badRequest(ctx, "Unable to get the request body.")
 		return
 	}
 
-	var params struct {
-		Name     string `json:"name"`
-		Email    string `json:"email"`
-		Password string `json:"password"`
-	}
+	params := make(map[string]interface{})
 
-	err := json.Unmarshal(body, &params)
+	// XXX: validate the json against an schema.
+	err = json.Unmarshal(body, &params)
 	if err != nil {
 		badRequest(ctx, "Error obtaining the user params")
 		return
 	}
 
+	// XXX: Switch againt the path to get the use case.
 	uc, err := casesprovider.GetUseCase("UserRegister")
 	if err != nil {
 		internalServerError(ctx, fmt.Sprintf("Error obtaining the use case: %s.", err))
 		return
 	}
 
-	err = uc.AddParam("name", params.Name)
+	err = uc.AddParams(params)
 	if err != nil {
-		internalServerError(ctx, fmt.Sprintf("Error adding the ad param: %s.", err))
-		return
-	}
-
-	err = uc.AddParam("email", params.Email)
-	if err != nil {
-		internalServerError(ctx, fmt.Sprintf("Error adding the ad param: %s.", err))
-		return
-	}
-
-	err = uc.AddParam("password", params.Password)
-	if err != nil {
-		internalServerError(ctx, fmt.Sprintf("Error adding the ad param: %s.", err))
+		internalServerError(ctx, fmt.Sprintf("Error adding the ad params: %s.", err))
 		return
 	}
 
