@@ -90,3 +90,16 @@ func (c *Controller) userRegistration(ctx *fasthttp.RequestCtx) {
 	ctx.SetStatusCode(fasthttp.StatusOK)
 	ctx.SetBody(result)
 }
+
+func (c *Controller) userLogin(ctx *fasthttp.RequestCtx) {
+	logPath(ctx.Path())
+	ctx.SetContentType("application/json; charset=utf-8")
+
+	err := c.checkRequestHeaders(ctx)
+	if err != nil {
+		return
+	}
+
+	ctx.SetStatusCode(fasthttp.StatusOK)
+	ctx.SetBodyString("{}")
+}
