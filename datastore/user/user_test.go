@@ -23,7 +23,7 @@ import (
 )
 
 func TestUser(t *testing.T) {
-	usr := New("name", "email", "password")
+	usr := New("username", "name", "email", "password")
 
 	if usr.ID() != 1 {
 		t.Errorf("Expected user id 1, Got %d", usr.ID())

@@ -24,8 +24,6 @@ import (
 	"fmt"
 
 	"github.com/valyala/fasthttp"
-
-	"github.com/radar-go/radar/casesprovider"
 )
 
 func (c *Controller) checkRequestHeaders(ctx *fasthttp.RequestCtx) error {
@@ -63,9 +61,10 @@ func (c *Controller) userRegistration(ctx *fasthttp.RequestCtx) {
 	}
 
 	// XXX: Switch againt the path to get the use case.
-	uc, err := casesprovider.GetUseCase("UserRegister")
+	uc, err := c.cases.GetUseCase("UserRegister")
 	if err != nil {
-		internalServerError(ctx, fmt.Sprintf("Error obtaining the use case: %s.", err))
+		internalServerError(ctx, fmt.Sprintf("Error obtaining the use case %s: %s.",
+			uc.GetName(), err))
 		return
 	}
 

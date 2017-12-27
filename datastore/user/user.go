@@ -30,20 +30,31 @@ var userSeq int
 // ErrUserExists raised when the user already exists in the datastore.
 var ErrUserExists = errors.New("User already exists")
 
+// ErrEmailEmpty raised when the email is empty.
+var ErrEmailEmpty = errors.New("Email is empty")
+
+// ErrUsernameEmpty raised when the username is empty.
+var ErrUsernameEmpty = errors.New("Username is empty")
+
+// ErrPasswordEmpty raised when the password is empty.
+var ErrPasswordEmpty = errors.New("Password is empty")
+
 // User represent an user in the data store.
 type User struct {
 	member.Member
 	id       int
+	username string
 	email    string
 	password string
 }
 
 // New returns a new User object.
-func New(name, email, password string) *User {
+func New(username, name, email, password string) *User {
 	userSeq++
 
 	usr := &User{
 		id:       userSeq,
+		username: username,
 		email:    email,
 		password: password,
 	}
