@@ -19,29 +19,20 @@ package user
 */
 
 import (
-	"testing"
+	"errors"
 )
 
-func TestUser(t *testing.T) {
-	usr := New("username", "name", "email", "password")
+// ErrUserExists raised when the user already exists in the datastore.
+var ErrUserExists = errors.New("User already exists")
 
-	if usr.ID() != 1 {
-		t.Errorf("Expected user id 1, Got %d", usr.ID())
-	}
+// ErrUserNotExists raised when the user doesn't exists in the datastore.
+var ErrUserNotExists = errors.New("User doesn't exists")
 
-	if usr.Username() != "username" {
-		t.Errorf("Expected name, got %s", usr.Name())
-	}
+// ErrEmailEmpty raised when the email is empty.
+var ErrEmailEmpty = errors.New("Email is empty")
 
-	if usr.Name() != "name" {
-		t.Errorf("Expected name, got %s", usr.Name())
-	}
+// ErrUsernameEmpty raised when the username is empty.
+var ErrUsernameEmpty = errors.New("Username is empty")
 
-	if usr.Email() != "email" {
-		t.Errorf("Expected email, Got %s", usr.email)
-	}
-
-	if usr.Password() != "password" {
-		t.Errorf("Expected password, Got %s", usr.password)
-	}
-}
+// ErrPasswordEmpty raised when the password is empty.
+var ErrPasswordEmpty = errors.New("Password is empty")
