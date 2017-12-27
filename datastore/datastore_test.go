@@ -21,7 +21,6 @@ package datastore
 import (
 	"testing"
 
-	"github.com/goware/emailx"
 	"github.com/pkg/errors"
 
 	"github.com/radar-go/radar/datastore/user"
@@ -30,7 +29,7 @@ import (
 func TestDatastoreRegisterUser(t *testing.T) {
 	ds := New()
 
-	id, err := ds.UserRegistration("ritho", "palvarez@ritho.net", "ritho")
+	id, err := ds.UserRegistration("ritho", "ritho", "palvarez@ritho.net", "ritho")
 	if err != nil {
 		t.Errorf("Unexpected error registering an user: %+v", err)
 	}
@@ -40,29 +39,15 @@ func TestDatastoreRegisterUser(t *testing.T) {
 	}
 }
 
-func TestDatastoreEmailError(t *testing.T) {
-	ds := New()
-
-	_, err := ds.UserRegistration("ritho", "ritho", "ritho")
-	if errors.Cause(err) != emailx.ErrInvalidFormat {
-		t.Errorf("Unexpected error registering an user: %+v", err)
-	}
-
-	_, err = ds.UserRegistration("ritho", "palvarez@invalid.es", "ritho")
-	if errors.Cause(err) != emailx.ErrUnresolvableHost {
-		t.Errorf("Unexpected error registering an user: %+v", err)
-	}
-}
-
 func TestDatastoreUserRegistered(t *testing.T) {
 	ds := New()
 
-	_, err := ds.UserRegistration("ritho", "palvarez@ritho.net", "ritho")
+	_, err := ds.UserRegistration("ritho", "ritho", "palvarez@ritho.net", "ritho")
 	if err != nil {
 		t.Errorf("Unexpected error registering an user: %+v", err)
 	}
 
-	_, err = ds.UserRegistration("ritho", "palvarez@ritho.net", "ritho")
+	_, err = ds.UserRegistration("ritho", "ritho", "palvarez@ritho.net", "ritho")
 	if errors.Cause(err) != user.ErrUserExists {
 		t.Errorf("Expected error %+v, Got %+v", user.ErrUserExists, err)
 	}

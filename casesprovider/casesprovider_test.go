@@ -25,40 +25,46 @@ import (
 	"github.com/radar-go/radar/casesprovider/usecase"
 )
 
+var definedUseCases int = 2
+
 func TestCasesProvider(t *testing.T) {
 	var err error
 	var uCase UseCase
 
-	list := UseCaseList()
-	if len(list) != 1 {
-		t.Errorf("Expected the use case list to have 1 element, got %d", len(list))
+	uc := New()
+	list := uc.UseCaseList()
+	if len(list) != definedUseCases {
+		t.Errorf("Expected the use case list to have %d element, got %d", definedUseCases,
+			len(list))
 	}
 
 	uCase = register.New()
-	Register(uCase)
+	uc.Register(uCase)
 
-	list = UseCaseList()
-	if len(list) != 1 {
-		t.Errorf("Expected the use case list to have 1 element, got %d", len(list))
+	list = uc.UseCaseList()
+	if len(list) != definedUseCases {
+		t.Errorf("Expected the use case list to have %d element, got %d", definedUseCases,
+			len(list))
 	}
 
 	uCase = &usecase.UseCase{
 		Name:      "usecase",
 		Datastore: uc.ds,
 	}
-	Register(uCase)
+	uc.Register(uCase)
 
-	list = UseCaseList()
-	if len(list) != 2 {
-		t.Errorf("Expected the use case list to have 2 elements, got %d", len(list))
+	list = uc.UseCaseList()
+	if len(list) != (definedUseCases + 1) {
+		t.Errorf("Expected the use case list to have %d elements, got %d",
+			(definedUseCases + 1), len(list))
 	}
 
-	_, err = GetUseCase("usecase")
+	_, err = uc.GetUseCase("usecase")
 	if err != nil {
 		t.Errorf("Unexpected error getting the use case: %+v", err)
 	}
 
-	_, err = GetUseCase("usecaseFail")
+	_, err = uc.GetUseCase("usecaseFail")
 	if err == nil {
 		t.Errorf("Expected error getting the use case did not happened")
 	}
