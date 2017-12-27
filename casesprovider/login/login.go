@@ -20,6 +20,9 @@ package login
 */
 
 import (
+	"errors"
+	"strings"
+
 	"github.com/radar-go/radar/casesprovider/usecase"
 )
 
@@ -35,11 +38,15 @@ type Result struct {
 
 // New creates and returns a new login use case object.
 func New() *UseCase {
-	uc := &UseCase{}
-	uc.Name = "Login"
-	uc.Params = make(map[string]interface{})
-	uc.Params["login"] = ""
-	uc.Params["password"] = ""
+	uc := &UseCase{
+		usecase.UseCase{
+			Name: "Login",
+			Params: map[string]interface{}{
+				"login":    "",
+				"password": "",
+			},
+		},
+	}
 
 	return uc
 }
@@ -49,7 +56,30 @@ func (uc *UseCase) Run() (usecase.ResultPrinter, error) {
 	var err error
 	res := usecase.NewResult()
 
+	login := strings.TrimSpace(uc.Params["login"].(string))
+	if len(login) < 5 {
+		return res, errors.New("Username too short")
+	}
+
+	password := strings.TrimSpace(uc.Params["password"].(string))
+	if len(password) < 5 {
+		return res, errors.New("Password too short")
+	}
+
+	user, err := uc.Datastore.GetUser(login)
+	if err != nil {
+		return res, err
+	}
+
+	if user.Password() != password {
+		return res, errors.New("Password missmatch")
+	}
+
 	res.Res["result"] = "User login successfully"
+	res.Res["id"] = user.ID()
+	res.Res["username"] = user.Username()
+	res.Res["name"] = user.Name()
+	res.Res["email"] = user.Email()
 
 	return res, err
 }

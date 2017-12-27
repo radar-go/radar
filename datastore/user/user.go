@@ -20,24 +20,10 @@ package user
 */
 
 import (
-	"errors"
-
 	"github.com/radar-go/radar/entities/member"
 )
 
 var userSeq int
-
-// ErrUserExists raised when the user already exists in the datastore.
-var ErrUserExists = errors.New("User already exists")
-
-// ErrEmailEmpty raised when the email is empty.
-var ErrEmailEmpty = errors.New("Email is empty")
-
-// ErrUsernameEmpty raised when the username is empty.
-var ErrUsernameEmpty = errors.New("Username is empty")
-
-// ErrPasswordEmpty raised when the password is empty.
-var ErrPasswordEmpty = errors.New("Password is empty")
 
 // User represent an user in the data store.
 type User struct {
@@ -67,4 +53,19 @@ func New(username, name, email, password string) *User {
 // ID returns the user id.
 func (u *User) ID() int {
 	return u.id
+}
+
+// Username returns the username.
+func (u *User) Username() string {
+	return u.username
+}
+
+// Email returns the user email.
+func (u *User) Email() string {
+	return u.email
+}
+
+// Password returns the user password.
+func (u *User) Password() string {
+	return u.password
 }

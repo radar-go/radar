@@ -20,6 +20,8 @@ package datastore
 */
 
 import (
+	"fmt"
+
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
 
@@ -57,9 +59,23 @@ func (d *Datastore) UserRegistration(username, name, email, password string) (in
 		return 0, errors.Wrap(user.ErrPasswordEmpty, "Error validating the password")
 	}
 
-	glog.Errorf("Registering user '%s'", username)
+	glog.Infof("Registering user '%s'", username)
 	usr := user.New(username, name, email, password)
 	d.users[username] = usr
 
 	return usr.ID(), nil
+}
+
+// GetUser returns an user stored in the datastore or an error in case it doesn't
+// exists.
+func (d *Datastore) GetUser(username string) (*user.User, error) {
+	var err error
+
+	usr, ok := d.users[username]
+	if !ok {
+		err = errors.Wrap(user.ErrUserNotExists, fmt.Sprintf("%s: ", username))
+		glog.Errorf("%+v", err)
+	}
+
+	return usr, err
 }
