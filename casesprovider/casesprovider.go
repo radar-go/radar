@@ -24,6 +24,7 @@ import (
 
 	"github.com/golang/glog"
 
+	"github.com/radar-go/radar/casesprovider/login"
 	"github.com/radar-go/radar/casesprovider/register"
 	"github.com/radar-go/radar/casesprovider/usecase"
 	"github.com/radar-go/radar/datastore"
@@ -38,32 +39,30 @@ type UseCase interface {
 	Run() (usecase.ResultPrinter, error)
 }
 
-var uc *uCases
-
-func init() {
-	var uCase UseCase
-	uCase = register.New()
-	Register(uCase)
-}
-
-// cases struct to call to the different Radar use cases.
-type uCases struct {
+// UCases struct to call to the different Radar use cases.
+type UCases struct {
 	ds       *datastore.Datastore
 	useCases map[string]UseCase
 }
 
-// Register registers a new UseCase into the list of use cases.
-func Register(useCase UseCase) {
-	if uc == nil {
-		uc = &uCases{
-			ds:       datastore.New(),
-			useCases: make(map[string]UseCase),
-		}
+// New returns a new UCases object.
+func New() *UCases {
+	uc := &UCases{
+		ds:       datastore.New(),
+		useCases: make(map[string]UseCase),
 	}
 
+	uc.Register(register.New())
+	uc.Register(login.New())
+
+	return uc
+}
+
+// Register registers a new UseCase into the list of use cases.
+func (uc *UCases) Register(useCase UseCase) {
 	name := useCase.GetName()
 	if _, ok := uc.useCases[name]; ok {
-		glog.Errorf("Use case %s alreadt register", name)
+		glog.Errorf("Use case %s already register", name)
 	}
 
 	useCase.SetDatastore(uc.ds)
@@ -71,7 +70,7 @@ func Register(useCase UseCase) {
 }
 
 // GetUseCase returns a particular UseCase based on name.
-func GetUseCase(name string) (UseCase, error) {
+func (uc *UCases) GetUseCase(name string) (UseCase, error) {
 	useCase, ok := uc.useCases[name]
 	if !ok {
 		return nil, fmt.Errorf("Use case %s is not registered", name)
@@ -81,7 +80,7 @@ func GetUseCase(name string) (UseCase, error) {
 }
 
 // UseCaseList returns the list of names of all the Use Cases.
-func UseCaseList() []string {
+func (uc *UCases) UseCaseList() []string {
 	cases := make([]string, 0, len(uc.useCases))
 	for k := range uc.useCases {
 		cases = append(cases, k)

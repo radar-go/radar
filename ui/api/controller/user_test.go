@@ -25,10 +25,11 @@ import (
 	"github.com/valyala/fasthttp"
 )
 
+var c *Controller = New()
+
 func TestUserControllerFormatError(t *testing.T) {
 	ctx := &fasthttp.RequestCtx{}
 
-	c := New()
 	c.userRegistration(ctx)
 	if ctx.Response.StatusCode() != 400 {
 		t.Errorf("Expected 400, Got %d", ctx.Response.StatusCode())
@@ -44,7 +45,6 @@ func TestUserControllerMissingParamsError(t *testing.T) {
 	ctx := &fasthttp.RequestCtx{}
 	ctx.Request.Header.Set("Content-Type", "application/json")
 
-	c := New()
 	c.userRegistration(ctx)
 	if ctx.Response.StatusCode() != 400 {
 		t.Errorf("Expected 400, Got %d", ctx.Response.StatusCode())
@@ -59,9 +59,8 @@ func TestUserControllerMissingParamsError(t *testing.T) {
 func TestUserControllerInvalidEmailFormatError(t *testing.T) {
 	ctx := &fasthttp.RequestCtx{}
 	ctx.Request.Header.Set("Content-Type", "application/json")
-	ctx.Request.SetBody([]byte(`{"name": "ritho", "email": "ritho", "password": "ritho"}`))
+	ctx.Request.SetBody([]byte(`{"username": "ritho", "name": "ritho", "email": "ritho", "password": "ritho"}`))
 
-	c := New()
 	c.userRegistration(ctx)
 	if ctx.Response.StatusCode() != 400 {
 		t.Errorf("Expected 400, Got %d", ctx.Response.StatusCode())
@@ -78,7 +77,6 @@ func TestUserControllerUnresolvedHostError(t *testing.T) {
 	ctx.Request.Header.Set("Content-Type", "application/json")
 	ctx.Request.SetBody([]byte(`{"name": "ritho", "email": "palvarez@invalid.es", "password": "ritho"}`))
 
-	c := New()
 	c.userRegistration(ctx)
 	if ctx.Response.StatusCode() != 400 {
 		t.Errorf("Expected 400, Got %d", ctx.Response.StatusCode())
@@ -90,12 +88,43 @@ func TestUserControllerUnresolvedHostError(t *testing.T) {
 	}
 }
 
+func TestUserControllerUsernameShort(t *testing.T) {
+	ctx := &fasthttp.RequestCtx{}
+	ctx.Request.Header.Set("Content-Type", "application/json")
+	ctx.Request.SetBody([]byte(`{"username": "rit", "name": "ritho", "email": "palvarez@ritho.net", "password": "ritho"}`))
+
+	c.userRegistration(ctx)
+	if ctx.Response.StatusCode() != 400 {
+		t.Errorf("Expected 400, Got %d", ctx.Response.StatusCode())
+	}
+
+	if !bytes.Equal(ctx.Response.Body(), []byte(`{"error":"Error registering the user: Username too short."}`)) {
+		t.Errorf(`Expected {"error":"Error registering the user: Username too short."}, Got %s`,
+			ctx.Response.Body())
+	}
+}
+
+func TestUserControllerPasswordShort(t *testing.T) {
+	ctx := &fasthttp.RequestCtx{}
+	ctx.Request.Header.Set("Content-Type", "application/json")
+	ctx.Request.SetBody([]byte(`{"username": "ritho", "name": "ritho", "email": "palvarez@ritho.net", "password": "1234"}`))
+
+	c.userRegistration(ctx)
+	if ctx.Response.StatusCode() != 400 {
+		t.Errorf("Expected 400, Got %d", ctx.Response.StatusCode())
+	}
+
+	if !bytes.Equal(ctx.Response.Body(), []byte(`{"error":"Error registering the user: Password too short."}`)) {
+		t.Errorf(`Expected {"error":"Error registering the user: Password too short."}, Got %s`,
+			ctx.Response.Body())
+	}
+}
+
 func TestUserControllerSuccess(t *testing.T) {
 	ctx := &fasthttp.RequestCtx{}
 	ctx.Request.Header.Set("Content-Type", "application/json")
-	ctx.Request.SetBody([]byte(`{"name": "ritho", "email": "palvarez@ritho.net", "password": "ritho"}`))
+	ctx.Request.SetBody([]byte(`{"username": "ritho", "name": "ritho", "email": "palvarez@ritho.net", "password": "ritho"}`))
 
-	c := New()
 	c.userRegistration(ctx)
 	if ctx.Response.StatusCode() != 200 {
 		t.Errorf("Expected 200, Got %d", ctx.Response.StatusCode())
@@ -110,9 +139,8 @@ func TestUserControllerSuccess(t *testing.T) {
 func TestUserControllerDuplicateUser(t *testing.T) {
 	ctx := &fasthttp.RequestCtx{}
 	ctx.Request.Header.Set("Content-Type", "application/json")
-	ctx.Request.SetBody([]byte(`{"name": "ritho", "email": "palvarez@ritho.net", "password": "ritho"}`))
+	ctx.Request.SetBody([]byte(`{"username": "ritho", "name": "ritho", "email": "palvarez@ritho.net", "password": "ritho"}`))
 
-	c := New()
 	c.userRegistration(ctx)
 	if ctx.Response.StatusCode() != 400 {
 		t.Errorf("Expected 400, Got %d", ctx.Response.StatusCode())

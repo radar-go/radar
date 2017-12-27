@@ -23,6 +23,8 @@ import (
 	"fmt"
 	"reflect"
 
+	errWrap "github.com/pkg/errors"
+
 	"github.com/radar-go/radar/casesprovider/errors"
 	"github.com/radar-go/radar/datastore"
 )
@@ -75,19 +77,23 @@ func (uc *UseCase) GetName() string {
 // AddParam adds a new ad param to the use case.
 func (uc *UseCase) AddParam(key string, value interface{}) error {
 	if uc.Params == nil {
-		return errors.ErrParamUnknown
+		return errWrap.Wrap(errors.ErrParamUnknown,
+			fmt.Sprintf("Error adding the param %s", key))
 	}
 
 	if _, ok := uc.Params[key]; !ok {
-		return errors.ErrParamUnknown
+		return errWrap.Wrap(errors.ErrParamUnknown,
+			fmt.Sprintf("Error adding the param %s, key doesn't exists", key))
 	}
 
 	if reflect.TypeOf(uc.Params[key]) != reflect.TypeOf(value) {
-		return errors.ErrParamType
+		return errWrap.Wrap(errors.ErrParamType,
+			fmt.Sprintf("Error adding the param %s", key))
 	}
 
 	if value == reflect.Zero(reflect.TypeOf(value)).Interface() {
-		return errors.ErrParamEmpty
+		return errWrap.Wrap(errors.ErrParamEmpty,
+			fmt.Sprintf("Error adding the param %s", key))
 	}
 
 	uc.Params[key] = value

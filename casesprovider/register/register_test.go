@@ -20,7 +20,11 @@ package register
 
 import (
 	"bytes"
+	"fmt"
 	"testing"
+
+	"github.com/goware/emailx"
+	errCause "github.com/pkg/errors"
 
 	"github.com/radar-go/radar/casesprovider/errors"
 	"github.com/radar-go/radar/datastore"
@@ -33,7 +37,12 @@ func TestRegister(t *testing.T) {
 	}
 
 	uc.SetDatastore(datastore.New())
-	err := uc.AddParam("name", "Ritho")
+	err := uc.AddParam("username", "ritho")
+	if err != nil {
+		t.Errorf("Unexpected error adding an ad param to the use case: %+v", err)
+	}
+
+	err = uc.AddParam("name", "Ritho")
 	if err != nil {
 		t.Errorf("Unexpected error adding an ad param to the use case: %+v", err)
 	}
@@ -81,17 +90,40 @@ func TestRegisterError(t *testing.T) {
 	}
 
 	_, err := uc.Run()
-	if err == nil {
-		t.Error("Expected error running the register use case.")
+	if errCause.Cause(err) != emailx.ErrInvalidFormat {
+		t.Errorf("Unexpected error running the register use case: %+v", err)
 	}
 
 	uc.Datastore = datastore.New()
-	_ = uc.AddParam("name", "Ritho")
 	_ = uc.AddParam("email", "Ritho")
+	_, err = uc.Run()
+	if errCause.Cause(err) != emailx.ErrInvalidFormat {
+		t.Errorf("Unexpected error running the register use case: %+v", err)
+	}
+
+	_ = uc.AddParam("email", "Ritho@invalid.es")
+	_, err = uc.Run()
+	if errCause.Cause(err) != emailx.ErrUnresolvableHost {
+		t.Errorf("Unexpected error running the register use case: %+v", err)
+	}
+
+	_ = uc.AddParam("email", "palvarez@ritho.net")
+	_ = uc.AddParam("name", "Ritho")
+	_, err = uc.Run()
+	if fmt.Sprintf("%v", err) != "Username too short" {
+		t.Errorf("Unexpected error running the register use case: %+v", err)
+	}
+
+	_ = uc.AddParam("username", "Ritho")
+	_, err = uc.Run()
+	if fmt.Sprintf("%v", err) != "Password too short" {
+		t.Errorf("Unexpected error running the register use case: %+v", err)
+	}
+
 	_ = uc.AddParam("password", "Ritho")
 	_, err = uc.Run()
-	if err == nil {
-		t.Error("Expected error running the register use case.")
+	if err != nil {
+		t.Errorf("Unexpected error running the register use case: %+v", err)
 	}
 }
 
@@ -102,37 +134,37 @@ func TestAdParamErrors(t *testing.T) {
 	}
 
 	err := uc.AddParam("name", "")
-	if err != errors.ErrParamEmpty {
+	if errCause.Cause(err) != errors.ErrParamEmpty {
 		t.Errorf("Unexpected error adding an ad param to the use case: %+v", err)
 	}
 
 	err = uc.AddParam("email", "")
-	if err != errors.ErrParamEmpty {
+	if errCause.Cause(err) != errors.ErrParamEmpty {
 		t.Errorf("Unexpected error adding an ad param to the use case: %+v", err)
 	}
 
 	err = uc.AddParam("password", "")
-	if err != errors.ErrParamEmpty {
+	if errCause.Cause(err) != errors.ErrParamEmpty {
 		t.Errorf("Unexpected error adding an ad param to the use case: %+v", err)
 	}
 
 	err = uc.AddParam("name", 1)
-	if err != errors.ErrParamType {
+	if errCause.Cause(err) != errors.ErrParamType {
 		t.Errorf("Unexpected error adding an ad param to the use case: %+v", err)
 	}
 
 	err = uc.AddParam("email", 1)
-	if err != errors.ErrParamType {
+	if errCause.Cause(err) != errors.ErrParamType {
 		t.Errorf("Unexpected error adding an ad param to the use case: %+v", err)
 	}
 
 	err = uc.AddParam("password", 1)
-	if err != errors.ErrParamType {
+	if errCause.Cause(err) != errors.ErrParamType {
 		t.Errorf("Unexpected error adding an ad param to the use case: %+v", err)
 	}
 
 	err = uc.AddParam("unknown", "Ritho")
-	if err != errors.ErrParamUnknown {
+	if errCause.Cause(err) != errors.ErrParamUnknown {
 		t.Errorf("Unexpected error adding an ad param to the use case: %+v", err)
 	}
 }

@@ -20,7 +20,7 @@ package datastore
 */
 
 import (
-	"github.com/goware/emailx"
+	"github.com/golang/glog"
 	"github.com/pkg/errors"
 
 	"github.com/radar-go/radar/datastore/user"
@@ -39,19 +39,27 @@ func New() *Datastore {
 }
 
 // UserRegistration registers a new user in the datasore.
-func (d *Datastore) UserRegistration(name, email, password string) (int, error) {
-	cleanEmail := emailx.Normalize(email)
-	if err := emailx.Validate(cleanEmail); err != nil {
-		return 0, errors.Wrap(err, "Error validating the email")
+func (d *Datastore) UserRegistration(username, name, email, password string) (int, error) {
+	if len(email) == 0 {
+		return 0, errors.Wrap(user.ErrEmailEmpty, "Error validating the email")
 	}
 
-	_, ok := d.users[cleanEmail]
+	_, ok := d.users[username]
 	if ok {
-		return 0, errors.Wrap(user.ErrUserExists, cleanEmail)
+		return 0, errors.Wrap(user.ErrUserExists, email)
 	}
 
-	usr := user.New(name, email, password)
-	d.users[cleanEmail] = usr
+	if len(username) == 0 {
+		return 0, errors.Wrap(user.ErrUsernameEmpty, "Error validating the username")
+	}
+
+	if len(password) == 0 {
+		return 0, errors.Wrap(user.ErrPasswordEmpty, "Error validating the password")
+	}
+
+	glog.Errorf("Registering user '%s'", username)
+	usr := user.New(username, name, email, password)
+	d.users[username] = usr
 
 	return usr.ID(), nil
 }
