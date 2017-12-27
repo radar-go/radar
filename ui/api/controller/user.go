@@ -24,6 +24,8 @@ import (
 	"fmt"
 
 	"github.com/valyala/fasthttp"
+
+	"github.com/radar-go/radar/casesprovider"
 )
 
 func (c *Controller) checkRequestHeaders(ctx *fasthttp.RequestCtx) error {
@@ -36,11 +38,14 @@ func (c *Controller) checkRequestHeaders(ctx *fasthttp.RequestCtx) error {
 	return nil
 }
 
-func (c *Controller) userRegistration(ctx *fasthttp.RequestCtx) {
+func (c *Controller) postHandler(ctx *fasthttp.RequestCtx) {
+	var err error
+	var uc casesprovider.UseCase
+
 	logPath(ctx.Path())
 	ctx.SetContentType("application/json; charset=utf-8")
 
-	err := c.checkRequestHeaders(ctx)
+	err = c.checkRequestHeaders(ctx)
 	if err != nil {
 		return
 	}
@@ -60,8 +65,16 @@ func (c *Controller) userRegistration(ctx *fasthttp.RequestCtx) {
 		return
 	}
 
-	// XXX: Switch againt the path to get the use case.
-	uc, err := c.cases.GetUseCase("UserRegister")
+	switch fmt.Sprintf("%s", ctx.Path()) {
+	case "/register":
+		uc, err = c.cases.GetUseCase("UserRegister")
+	case "/login":
+		uc, err = c.cases.GetUseCase("Login")
+	default:
+		badRequest(ctx, fmt.Sprintf("Unknown path: %s.", ctx.Path()))
+		return
+	}
+
 	if err != nil {
 		internalServerError(ctx, fmt.Sprintf("Error obtaining the use case %s: %s.",
 			uc.GetName(), err))
@@ -88,17 +101,4 @@ func (c *Controller) userRegistration(ctx *fasthttp.RequestCtx) {
 
 	ctx.SetStatusCode(fasthttp.StatusOK)
 	ctx.SetBody(result)
-}
-
-func (c *Controller) userLogin(ctx *fasthttp.RequestCtx) {
-	logPath(ctx.Path())
-	ctx.SetContentType("application/json; charset=utf-8")
-
-	err := c.checkRequestHeaders(ctx)
-	if err != nil {
-		return
-	}
-
-	ctx.SetStatusCode(fasthttp.StatusOK)
-	ctx.SetBodyString("{}")
 }
