@@ -30,13 +30,15 @@ import (
 
 // Datastore struct to access to the datastore.
 type Datastore struct {
-	users map[string]*user.User
+	users    map[string]*user.User
+	usrLogin map[string]*user.User
 }
 
 // New creates and returns a new datastore object.
 func New() *Datastore {
 	return &Datastore{
-		users: make(map[string]*user.User),
+		users:    make(map[string]*user.User),
+		usrLogin: make(map[string]*user.User),
 	}
 }
 
@@ -78,4 +80,25 @@ func (d *Datastore) GetUser(username string) (*user.User, error) {
 	}
 
 	return usr, err
+}
+
+// Login register a new user login.
+func (d *Datastore) Login(uuid, username string) error {
+	var err error
+
+	_, ok := d.usrLogin[uuid]
+	if ok {
+		return errors.Wrap(user.ErrUserAlreadyLogin, fmt.Sprintf("%s: ", username))
+	}
+
+	usr, ok := d.users[username]
+	if !ok {
+		err = errors.Wrap(user.ErrUserNotExists, fmt.Sprintf("%s: ", username))
+		glog.Errorf("%+v", err)
+		return err
+	}
+
+	d.usrLogin[uuid] = usr
+
+	return err
 }

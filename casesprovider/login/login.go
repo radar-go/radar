@@ -23,6 +23,8 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/golang-plus/uuid"
+
 	"github.com/radar-go/radar/casesprovider/usecase"
 )
 
@@ -75,11 +77,19 @@ func (uc *UseCase) Run() (usecase.ResultPrinter, error) {
 		return res, errors.New("Password missmatch")
 	}
 
+	uuid, err := uuid.NewTimeBased()
+	if err != nil {
+		return res, err
+	}
+
+	err = uc.Datastore.Login(uuid.String(), login)
+
 	res.Res["result"] = "User login successfully"
 	res.Res["id"] = user.ID()
 	res.Res["username"] = user.Username()
 	res.Res["name"] = user.Name()
 	res.Res["email"] = user.Email()
+	res.Res["token"] = uuid.String()
 
 	return res, err
 }
