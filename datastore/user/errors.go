@@ -36,3 +36,6 @@ var ErrUsernameEmpty = errors.New("Username is empty")
 
 // ErrPasswordEmpty raised when the password is empty.
 var ErrPasswordEmpty = errors.New("Password is empty")
+
+// ErrUserAlreadyLogin raised when the user logins more than once.
+var ErrUserAlreadyLogin = errors.New("User already logged in")
