@@ -75,7 +75,7 @@ func (d *Datastore) GetUser(username string) (*user.User, error) {
 
 	usr, ok := d.users[username]
 	if !ok {
-		err = errors.Wrap(user.ErrUserNotExists, fmt.Sprintf("%s: ", username))
+		err = errors.Wrap(user.ErrUserNotExists, fmt.Sprintf("%s", username))
 		glog.Errorf("%+v", err)
 	}
 
