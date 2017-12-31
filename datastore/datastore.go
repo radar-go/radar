@@ -20,8 +20,6 @@ package datastore
 */
 
 import (
-	"fmt"
-
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
 
@@ -75,7 +73,7 @@ func (d *Datastore) GetUser(username string) (*user.User, error) {
 
 	usr, ok := d.users[username]
 	if !ok {
-		err = errors.Wrap(user.ErrUserNotExists, fmt.Sprintf("%s", username))
+		err = errors.Wrap(user.ErrUserNotExists, username)
 		glog.Errorf("%+v", err)
 	}
 
@@ -88,12 +86,12 @@ func (d *Datastore) Login(uuid, username string) error {
 
 	_, ok := d.usrLogin[uuid]
 	if ok {
-		return errors.Wrap(user.ErrUserAlreadyLogin, fmt.Sprintf("%s: ", username))
+		return errors.Wrap(user.ErrUserAlreadyLogin, username)
 	}
 
 	usr, ok := d.users[username]
 	if !ok {
-		err = errors.Wrap(user.ErrUserNotExists, fmt.Sprintf("%s: ", username))
+		err = errors.Wrap(user.ErrUserNotExists, username)
 		glog.Errorf("%+v", err)
 		return err
 	}
