@@ -19,6 +19,7 @@ package datastore
 */
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/pkg/errors"
@@ -42,7 +43,22 @@ func TestDatastoreRegisterUser(t *testing.T) {
 func TestDatastoreUserRegistered(t *testing.T) {
 	ds := New()
 
-	_, err := ds.UserRegistration("ritho", "ritho", "palvarez@ritho.net", "ritho")
+	_, err := ds.UserRegistration("ritho", "ritho", "", "ritho")
+	if errors.Cause(err) != user.ErrEmailEmpty {
+		t.Errorf("Expected '%v', Got '%v'", user.ErrEmailEmpty, err)
+	}
+
+	_, err = ds.UserRegistration("", "ritho", "palvarez@ritho.net", "ritho")
+	if errors.Cause(err) != user.ErrUsernameEmpty {
+		t.Errorf("Expected '%v', Got '%v'", user.ErrUsernameEmpty, err)
+	}
+
+	_, err = ds.UserRegistration("ritho", "ritho", "palvarez@ritho.net", "")
+	if errors.Cause(err) != user.ErrPasswordEmpty {
+		t.Errorf("Expected '%v', Got '%v'", user.ErrPasswordEmpty, err)
+	}
+
+	_, err = ds.UserRegistration("ritho", "ritho", "palvarez@ritho.net", "ritho")
 	if err != nil {
 		t.Errorf("Unexpected error registering an user: %+v", err)
 	}
@@ -50,5 +66,40 @@ func TestDatastoreUserRegistered(t *testing.T) {
 	_, err = ds.UserRegistration("ritho", "ritho", "palvarez@ritho.net", "ritho")
 	if errors.Cause(err) != user.ErrUserExists {
 		t.Errorf("Expected error %+v, Got %+v", user.ErrUserExists, err)
+	}
+}
+
+func TestDatastoreGetUser(t *testing.T) {
+	ds := New()
+
+	_, err := ds.GetUser("ritho")
+	if fmt.Sprintf("%v", err) != "ritho: User doesn't exists" {
+		t.Errorf("Expected 'ritho: User doesn't exists', Got '%v'", err)
+	}
+
+	ds.users["ritho"] = &user.User{}
+	_, err = ds.GetUser("ritho")
+	if err != nil {
+		t.Errorf("Unexpected error %+v", err)
+	}
+}
+
+func TestDatastoreLogin(t *testing.T) {
+	ds := New()
+
+	err := ds.Login("1234", "ritho")
+	if fmt.Sprintf("%v", err) != "ritho: User doesn't exists" {
+		t.Errorf("Expected 'ritho: User doesn't exists', Got '%v'", err)
+	}
+
+	ds.users["ritho"] = &user.User{}
+	err = ds.Login("1234", "ritho")
+	if err != nil {
+		t.Errorf("Unexpected error %+v", err)
+	}
+
+	err = ds.Login("1234", "ritho")
+	if fmt.Sprintf("%v", err) != "ritho: User already logged in" {
+		t.Errorf("Expected 'ritho: User already logged in', Got '%v'", err)
 	}
 }
