@@ -1,6 +1,6 @@
 package casesprovider
 
-/* Copyright (C) 2017 Radar team (see AUTHORS)
+/* Copyright (C) 2017-2018 Radar team (see AUTHORS)
 
    This file is part of radar.
 
@@ -25,7 +25,7 @@ import (
 	"github.com/radar-go/radar/casesprovider/usecase"
 )
 
-var definedUseCases int = 2
+var definedUseCases int = 3
 
 func TestCasesProvider(t *testing.T) {
 	var err error
