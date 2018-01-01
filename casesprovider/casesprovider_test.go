@@ -20,16 +20,12 @@ package casesprovider
 
 import (
 	"testing"
-
-	"github.com/radar-go/radar/casesprovider/register"
-	"github.com/radar-go/radar/casesprovider/usecase"
 )
 
-var definedUseCases int = 3
+var definedUseCases = 3
 
 func TestCasesProvider(t *testing.T) {
 	var err error
-	var uCase UseCase
 
 	uc := New()
 	list := uc.UseCaseList()
@@ -38,21 +34,14 @@ func TestCasesProvider(t *testing.T) {
 			len(list))
 	}
 
-	uCase = register.New()
-	uc.Register(uCase)
-
+	uc.Register("UserRegister")
 	list = uc.UseCaseList()
 	if len(list) != definedUseCases {
 		t.Errorf("Expected the use case list to have %d element, got %d", definedUseCases,
 			len(list))
 	}
 
-	uCase = &usecase.UseCase{
-		Name:      "usecase",
-		Datastore: uc.ds,
-	}
-	uc.Register(uCase)
-
+	uc.Register("usecase")
 	list = uc.UseCaseList()
 	if len(list) != (definedUseCases + 1) {
 		t.Errorf("Expected the use case list to have %d elements, got %d",

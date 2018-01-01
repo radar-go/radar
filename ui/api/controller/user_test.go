@@ -1,6 +1,6 @@
 package controller
 
-/* Copyright (C) 2017 Radar team (see AUTHORS)
+/* Copyright (C) 2017-2018 Radar team (see AUTHORS)
 
    This file is part of radar.
 
@@ -20,6 +20,8 @@ package controller
 
 import (
 	"bytes"
+	"encoding/json"
+	"fmt"
 	"testing"
 
 	"github.com/valyala/fasthttp"
@@ -58,6 +60,57 @@ func TestUserControllerBodyError(t *testing.T) {
 	}
 }
 
+func TestLoginLogout(t *testing.T) {
+	ctx := &fasthttp.RequestCtx{}
+	ctx.Request.Header.Set("Content-Type", "application/json")
+	ctx.Request.Header.SetRequestURI("/register")
+	ctx.Request.SetBody([]byte(`{"username": "i02sopop", "name": "ritho", "email": "palvarez@ritho.net", "password": "ritho"}`))
+	c.postHandler(ctx)
+	if ctx.Response.StatusCode() != 200 {
+		t.Errorf("Expected 200, Got %d", ctx.Response.StatusCode())
+	}
+
+	ctx = &fasthttp.RequestCtx{}
+	ctx.Request.Header.Set("Content-Type", "application/json")
+	ctx.Request.Header.SetRequestURI("/login")
+	ctx.Request.SetBody([]byte(`{"login": "i02sopop", "password": "ritho"}`))
+	c.postHandler(ctx)
+	if ctx.Response.StatusCode() != 200 {
+		t.Errorf("Expected 200, Got %d", ctx.Response.StatusCode())
+	}
+
+	var body map[string]interface{}
+	err := json.Unmarshal(ctx.Response.Body(), &body)
+	if err != nil {
+		t.Errorf("Unexpected error %v", err)
+	}
+
+	if _, ok := body["result"]; !ok || body["result"] != "User login successfully" {
+		t.Errorf(`Expected "result":"User login successfully", Got %s`,
+			ctx.Response.Body())
+	}
+
+	token, ok := body["token"]
+	if !ok {
+		t.Error("Token not found")
+	}
+
+	logoutBody := fmt.Sprintf(`{"username": "i02sopop", "token": "%s"}`, token)
+
+	ctx = &fasthttp.RequestCtx{}
+	ctx.Request.Header.Set("Content-Type", "application/json")
+	ctx.Request.Header.SetRequestURI("/logout")
+	ctx.Request.SetBody([]byte(logoutBody))
+	c.postHandler(ctx)
+	if ctx.Response.StatusCode() != 200 {
+		t.Errorf("Expected 200, Got %d", ctx.Response.StatusCode())
+	}
+
+	if !bytes.Contains(ctx.Response.Body(), []byte("User logout successfully")) {
+		t.Errorf(`Expected , Got %s`, ctx.Response.Body())
+	}
+}
+
 func TestPostHandler(t *testing.T) {
 	testCases := []struct {
 		name     string
@@ -85,14 +138,14 @@ func TestPostHandler(t *testing.T) {
 			"/register",
 			`{"username": "rit", "name": "ritho", "email": "palvarez@ritho.net", "password": "ritho"}`,
 			400,
-			`Error registering the user: Username too short`,
+			`Username too short`,
 		},
 		{
 			"RegisterPasswordShort",
 			"/register",
 			`{"username": "ritho", "name": "ritho", "email": "palvarez@ritho.net", "password": "1234"}`,
 			400,
-			`Error registering the user: Password too short`,
+			`Password too short`,
 		},
 		{
 			"RegisterSuccess",
@@ -149,6 +202,27 @@ func TestPostHandler(t *testing.T) {
 			`{"login": "ritho", "password": "ritho"}`,
 			400,
 			`ritho: User already logged in`,
+		},
+		{
+			"LogoutError",
+			"/logout",
+			`{"username": "ritho"}`,
+			400,
+			`Token too short`,
+		},
+		{
+			"LogoutError",
+			"/logout",
+			`{"username": "ritho", "token": "00000"}`,
+			400,
+			`Token too short`,
+		},
+		{
+			"LogoutError",
+			"/logout",
+			`{"username": "ritho", "token": "00000000-0000-0000-0000-000000000000"}`,
+			400,
+			`ritho: User not logged in`,
 		},
 	}
 

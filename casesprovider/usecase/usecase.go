@@ -1,6 +1,6 @@
 package usecase
 
-/* Copyright (C) 2017 Radar team (see AUTHORS)
+/* Copyright (C) 2017-2018 Radar team (see AUTHORS)
 
    This file is part of radar.
 
@@ -62,6 +62,9 @@ func (r *Result) Bytes() ([]byte, error) {
 	return json.Marshal(r.Res)
 }
 
+// Name of the use case.
+var Name = "UseCase"
+
 // UseCase represents a generic use case.
 type UseCase struct {
 	Name      string
@@ -122,5 +125,5 @@ func (uc *UseCase) SetDatastore(ds *datastore.Datastore) {
 
 // Run executes the use case.
 func (uc *UseCase) Run() (ResultPrinter, error) {
-	return nil, fmt.Errorf("Function not implemented")
+	return nil, fmt.Errorf("Function Run not implemented")
 }

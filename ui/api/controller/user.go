@@ -1,6 +1,6 @@
 package controller
 
-/* Copyright (C) 2017 Radar team (see AUTHORS)
+/* Copyright (C) 2017-2018 Radar team (see AUTHORS)
 
    This file is part of radar.
 
@@ -70,6 +70,8 @@ func (c *Controller) postHandler(ctx *fasthttp.RequestCtx) {
 		uc, err = c.cases.GetUseCase("UserRegister")
 	case "/login":
 		uc, err = c.cases.GetUseCase("Login")
+	case "/logout":
+		uc, err = c.cases.GetUseCase("Logout")
 	default:
 		badRequest(ctx, fmt.Sprintf("Unknown path: %s.", ctx.Path()))
 		return
@@ -89,7 +91,7 @@ func (c *Controller) postHandler(ctx *fasthttp.RequestCtx) {
 
 	res, err := uc.Run()
 	if err != nil {
-		badRequest(ctx, fmt.Sprintf("Error registering the user: %s.", err))
+		badRequest(ctx, fmt.Sprintf("%s", err))
 		return
 	}
 
