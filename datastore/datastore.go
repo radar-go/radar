@@ -96,6 +96,12 @@ func (d *Datastore) Login(uuid, username string) error {
 		return err
 	}
 
+	for _, value := range d.usrLogin {
+		if usr.Username() == value.Username() {
+			return errors.Wrap(user.ErrUserAlreadyLogin, username)
+		}
+	}
+
 	d.usrLogin[uuid] = usr
 
 	return err
