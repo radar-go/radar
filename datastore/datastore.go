@@ -80,7 +80,7 @@ func (d *Datastore) GetUser(username string) (*user.User, error) {
 	return usr, err
 }
 
-// Login register a new user login.
+// Login adds an user session to the datastore.
 func (d *Datastore) Login(uuid, username string) error {
 	var err error
 
@@ -103,6 +103,25 @@ func (d *Datastore) Login(uuid, username string) error {
 	}
 
 	d.usrLogin[uuid] = usr
+
+	return err
+}
+
+// Logout removes the user session from the datastore.
+func (d *Datastore) Logout(uuid, username string) error {
+	var err error
+
+	if _, ok := d.users[username]; !ok {
+		err = errors.Wrap(user.ErrUserNotExists, username)
+		glog.Errorf("%+v", err)
+		return err
+	}
+
+	if _, ok := d.usrLogin[uuid]; !ok {
+		return errors.Wrap(user.ErrUserNotLoggedIn, username)
+	}
+
+	delete(d.usrLogin, uuid)
 
 	return err
 }
