@@ -83,6 +83,9 @@ func (uc *UseCase) Run() (usecase.ResultPrinter, error) {
 	}
 
 	err = uc.Datastore.Login(uuid.String(), login)
+	if err != nil {
+		return res, err
+	}
 
 	res.Res["result"] = "User login successfully"
 	res.Res["id"] = user.ID()
