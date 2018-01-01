@@ -1,7 +1,7 @@
 // Package login implements the user login use case.
 package login
 
-/* Copyright (C) 2017 Radar team (see AUTHORS)
+/* Copyright (C) 2017-2018 Radar team (see AUTHORS)
 
    This file is part of radar.
 
