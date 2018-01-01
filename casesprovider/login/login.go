@@ -38,11 +38,14 @@ type Result struct {
 	usecase.Result
 }
 
+// Name of the use case.
+var Name = "Login"
+
 // New creates and returns a new login use case object.
 func New() *UseCase {
 	uc := &UseCase{
 		usecase.UseCase{
-			Name: "Login",
+			Name: Name,
 			Params: map[string]interface{}{
 				"login":    "",
 				"password": "",

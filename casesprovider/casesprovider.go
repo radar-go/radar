@@ -43,40 +43,55 @@ type UseCase interface {
 // UCases struct to call to the different Radar use cases.
 type UCases struct {
 	ds       *datastore.Datastore
-	useCases map[string]UseCase
+	useCases map[string]bool
 }
 
 // New returns a new UCases object.
 func New() *UCases {
 	uc := &UCases{
 		ds:       datastore.New(),
-		useCases: make(map[string]UseCase),
+		useCases: make(map[string]bool),
 	}
 
-	uc.Register(register.New())
-	uc.Register(login.New())
-	uc.Register(logout.New())
+	uc.Register(register.Name)
+	uc.Register(login.Name)
+	uc.Register(logout.Name)
 
 	return uc
 }
 
 // Register registers a new UseCase into the list of use cases.
-func (uc *UCases) Register(useCase UseCase) {
-	name := useCase.GetName()
+func (uc *UCases) Register(name string) {
 	if _, ok := uc.useCases[name]; ok {
 		glog.Errorf("Use case %s already register", name)
 	}
 
-	useCase.SetDatastore(uc.ds)
-	uc.useCases[name] = useCase
+	uc.useCases[name] = true
 }
 
 // GetUseCase returns a particular UseCase based on name.
 func (uc *UCases) GetUseCase(name string) (UseCase, error) {
-	useCase, ok := uc.useCases[name]
-	if !ok {
+	var useCase UseCase
+
+	defined, ok := uc.useCases[name]
+	if !ok || !defined {
 		return nil, fmt.Errorf("Use case %s is not registered", name)
 	}
+
+	switch name {
+	case login.Name:
+		useCase = login.New()
+	case logout.Name:
+		useCase = logout.New()
+	case register.Name:
+		useCase = register.New()
+	default:
+		useCase = &usecase.UseCase{
+			Name: name,
+		}
+	}
+
+	useCase.SetDatastore(uc.ds)
 
 	return useCase, nil
 }

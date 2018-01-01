@@ -79,6 +79,10 @@ func TestLogout(t *testing.T) {
 	}
 
 	err = uc.Datastore.Login("00000000-0000-0000-0000-000000000000", "ritho")
+	if err != nil {
+		t.Errorf("Unexpected error %+v", err)
+	}
+
 	res, err := uc.Run()
 	if err != nil {
 		t.Errorf("Unexpected error %+v", err)
