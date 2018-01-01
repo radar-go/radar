@@ -1,7 +1,7 @@
 // Package register implements the user registration use case.
 package register
 
-/* Copyright (C) 2017 Radar team (see AUTHORS)
+/* Copyright (C) 2017-2018 Radar team (see AUTHORS)
 
    This file is part of radar.
 
@@ -39,11 +39,14 @@ type Result struct {
 	usecase.Result
 }
 
+// Name of the use case.
+var Name = "UserRegister"
+
 // New creates and returns a new register use case object.
 func New() *UseCase {
 	uc := &UseCase{
 		usecase.UseCase{
-			Name: "UserRegister",
+			Name: Name,
 			Params: map[string]interface{}{
 				"username": "",
 				"name":     "",

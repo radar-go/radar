@@ -1,7 +1,7 @@
 // Package controller implements the Radar API controller.
 package controller
 
-/* Copyright (C) 2017 Radar team (see AUTHORS)
+/* Copyright (C) 2017-2018 Radar team (see AUTHORS)
 
    This file is part of radar.
 
@@ -61,6 +61,7 @@ func (c *Controller) register() {
 	c.Router.GET("/healthcheck", c.healthcheck)
 	c.Router.POST("/register", c.postHandler)
 	c.Router.POST("/login", c.postHandler)
+	c.Router.POST("/logout", c.postHandler)
 }
 
 // panic handles when the server have a fatal error.
