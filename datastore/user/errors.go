@@ -39,3 +39,6 @@ var ErrPasswordEmpty = errors.New("Password is empty")
 
 // ErrUserAlreadyLogin raised when the user logins more than once.
 var ErrUserAlreadyLogin = errors.New("User already logged in")
+
+// ErrUserNotLoggedIn raised when the user tries to log out without being logged in.
+var ErrUserNotLoggedIn = errors.New("User not logged in")

@@ -1,7 +1,7 @@
 // Package casesprovider initialize the use cases for Radar.
 package casesprovider
 
-/* Copyright (C) 2017 Radar team (see AUTHORS)
+/* Copyright (C) 2017-2018 Radar team (see AUTHORS)
 
    This file is part of radar.
 
@@ -25,6 +25,7 @@ import (
 	"github.com/golang/glog"
 
 	"github.com/radar-go/radar/casesprovider/login"
+	"github.com/radar-go/radar/casesprovider/logout"
 	"github.com/radar-go/radar/casesprovider/register"
 	"github.com/radar-go/radar/casesprovider/usecase"
 	"github.com/radar-go/radar/datastore"
@@ -54,6 +55,7 @@ func New() *UCases {
 
 	uc.Register(register.New())
 	uc.Register(login.New())
+	uc.Register(logout.New())
 
 	return uc
 }
