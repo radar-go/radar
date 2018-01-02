@@ -128,3 +128,13 @@ func TestDatastoreLogout(t *testing.T) {
 		t.Errorf("Expected 'rit: User doesn't exists', Got '%v'", err)
 	}
 }
+
+func TestEndpoints(t *testing.T) {
+	ds := New()
+
+	numEndpoints := 3
+	endpoints := ds.Endpoints()
+	if len(endpoints) != numEndpoints {
+		t.Errorf("Expected %d, Got %d", numEndpoints, len(endpoints))
+	}
+}

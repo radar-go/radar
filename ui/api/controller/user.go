@@ -27,6 +27,7 @@ import (
 
 	"github.com/radar-go/radar/casesprovider"
 	_ "github.com/radar-go/radar/casesprovider/cases"
+	"github.com/radar-go/radar/datastore"
 )
 
 func (c *Controller) checkRequestHeaders(ctx *fasthttp.RequestCtx) error {
@@ -66,17 +67,14 @@ func (c *Controller) postHandler(ctx *fasthttp.RequestCtx) {
 		return
 	}
 
-	switch fmt.Sprintf("%s", ctx.Path()) {
-	case "/register":
-		uc, err = casesprovider.GetUseCase("UserRegister")
-	case "/login":
-		uc, err = casesprovider.GetUseCase("Login")
-	case "/logout":
-		uc, err = casesprovider.GetUseCase("Logout")
-	default:
+	ds := datastore.New()
+	endpoints := ds.Endpoints()
+	caseName, ok := endpoints[fmt.Sprintf("%s", ctx.Path())]
+	if !ok {
 		badRequest(ctx, fmt.Sprintf("Unknown path: %s.", ctx.Path()))
 		return
 	}
+	uc, err = casesprovider.GetUseCase(caseName)
 
 	if err != nil {
 		internalServerError(ctx, fmt.Sprintf("Error obtaining the use case %s: %s.",
