@@ -1,7 +1,7 @@
 // Package datastore implements the access to the datastore.
 package datastore
 
-/* Copyright (C) 2017 Radar team (see AUTHORS)
+/* Copyright (C) 2017-2018 Radar team (see AUTHORS)
 
    This file is part of radar.
 
@@ -37,6 +37,15 @@ func New() *Datastore {
 	return &Datastore{
 		users:    make(map[string]*user.User),
 		usrLogin: make(map[string]*user.User),
+	}
+}
+
+// Endpoints returns a list of endpoints linked with their use case.
+func (d *Datastore) Endpoints() map[string]string {
+	return map[string]string{
+		"/account/register": "UserRegister",
+		"/account/login":    "Login",
+		"/account/logout":   "Logout",
 	}
 }
 

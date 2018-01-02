@@ -31,7 +31,7 @@ var c *Controller = New()
 
 func TestUserControllerFormatError(t *testing.T) {
 	ctx := &fasthttp.RequestCtx{}
-	ctx.Request.Header.SetRequestURI("/register")
+	ctx.Request.Header.SetRequestURI("/account/register")
 
 	c.postHandler(ctx)
 	if ctx.Response.StatusCode() != 400 {
@@ -47,7 +47,7 @@ func TestUserControllerFormatError(t *testing.T) {
 func TestUserControllerBodyError(t *testing.T) {
 	ctx := &fasthttp.RequestCtx{}
 	ctx.Request.Header.Set("Content-Type", "application/json")
-	ctx.Request.Header.SetRequestURI("/register")
+	ctx.Request.Header.SetRequestURI("/account/register")
 
 	c.postHandler(ctx)
 	if ctx.Response.StatusCode() != 400 {
@@ -63,7 +63,7 @@ func TestUserControllerBodyError(t *testing.T) {
 func TestLoginLogout(t *testing.T) {
 	ctx := &fasthttp.RequestCtx{}
 	ctx.Request.Header.Set("Content-Type", "application/json")
-	ctx.Request.Header.SetRequestURI("/register")
+	ctx.Request.Header.SetRequestURI("/account/register")
 	ctx.Request.SetBody([]byte(`{"username": "i02sopop", "name": "ritho", "email": "palvarez@ritho.net", "password": "ritho"}`))
 	c.postHandler(ctx)
 	if ctx.Response.StatusCode() != 200 {
@@ -72,7 +72,7 @@ func TestLoginLogout(t *testing.T) {
 
 	ctx = &fasthttp.RequestCtx{}
 	ctx.Request.Header.Set("Content-Type", "application/json")
-	ctx.Request.Header.SetRequestURI("/login")
+	ctx.Request.Header.SetRequestURI("/account/login")
 	ctx.Request.SetBody([]byte(`{"login": "i02sopop", "password": "ritho"}`))
 	c.postHandler(ctx)
 	if ctx.Response.StatusCode() != 200 {
@@ -99,7 +99,7 @@ func TestLoginLogout(t *testing.T) {
 
 	ctx = &fasthttp.RequestCtx{}
 	ctx.Request.Header.Set("Content-Type", "application/json")
-	ctx.Request.Header.SetRequestURI("/logout")
+	ctx.Request.Header.SetRequestURI("/account/logout")
 	ctx.Request.SetBody([]byte(logoutBody))
 	c.postHandler(ctx)
 	if ctx.Response.StatusCode() != 200 {
@@ -121,105 +121,105 @@ func TestPostHandler(t *testing.T) {
 	}{
 		{
 			"RegisterInvalidEmailFormatError",
-			"/register",
+			"/account/register",
 			`{"username": "ritho", "name": "ritho", "email": "ritho", "password": "ritho"}`,
 			400,
 			`Error validating the email: invalid format`,
 		},
 		{
 			"RegisterUnresolvedHostError",
-			"/register",
+			"/account/register",
 			`{"name": "ritho", "email": "palvarez@invalid.es", "password": "ritho"}`,
 			400,
 			`Error validating the email: unresolvable host`,
 		},
 		{
 			"RegisterUsernameShort",
-			"/register",
+			"/account/register",
 			`{"username": "rit", "name": "ritho", "email": "palvarez@ritho.net", "password": "ritho"}`,
 			400,
 			`Username too short`,
 		},
 		{
 			"RegisterPasswordShort",
-			"/register",
+			"/account/register",
 			`{"username": "ritho", "name": "ritho", "email": "palvarez@ritho.net", "password": "1234"}`,
 			400,
 			`Password too short`,
 		},
 		{
 			"RegisterSuccess",
-			"/register",
+			"/account/register",
 			`{"username": "ritho", "name": "ritho", "email": "palvarez@ritho.net", "password": "ritho"}`,
 			200,
 			`"result":"User registered successfully"`,
 		},
 		{
 			"RegisterDuplicateUser",
-			"/register",
+			"/account/register",
 			`{"username": "ritho", "name": "ritho", "email": "palvarez@ritho.net", "password": "ritho"}`,
 			400,
 			`palvarez@ritho.net: User already exists`,
 		},
 		{
 			"LoginUnknownParam",
-			"/login",
+			"/account/login",
 			`{"login": "ritho", "passwerd": "ritho"}`,
 			500,
 			`Error adding the param passwerd, key doesn't exists: Unknown parameter for the use case`,
 		},
 		{
 			"LoginUsernameShort",
-			"/login",
+			"/account/login",
 			`{"login": "rit", "password": "ritho"}`,
 			400,
 			`Username too short`,
 		},
 		{
 			"LoginPasswordShort",
-			"/login",
+			"/account/login",
 			`{"login": "ritho", "password": "rit"}`,
 			400,
 			`Password too short`,
 		},
 		{
 			"LoginWrongPassword",
-			"/login",
+			"/account/login",
 			`{"login": "ritho", "password": "rithoo"}`,
 			400,
 			`Password missmatch`,
 		},
 		{
 			"LoginSuccess",
-			"/login",
+			"/account/login",
 			`{"login": "ritho", "password": "ritho"}`,
 			200,
 			`"result":"User login successfully"`,
 		},
 		{
 			"LoginAlreadyLogin",
-			"/login",
+			"/account/login",
 			`{"login": "ritho", "password": "ritho"}`,
 			400,
 			`ritho: User already logged in`,
 		},
 		{
 			"LogoutError",
-			"/logout",
+			"/account/logout",
 			`{"username": "ritho"}`,
 			400,
 			`Token too short`,
 		},
 		{
 			"LogoutError",
-			"/logout",
+			"/account/logout",
 			`{"username": "ritho", "token": "00000"}`,
 			400,
 			`Token too short`,
 		},
 		{
 			"LogoutError",
-			"/logout",
+			"/account/logout",
 			`{"username": "ritho", "token": "00000000-0000-0000-0000-000000000000"}`,
 			400,
 			`ritho: User not logged in`,

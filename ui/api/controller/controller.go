@@ -25,6 +25,8 @@ import (
 	"github.com/buaazp/fasthttprouter"
 	"github.com/golang/glog"
 	"github.com/valyala/fasthttp"
+
+	"github.com/radar-go/radar/datastore"
 )
 
 // Controller struct to manager the Radar API Controller.
@@ -55,9 +57,12 @@ func (c *Controller) register() {
 	c.Router.PanicHandler = c.panic
 
 	c.Router.GET("/healthcheck", c.healthcheck)
-	c.Router.POST("/register", c.postHandler)
-	c.Router.POST("/login", c.postHandler)
-	c.Router.POST("/logout", c.postHandler)
+
+	ds := datastore.New()
+	endpoints := ds.Endpoints()
+	for key := range endpoints {
+		c.Router.POST(key, c.postHandler)
+	}
 }
 
 // panic handles when the server have a fatal error.
