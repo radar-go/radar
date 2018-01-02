@@ -24,84 +24,64 @@ import (
 
 	"github.com/golang/glog"
 
-	"github.com/radar-go/radar/casesprovider/login"
-	"github.com/radar-go/radar/casesprovider/logout"
-	"github.com/radar-go/radar/casesprovider/register"
-	"github.com/radar-go/radar/casesprovider/usecase"
 	"github.com/radar-go/radar/datastore"
 )
+
+// ResultPrinter for the Use Case.
+type ResultPrinter interface {
+	String() (string, error)
+	Bytes() ([]byte, error)
+}
 
 // UseCase defines the operations that can be done over any use case.
 type UseCase interface {
 	AddParam(string, interface{}) error
 	AddParams(map[string]interface{}) error
 	GetName() string
+	New() UseCase
 	SetDatastore(*datastore.Datastore)
-	Run() (usecase.ResultPrinter, error)
+	Run() (ResultPrinter, error)
 }
 
 // UCases struct to call to the different Radar use cases.
 type UCases struct {
 	ds       *datastore.Datastore
-	useCases map[string]bool
+	useCases map[string]UseCase
 }
 
-// New returns a new UCases object.
-func New() *UCases {
-	uc := &UCases{
-		ds:       datastore.New(),
-		useCases: make(map[string]bool),
-	}
-
-	uc.Register(register.Name)
-	uc.Register(login.Name)
-	uc.Register(logout.Name)
-
-	return uc
+var cases = &UCases{
+	ds:       datastore.New(),
+	useCases: make(map[string]UseCase),
 }
 
 // Register registers a new UseCase into the list of use cases.
-func (uc *UCases) Register(name string) {
-	if _, ok := uc.useCases[name]; ok {
-		glog.Errorf("Use case %s already register", name)
+func Register(uCase UseCase) {
+	if _, ok := cases.useCases[uCase.GetName()]; ok {
+		glog.Errorf("Use case %s already register", uCase.GetName())
 	}
 
-	uc.useCases[name] = true
+	cases.useCases[uCase.GetName()] = uCase
 }
 
 // GetUseCase returns a particular UseCase based on name.
-func (uc *UCases) GetUseCase(name string) (UseCase, error) {
-	var useCase UseCase
-
-	defined, ok := uc.useCases[name]
-	if !ok || !defined {
+func GetUseCase(name string) (UseCase, error) {
+	useCase, ok := cases.useCases[name]
+	if !ok {
 		return nil, fmt.Errorf("Use case %s is not registered", name)
 	}
 
-	switch name {
-	case login.Name:
-		useCase = login.New()
-	case logout.Name:
-		useCase = logout.New()
-	case register.Name:
-		useCase = register.New()
-	default:
-		useCase = &usecase.UseCase{
-			Name: name,
-		}
-	}
+	uc := useCase.New()
+	uc.SetDatastore(cases.ds)
 
-	useCase.SetDatastore(uc.ds)
-
-	return useCase, nil
+	return uc, nil
 }
 
 // UseCaseList returns the list of names of all the Use Cases.
-func (uc *UCases) UseCaseList() []string {
-	cases := make([]string, 0, len(uc.useCases))
-	for k := range uc.useCases {
-		cases = append(cases, k)
+func UseCaseList() []string {
+	casesList := make([]string, 0, len(cases.useCases))
+	for k := range cases.useCases {
+		casesList = append(casesList, k)
 	}
 
-	return cases
+	return casesList
 }

@@ -25,7 +25,8 @@ import (
 
 	"github.com/golang-plus/uuid"
 
-	"github.com/radar-go/radar/casesprovider/usecase"
+	"github.com/radar-go/radar/casesprovider"
+	"github.com/radar-go/radar/casesprovider/cases/usecase"
 )
 
 // UseCase for the user login.
@@ -56,8 +57,13 @@ func New() *UseCase {
 	return uc
 }
 
-// Run tries to register a new user in the system.
-func (uc *UseCase) Run() (usecase.ResultPrinter, error) {
+// New creates and returns a new login use case object.
+func (uc *UseCase) New() casesprovider.UseCase {
+	return New()
+}
+
+// Run tries to log in an user into the system.
+func (uc *UseCase) Run() (casesprovider.ResultPrinter, error) {
 	var err error
 	res := usecase.NewResult()
 

@@ -22,38 +22,37 @@ import (
 	"testing"
 )
 
-var definedUseCases = 3
-
 func TestCasesProvider(t *testing.T) {
 	var err error
 
-	uc := New()
-	list := uc.UseCaseList()
-	if len(list) != definedUseCases {
-		t.Errorf("Expected the use case list to have %d element, got %d", definedUseCases,
-			len(list))
+	list := UseCaseList()
+	if len(list) != 0 {
+		t.Errorf("Expected the use case list to have 0 elements, got %d", len(list))
 	}
 
-	uc.Register("UserRegister")
-	list = uc.UseCaseList()
-	if len(list) != definedUseCases {
-		t.Errorf("Expected the use case list to have %d element, got %d", definedUseCases,
-			len(list))
+	uc := &MockUseCase{
+		Name:   "mock",
+		Params: make(map[string]interface{}),
 	}
 
-	uc.Register("usecase")
-	list = uc.UseCaseList()
-	if len(list) != (definedUseCases + 1) {
-		t.Errorf("Expected the use case list to have %d elements, got %d",
-			(definedUseCases + 1), len(list))
+	Register(uc)
+	list = UseCaseList()
+	if len(list) != 1 {
+		t.Errorf("Expected the use case list to have 1 element, got %d", len(list))
 	}
 
-	_, err = uc.GetUseCase("usecase")
+	Register(uc)
+	list = UseCaseList()
+	if len(list) != 1 {
+		t.Errorf("Expected the use case list to have 1 element, got %d", len(list))
+	}
+
+	_, err = GetUseCase("mock")
 	if err != nil {
 		t.Errorf("Unexpected error getting the use case: %+v", err)
 	}
 
-	_, err = uc.GetUseCase("usecaseFail")
+	_, err = GetUseCase("usecaseFail")
 	if err == nil {
 		t.Errorf("Expected error getting the use case did not happened")
 	}

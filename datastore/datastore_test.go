@@ -1,6 +1,6 @@
 package datastore
 
-/* Copyright (C) 2017 Radar team (see AUTHORS)
+/* Copyright (C) 2017-2018 Radar team (see AUTHORS)
 
    This file is part of radar.
 
@@ -101,5 +101,30 @@ func TestDatastoreLogin(t *testing.T) {
 	err = ds.Login("1234", "ritho")
 	if fmt.Sprintf("%v", err) != "ritho: User already logged in" {
 		t.Errorf("Expected 'ritho: User already logged in', Got '%v'", err)
+	}
+}
+
+func TestDatastoreLogout(t *testing.T) {
+	ds := New()
+
+	ds.users["ritho"] = &user.User{}
+	err := ds.Login("1234", "ritho")
+	if err != nil {
+		t.Errorf("Unexpected error %+v", err)
+	}
+
+	err = ds.Logout("1234", "ritho")
+	if err != nil {
+		t.Errorf("Unexpected error '%v'", err)
+	}
+
+	err = ds.Logout("1234", "ritho")
+	if fmt.Sprintf("%v", err) != "ritho: User not logged in" {
+		t.Errorf("Expected 'ritho: User not logged in', Got '%v'", err)
+	}
+
+	err = ds.Logout("1234", "rit")
+	if fmt.Sprintf("%v", err) != "rit: User doesn't exists" {
+		t.Errorf("Expected 'rit: User doesn't exists', Got '%v'", err)
 	}
 }
