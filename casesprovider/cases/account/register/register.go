@@ -26,7 +26,8 @@ import (
 	"github.com/goware/emailx"
 	"github.com/pkg/errors"
 
-	"github.com/radar-go/radar/casesprovider/usecase"
+	"github.com/radar-go/radar/casesprovider"
+	"github.com/radar-go/radar/casesprovider/cases/usecase"
 )
 
 // UseCase for the user registration.
@@ -39,14 +40,11 @@ type Result struct {
 	usecase.Result
 }
 
-// Name of the use case.
-var Name = "UserRegister"
-
 // New creates and returns a new register use case object.
 func New() *UseCase {
 	uc := &UseCase{
 		usecase.UseCase{
-			Name: Name,
+			Name: "UserRegister",
 			Params: map[string]interface{}{
 				"username": "",
 				"name":     "",
@@ -59,8 +57,13 @@ func New() *UseCase {
 	return uc
 }
 
+// New creates and returns a new register use case object.
+func (uc *UseCase) New() casesprovider.UseCase {
+	return New()
+}
+
 // Run tries to register a new user in the system.
-func (uc *UseCase) Run() (usecase.ResultPrinter, error) {
+func (uc *UseCase) Run() (casesprovider.ResultPrinter, error) {
 	res := usecase.NewResult()
 
 	cleanEmail := emailx.Normalize(uc.Params["email"].(string))

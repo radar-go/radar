@@ -25,27 +25,25 @@ import (
 
 	"github.com/golang-plus/uuid"
 
-	"github.com/radar-go/radar/casesprovider/usecase"
+	"github.com/radar-go/radar/casesprovider"
+	"github.com/radar-go/radar/casesprovider/cases/usecase"
 )
 
-// UseCase for the user login.
+// UseCase for the user logout.
 type UseCase struct {
 	usecase.UseCase
 }
 
-// Result stores the result of the user login.
+// Result stores the result of the user logout.
 type Result struct {
 	usecase.Result
 }
 
-// Name of the use case.
-var Name = "Logout"
-
-// New creates and returns a new login use case object.
+// New creates and returns a new logout use case object.
 func New() *UseCase {
 	uc := &UseCase{
 		usecase.UseCase{
-			Name: Name,
+			Name: "Logout",
 			Params: map[string]interface{}{
 				"username": "",
 				"token":    "",
@@ -56,8 +54,13 @@ func New() *UseCase {
 	return uc
 }
 
-// Run tries to register a new user in the system.
-func (uc *UseCase) Run() (usecase.ResultPrinter, error) {
+// New creates and returns a new logout use case object.
+func (uc *UseCase) New() casesprovider.UseCase {
+	return New()
+}
+
+// Run tries to log out an user from the system.
+func (uc *UseCase) Run() (casesprovider.ResultPrinter, error) {
 	var err error
 	res := usecase.NewResult()
 

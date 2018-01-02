@@ -1,6 +1,6 @@
-package usecase
+package casesprovider
 
-/* Copyright (C) 2017-2018 Radar team (see AUTHORS)
+/* Copyright (C) 2018 Radar team (see AUTHORS)
 
    This file is part of radar.
 
@@ -29,26 +29,20 @@ import (
 	"github.com/radar-go/radar/datastore"
 )
 
-// ResultPrinter for the Use Case.
-type ResultPrinter interface {
-	String() (string, error)
-	Bytes() ([]byte, error)
-}
-
-// Result represents a generic user case result.
-type Result struct {
+// MockResult represents a generic user case result.
+type MockResult struct {
 	Res map[string]interface{}
 }
 
-// NewResult creates a new result object.
-func NewResult() *Result {
-	return &Result{
+// NewMockResult creates a new result object.
+func NewMockResult() *MockResult {
+	return &MockResult{
 		Res: make(map[string]interface{}),
 	}
 }
 
 // Bytes returns the use case result in string format.
-func (r *Result) String() (string, error) {
+func (r *MockResult) String() (string, error) {
 	res, err := json.Marshal(r.Res)
 	if err != nil {
 		return "{}", err
@@ -58,27 +52,32 @@ func (r *Result) String() (string, error) {
 }
 
 // Bytes returns the use case result in []bytes format.
-func (r *Result) Bytes() ([]byte, error) {
+func (r *MockResult) Bytes() ([]byte, error) {
 	return json.Marshal(r.Res)
 }
 
-// Name of the use case.
-var Name = "UseCase"
-
-// UseCase represents a generic use case.
-type UseCase struct {
+// MockUseCase represents a generic use case.
+type MockUseCase struct {
 	Name      string
 	Datastore *datastore.Datastore
 	Params    map[string]interface{}
 }
 
+// New returns a new MockUseCase object.
+func (uc *MockUseCase) New() UseCase {
+	return &MockUseCase{
+		Name:   "MockUseCase",
+		Params: make(map[string]interface{}),
+	}
+}
+
 // GetName adds a new ad param to the use case.
-func (uc *UseCase) GetName() string {
+func (uc *MockUseCase) GetName() string {
 	return uc.Name
 }
 
 // AddParam adds a new ad param to the use case.
-func (uc *UseCase) AddParam(key string, value interface{}) error {
+func (uc *MockUseCase) AddParam(key string, value interface{}) error {
 	if uc.Params == nil {
 		return errWrap.Wrap(errors.ErrParamUnknown,
 			fmt.Sprintf("Error adding the param %s", key))
@@ -105,7 +104,7 @@ func (uc *UseCase) AddParam(key string, value interface{}) error {
 }
 
 // AddParams adds a set of ad params to the use case.
-func (uc *UseCase) AddParams(params map[string]interface{}) error {
+func (uc *MockUseCase) AddParams(params map[string]interface{}) error {
 	var err error
 
 	for key, value := range params {
@@ -118,12 +117,12 @@ func (uc *UseCase) AddParams(params map[string]interface{}) error {
 	return err
 }
 
-// SetDataStore sets the datastore to use by the use case.
-func (uc *UseCase) SetDatastore(ds *datastore.Datastore) {
+// SetDatastore sets the datastore to use by the use case.
+func (uc *MockUseCase) SetDatastore(ds *datastore.Datastore) {
 	uc.Datastore = ds
 }
 
 // Run executes the use case.
-func (uc *UseCase) Run() (ResultPrinter, error) {
+func (uc *MockUseCase) Run() (ResultPrinter, error) {
 	return nil, fmt.Errorf("Function Run not implemented")
 }

@@ -25,21 +25,17 @@ import (
 	"github.com/buaazp/fasthttprouter"
 	"github.com/golang/glog"
 	"github.com/valyala/fasthttp"
-
-	"github.com/radar-go/radar/casesprovider"
 )
 
 // Controller struct to manager the Radar API Controller.
 type Controller struct {
 	Router *fasthttprouter.Router
-	cases  *casesprovider.UCases
 }
 
 // New creates and return a new Controller object.
 func New() *Controller {
 	c := &Controller{
 		Router: fasthttprouter.New(),
-		cases:  casesprovider.New(),
 	}
 	c.register()
 

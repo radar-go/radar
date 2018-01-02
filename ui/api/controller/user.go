@@ -26,6 +26,7 @@ import (
 	"github.com/valyala/fasthttp"
 
 	"github.com/radar-go/radar/casesprovider"
+	_ "github.com/radar-go/radar/casesprovider/cases"
 )
 
 func (c *Controller) checkRequestHeaders(ctx *fasthttp.RequestCtx) error {
@@ -67,11 +68,11 @@ func (c *Controller) postHandler(ctx *fasthttp.RequestCtx) {
 
 	switch fmt.Sprintf("%s", ctx.Path()) {
 	case "/register":
-		uc, err = c.cases.GetUseCase("UserRegister")
+		uc, err = casesprovider.GetUseCase("UserRegister")
 	case "/login":
-		uc, err = c.cases.GetUseCase("Login")
+		uc, err = casesprovider.GetUseCase("Login")
 	case "/logout":
-		uc, err = c.cases.GetUseCase("Logout")
+		uc, err = casesprovider.GetUseCase("Logout")
 	default:
 		badRequest(ctx, fmt.Sprintf("Unknown path: %s.", ctx.Path()))
 		return
