@@ -21,12 +21,14 @@ package cases
 
 import (
 	"github.com/radar-go/radar/casesprovider"
+	"github.com/radar-go/radar/casesprovider/cases/account/edit"
 	"github.com/radar-go/radar/casesprovider/cases/account/login"
 	"github.com/radar-go/radar/casesprovider/cases/account/logout"
 	"github.com/radar-go/radar/casesprovider/cases/account/register"
 )
 
 func init() {
+	casesprovider.Register(edit.New())
 	casesprovider.Register(login.New())
 	casesprovider.Register(logout.New())
 	casesprovider.Register(register.New())

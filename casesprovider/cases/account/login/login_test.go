@@ -1,6 +1,6 @@
 package login
 
-/* Copyright (C) 2017 Radar team (see AUTHORS)
+/* Copyright (C) 2017-2018 Radar team (see AUTHORS)
 
    This file is part of radar.
 
@@ -28,7 +28,7 @@ import (
 
 func TestLogin(t *testing.T) {
 	uc := New()
-	if uc.Name != "Login" {
+	if uc.Name != "AccountLogin" {
 		t.Errorf("Expected Login, Got %s", uc.Name)
 	}
 

@@ -18,3 +18,12 @@ package radar
    You should have received a copy of the GNU General Public License
    along with radar. If not, see <http://www.gnu.org/licenses/>.
 */
+
+import (
+	"strings"
+)
+
+// CleanString trim the spaces of an string and convert it to lowercase.
+func CleanString(s string) string {
+	return strings.ToLower(strings.TrimSpace(s))
+}

@@ -21,10 +21,6 @@ package register
 
 import (
 	"fmt"
-	"strings"
-
-	"github.com/goware/emailx"
-	"github.com/pkg/errors"
 
 	"github.com/radar-go/radar/casesprovider"
 	"github.com/radar-go/radar/casesprovider/cases/usecase"
@@ -44,7 +40,7 @@ type Result struct {
 func New() *UseCase {
 	uc := &UseCase{
 		usecase.UseCase{
-			Name: "UserRegister",
+			Name: "AccountRegister",
 			Params: map[string]interface{}{
 				"username": "",
 				"name":     "",
@@ -66,26 +62,17 @@ func (uc *UseCase) New() casesprovider.UseCase {
 func (uc *UseCase) Run() (casesprovider.ResultPrinter, error) {
 	res := usecase.NewResult()
 
-	cleanEmail := emailx.Normalize(uc.Params["email"].(string))
-	if err := emailx.Validate(cleanEmail); err != nil {
-		return res, errors.Wrap(err, "Error validating the email")
-	}
-
-	username := strings.TrimSpace(uc.Params["username"].(string))
-	if len(username) < 5 {
-		return res, errors.New("Username too short")
-	}
-
-	password := uc.Params["password"].(string)
-	if len(password) < 5 {
-		return res, errors.New("Password too short")
+	username := uc.Params["username"].(string)
+	_, err := uc.Datastore.GetUserByUsername(username)
+	if err == nil {
+		return res, fmt.Errorf("User %s already registered", username)
 	}
 
 	userID, err := uc.Datastore.UserRegistration(
 		username,
 		uc.Params["name"].(string),
-		cleanEmail,
-		password,
+		uc.Params["email"].(string),
+		uc.Params["password"].(string),
 	)
 
 	if err != nil {
