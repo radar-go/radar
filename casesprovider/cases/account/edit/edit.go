@@ -1,7 +1,7 @@
-// Package login implements the user login use case.
-package login
+// Package edit implements the user edition use case.
+package edit
 
-/* Copyright (C) 2017-2018 Radar team (see AUTHORS)
+/* Copyright (C) 2018 Radar team (see AUTHORS)
 
    This file is part of radar.
 
@@ -20,31 +20,35 @@ package login
 */
 
 import (
-	"errors"
+	"fmt"
 
-	"github.com/golang-plus/uuid"
+	"github.com/pkg/errors"
 
 	"github.com/radar-go/radar/casesprovider"
 	"github.com/radar-go/radar/casesprovider/cases/usecase"
 )
 
-// UseCase for the user login.
+// UseCase for the user edition.
 type UseCase struct {
 	usecase.UseCase
 }
 
-// Result stores the result of the user login.
+// Result stores the result of the user edition.
 type Result struct {
 	usecase.Result
 }
 
-// New creates and returns a new login use case object.
+// New creates and returns a new edit use case object.
 func New() *UseCase {
 	uc := &UseCase{
 		usecase.UseCase{
-			Name: "AccountLogin",
+			Name: "AccountEdit",
 			Params: map[string]interface{}{
-				"login":    "",
+				"id":       0,
+				"token":    "",
+				"username": "",
+				"name":     "",
+				"email":    "",
 				"password": "",
 			},
 		},
@@ -53,43 +57,49 @@ func New() *UseCase {
 	return uc
 }
 
-// New creates and returns a new login use case object.
+// New creates and returns a new edit use case object.
 func (uc *UseCase) New() casesprovider.UseCase {
 	return New()
 }
 
-// Run tries to log in an user into the system.
+// Run tries to edit an user from the system.
 func (uc *UseCase) Run() (casesprovider.ResultPrinter, error) {
-	var err error
 	res := usecase.NewResult()
 
-	login := uc.Params["login"].(string)
-	password := uc.Params["password"].(string)
-	user, err := uc.Datastore.GetUserByUsername(login)
+	token := uc.Params["token"].(string)
+	user, err := uc.Datastore.GetUserBySession(token)
 	if err != nil {
 		return res, err
 	}
 
-	if user.Password() != password {
-		return res, errors.New("Password missmatch")
+	if user.ID() != uc.Params["id"].(int) {
+		return res, errors.New("The user id doesn't match with the user logged in.")
 	}
 
-	uuid, err := uuid.NewTimeBased()
+	user.SetName(uc.Params["name"].(string))
+	err = user.SetEmail(uc.Params["username"].(string))
 	if err != nil {
 		return res, err
 	}
 
-	err = uc.Datastore.AddSession(uuid.String(), login)
+	err = user.SetUsername(uc.Params["username"].(string))
 	if err != nil {
 		return res, err
 	}
 
-	res.Res["result"] = "User login successfully"
-	res.Res["id"] = user.ID()
-	res.Res["username"] = user.Username()
-	res.Res["name"] = user.Name()
-	res.Res["email"] = user.Email()
-	res.Res["token"] = uuid.String()
+	err = user.SetPassword(uc.Params["password"].(string))
+	if err != nil {
+		return res, err
+	}
 
-	return res, err
+	err = uc.Datastore.UpdateUserData(user, token)
+	if err != nil {
+		res.Res["result"] = "Error updating the user data"
+		res.Res["error"] = fmt.Sprintf("%s", err)
+	} else {
+		res.Res["result"] = "User data updated successfully"
+		res.Res["id"] = user.ID()
+	}
+
+	return res, nil
 }

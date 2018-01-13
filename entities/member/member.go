@@ -21,6 +21,7 @@ package member
 
 import (
 	"fmt"
+	"strings"
 
 	role "github.com/radar-go/radar/entities/role/api"
 	technology "github.com/radar-go/radar/entities/technology/api"
@@ -75,7 +76,10 @@ func (m *Member) Technologies() []technology.Technology {
 
 // SetName sets the member name.
 func (m *Member) SetName(name string) {
-	m.name = name
+	cleanName := strings.TrimSpace(name)
+	if len(cleanName) > 0 {
+		m.name = cleanName
+	}
 }
 
 // Equals compares two member objects to check if they're the same one.

@@ -1,6 +1,6 @@
 package register
 
-/* Copyright (C) 2017 Radar team (see AUTHORS)
+/* Copyright (C) 2017-2018 Radar team (see AUTHORS)
 
    This file is part of radar.
 
@@ -32,8 +32,8 @@ import (
 
 func TestRegister(t *testing.T) {
 	uc := New()
-	if uc.Name != "UserRegister" {
-		t.Errorf("Expected Use Case name to be UserRegister, got %s", uc.Name)
+	if uc.Name != "AccountRegister" {
+		t.Errorf("Expected Use Case name to be AccountRegister, got %s", uc.Name)
 	}
 
 	uc.SetDatastore(datastore.New())
@@ -85,8 +85,8 @@ func TestRegister(t *testing.T) {
 
 func TestRegisterError(t *testing.T) {
 	uc := New()
-	if uc.Name != "UserRegister" {
-		t.Errorf("Expected Use Case name to be UserRegister, got %s", uc.Name)
+	if uc.Name != "AccountRegister" {
+		t.Errorf("Expected Use Case name to be AccountRegister, got %s", uc.Name)
 	}
 
 	_, err := uc.Run()
@@ -129,8 +129,8 @@ func TestRegisterError(t *testing.T) {
 
 func TestAdParamErrors(t *testing.T) {
 	uc := New()
-	if uc.Name != "UserRegister" {
-		t.Errorf("Expected Use Case name to be UserRegister, got %s", uc.Name)
+	if uc.Name != "AccountRegister" {
+		t.Errorf("Expected Use Case name to be AccountRegister, got %s", uc.Name)
 	}
 
 	err := uc.AddParam("name", "")

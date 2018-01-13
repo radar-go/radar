@@ -20,67 +20,64 @@ package datastore
 */
 
 import (
+	"github.com/golang-plus/uuid"
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
 
+	"github.com/radar-go/radar"
 	"github.com/radar-go/radar/datastore/user"
 )
 
 // Datastore struct to access to the datastore.
 type Datastore struct {
 	users    map[string]*user.User
-	usrLogin map[string]*user.User
+	sessions map[string]*user.User
 }
 
 // New creates and returns a new datastore object.
 func New() *Datastore {
 	return &Datastore{
 		users:    make(map[string]*user.User),
-		usrLogin: make(map[string]*user.User),
+		sessions: make(map[string]*user.User),
 	}
 }
 
 // Endpoints returns a list of endpoints linked with their use case.
 func (d *Datastore) Endpoints() map[string]string {
 	return map[string]string{
-		"/account/register": "UserRegister",
-		"/account/login":    "Login",
-		"/account/logout":   "Logout",
+		"/account/edit":     "AccountEdit",
+		"/account/login":    "AccountLogin",
+		"/account/logout":   "AccountLogout",
+		"/account/register": "AccountRegister",
 	}
 }
 
 // UserRegistration registers a new user in the datasore.
 func (d *Datastore) UserRegistration(username, name, email, password string) (int, error) {
-	if len(email) == 0 {
-		return 0, errors.Wrap(user.ErrEmailEmpty, "Error validating the email")
-	}
-
-	_, ok := d.users[username]
+	cleanUsername := radar.CleanString(username)
+	_, ok := d.users[cleanUsername]
 	if ok {
 		return 0, errors.Wrap(user.ErrUserExists, email)
 	}
 
-	if len(username) == 0 {
-		return 0, errors.Wrap(user.ErrUsernameEmpty, "Error validating the username")
-	}
-
-	if len(password) == 0 {
-		return 0, errors.Wrap(user.ErrPasswordEmpty, "Error validating the password")
-	}
-
 	glog.Infof("Registering user '%s'", username)
-	usr := user.New(username, name, email, password)
-	d.users[username] = usr
+	usr, err := user.New(cleanUsername, name, email, password)
+	if err != nil {
+		return 0, err
+	}
+
+	d.users[cleanUsername] = usr
 
 	return usr.ID(), nil
 }
 
-// GetUser returns an user stored in the datastore or an error in case it doesn't
-// exists.
-func (d *Datastore) GetUser(username string) (*user.User, error) {
+// GetUserByUsername returns an user stored in the datastore by its username or
+// an error in case it doesn't exists.
+func (d *Datastore) GetUserByUsername(username string) (*user.User, error) {
 	var err error
 
-	usr, ok := d.users[username]
+	cleanUsername := radar.CleanString(username)
+	usr, ok := d.users[cleanUsername]
 	if !ok {
 		err = errors.Wrap(user.ErrUserNotExists, username)
 		glog.Errorf("%+v", err)
@@ -89,48 +86,101 @@ func (d *Datastore) GetUser(username string) (*user.User, error) {
 	return usr, err
 }
 
-// Login adds an user session to the datastore.
-func (d *Datastore) Login(uuid, username string) error {
+// GetUserBySession returns an user by its session or an error in case the user
+// is not logged in.
+func (d *Datastore) GetUserBySession(session string) (*user.User, error) {
 	var err error
 
-	_, ok := d.usrLogin[uuid]
+	cleanSession := radar.CleanString(session)
+	usr, ok := d.sessions[cleanSession]
+	if !ok {
+		err = errors.Wrap(user.ErrUserNotLoggedIn, session)
+		glog.Errorf("%+v", err)
+	}
+
+	return usr, err
+}
+
+// AddSession adds an user session to the datastore.
+func (d *Datastore) AddSession(session, username string) error {
+	var err error
+
+	cleanSession := radar.CleanString(session)
+	if len(cleanSession) != len(uuid.Nil) {
+		return errors.New("Session id too short")
+	}
+
+	_, ok := d.sessions[cleanSession]
 	if ok {
 		return errors.Wrap(user.ErrUserAlreadyLogin, username)
 	}
 
-	usr, ok := d.users[username]
+	cleanUsername := radar.CleanString(username)
+	usr, ok := d.users[cleanUsername]
 	if !ok {
 		err = errors.Wrap(user.ErrUserNotExists, username)
 		glog.Errorf("%+v", err)
 		return err
 	}
 
-	for _, value := range d.usrLogin {
-		if usr.Username() == value.Username() {
+	for _, value := range d.sessions {
+		if usr.ID() == value.ID() {
 			return errors.Wrap(user.ErrUserAlreadyLogin, username)
 		}
 	}
 
-	d.usrLogin[uuid] = usr
+	d.sessions[cleanSession] = usr
 
 	return err
 }
 
-// Logout removes the user session from the datastore.
-func (d *Datastore) Logout(uuid, username string) error {
+// DeleteSession removes the user session from the datastore.
+func (d *Datastore) DeleteSession(session, username string) error {
 	var err error
 
-	if _, ok := d.users[username]; !ok {
+	cleanSession := radar.CleanString(session)
+	cleanUsername := radar.CleanString(username)
+	if _, ok := d.users[cleanUsername]; !ok {
 		err = errors.Wrap(user.ErrUserNotExists, username)
 		glog.Errorf("%+v", err)
 		return err
 	}
 
-	if _, ok := d.usrLogin[uuid]; !ok {
+	if _, ok := d.sessions[cleanSession]; !ok {
 		return errors.Wrap(user.ErrUserNotLoggedIn, username)
 	}
 
-	delete(d.usrLogin, uuid)
+	delete(d.sessions, cleanSession)
+
+	return err
+}
+
+// UpdateUserData updates the user data information both in the users map and in
+// the sessions map.
+func (d *Datastore) UpdateUserData(usr *user.User, session string) error {
+	var err error
+
+	cleanSession := radar.CleanString(session)
+	if _, ok := d.sessions[cleanSession]; !ok {
+		return errors.Wrap(user.ErrUserNotLoggedIn, usr.Username())
+	}
+
+	delete(d.sessions, cleanSession)
+	d.sessions[cleanSession] = usr
+
+	registered := false
+	for key, userReg := range d.users {
+		if usr.ID() == userReg.ID() {
+			delete(d.sessions, key)
+			d.sessions[usr.Username()] = usr
+			registered = true
+			break
+		}
+	}
+
+	if !registered {
+		return errors.Wrap(user.ErrUserNotExists, usr.Username())
+	}
 
 	return err
 }

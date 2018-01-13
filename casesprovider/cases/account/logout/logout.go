@@ -20,11 +20,6 @@ package logout
 */
 
 import (
-	"errors"
-	"strings"
-
-	"github.com/golang-plus/uuid"
-
 	"github.com/radar-go/radar/casesprovider"
 	"github.com/radar-go/radar/casesprovider/cases/usecase"
 )
@@ -43,7 +38,7 @@ type Result struct {
 func New() *UseCase {
 	uc := &UseCase{
 		usecase.UseCase{
-			Name: "Logout",
+			Name: "AccountLogout",
 			Params: map[string]interface{}{
 				"username": "",
 				"token":    "",
@@ -64,22 +59,14 @@ func (uc *UseCase) Run() (casesprovider.ResultPrinter, error) {
 	var err error
 	res := usecase.NewResult()
 
-	username := strings.TrimSpace(uc.Params["username"].(string))
-	if len(username) < 5 {
-		return res, errors.New("Username too short")
-	}
-
-	token := strings.TrimSpace(uc.Params["token"].(string))
-	if len(token) < len(uuid.Nil) {
-		return res, errors.New("Token too short")
-	}
-
-	user, err := uc.Datastore.GetUser(username)
+	username := uc.Params["username"].(string)
+	session := uc.Params["token"].(string)
+	user, err := uc.Datastore.GetUserByUsername(username)
 	if err != nil {
 		return res, err
 	}
 
-	err = uc.Datastore.Logout(token, username)
+	err = uc.Datastore.DeleteSession(session, username)
 	if err != nil {
 		return res, err
 	}

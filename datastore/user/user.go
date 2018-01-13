@@ -1,7 +1,7 @@
 // Package user implements the user data storage.
 package user
 
-/* Copyright (C) 2017 Radar team (see AUTHORS)
+/* Copyright (C) 2017-2018 Radar team (see AUTHORS)
 
    This file is part of radar.
 
@@ -20,6 +20,10 @@ package user
 */
 
 import (
+	"github.com/goware/emailx"
+	"github.com/pkg/errors"
+
+	"github.com/radar-go/radar"
 	"github.com/radar-go/radar/entities/member"
 )
 
@@ -35,19 +39,26 @@ type User struct {
 }
 
 // New returns a new User object.
-func New(username, name, email, password string) *User {
-	userSeq++
+func New(username, name, email, password string) (*User, error) {
+	usr := &User{}
 
-	usr := &User{
-		id:       userSeq,
-		username: username,
-		email:    email,
-		password: password,
+	if err := usr.SetUsername(username); err != nil {
+		return nil, err
 	}
 
 	usr.SetName(name)
+	if err := usr.SetEmail(email); err != nil {
+		return nil, err
+	}
 
-	return usr
+	if err := usr.SetPassword(password); err != nil {
+		return nil, err
+	}
+
+	userSeq++
+	usr.id = userSeq
+
+	return usr, nil
 }
 
 // ID returns the user id.
@@ -68,4 +79,40 @@ func (u *User) Email() string {
 // Password returns the user password.
 func (u *User) Password() string {
 	return u.password
+}
+
+// SetUsername returns the username.
+func (u *User) SetUsername(username string) error {
+	newUsername := radar.CleanString(username)
+	if len(newUsername) < 5 {
+		return errors.New("Username too short")
+	}
+
+	u.username = newUsername
+
+	return nil
+}
+
+// SetEmail returns the user email.
+func (u *User) SetEmail(e string) error {
+	cleanEmail := emailx.Normalize(e)
+	if err := emailx.Validate(cleanEmail); err != nil {
+		return errors.Wrap(err, "Error validating the email")
+	}
+
+	u.email = cleanEmail
+
+	return nil
+}
+
+// SetPassword returns the user password.
+func (u *User) SetPassword(p string) error {
+	newPassword := radar.CleanString(p)
+	if len(newPassword) < 5 {
+		return errors.New("Password too short")
+	}
+
+	u.password = newPassword
+
+	return nil
 }

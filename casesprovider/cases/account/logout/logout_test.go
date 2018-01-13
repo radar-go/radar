@@ -28,8 +28,8 @@ import (
 
 func TestLogout(t *testing.T) {
 	uc := New()
-	if uc.Name != "Logout" {
-		t.Errorf("Expected Logout, Got %s", uc.Name)
+	if uc.Name != "AccountLogout" {
+		t.Errorf("Expected AccountLogout, Got %s", uc.Name)
 	}
 
 	uc.SetDatastore(datastore.New())

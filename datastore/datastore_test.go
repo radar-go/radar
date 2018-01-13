@@ -72,13 +72,13 @@ func TestDatastoreUserRegistered(t *testing.T) {
 func TestDatastoreGetUser(t *testing.T) {
 	ds := New()
 
-	_, err := ds.GetUser("ritho")
+	_, err := ds.GetUserByUsername("ritho")
 	if fmt.Sprintf("%v", err) != "ritho: User doesn't exists" {
 		t.Errorf("Expected 'ritho: User doesn't exists', Got '%v'", err)
 	}
 
 	ds.users["ritho"] = &user.User{}
-	_, err = ds.GetUser("ritho")
+	_, err = ds.GetUserByUsername("ritho")
 	if err != nil {
 		t.Errorf("Unexpected error %+v", err)
 	}
@@ -132,7 +132,7 @@ func TestDatastoreLogout(t *testing.T) {
 func TestEndpoints(t *testing.T) {
 	ds := New()
 
-	numEndpoints := 3
+	numEndpoints := 4
 	endpoints := ds.Endpoints()
 	if len(endpoints) != numEndpoints {
 		t.Errorf("Expected %d, Got %d", numEndpoints, len(endpoints))
