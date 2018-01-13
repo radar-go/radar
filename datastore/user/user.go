@@ -85,7 +85,7 @@ func (u *User) Password() string {
 func (u *User) SetUsername(username string) error {
 	newUsername := radar.CleanString(username)
 	if len(newUsername) < 5 {
-		return errors.New("Username too short")
+		return ErrUsernameTooShort
 	}
 
 	u.username = newUsername
@@ -109,7 +109,7 @@ func (u *User) SetEmail(e string) error {
 func (u *User) SetPassword(p string) error {
 	newPassword := radar.CleanString(p)
 	if len(newPassword) < 5 {
-		return errors.New("Password too short")
+		return ErrPasswordTooShort
 	}
 
 	u.password = newPassword

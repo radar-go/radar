@@ -1,6 +1,6 @@
 package user
 
-/* Copyright (C) 2017 Radar team (see AUTHORS)
+/* Copyright (C) 2017-2018 Radar team (see AUTHORS)
 
    This file is part of radar.
 
@@ -19,7 +19,7 @@ package user
 */
 
 import (
-	"errors"
+	"github.com/pkg/errors"
 )
 
 // ErrUserExists raised when the user already exists in the datastore.
@@ -42,3 +42,9 @@ var ErrUserAlreadyLogin = errors.New("User already logged in")
 
 // ErrUserNotLoggedIn raised when the user session is not present.
 var ErrUserNotLoggedIn = errors.New("User not logged in")
+
+// ErrUsernameTooShort raised when the username is too short.
+var ErrUsernameTooShort = errors.New("Username too short")
+
+// ErrPasswordTooShort raised when the password is too short.
+var ErrPasswordTooShort = errors.New("Password too short")

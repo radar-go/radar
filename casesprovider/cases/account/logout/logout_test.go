@@ -33,31 +33,9 @@ func TestLogout(t *testing.T) {
 	}
 
 	uc.SetDatastore(datastore.New())
-	_, err := uc.Run()
-	if fmt.Sprintf("%v", err) != "Username too short" {
-		t.Errorf("Expected 'Username too short', Got '%v'", err)
-	}
-
-	uc.AddParam("username", "rit")
-	_, err = uc.Run()
-	if fmt.Sprintf("%v", err) != "Username too short" {
-		t.Errorf("Expected 'Username too short', Got '%v'", err)
-	}
-
 	uc.AddParam("username", "ritho")
-	_, err = uc.Run()
-	if fmt.Sprintf("%v", err) != "Token too short" {
-		t.Errorf("Expected 'Token too short', Got '%v'", err)
-	}
-
-	uc.AddParam("token", "0000")
-	_, err = uc.Run()
-	if fmt.Sprintf("%v", err) != "Token too short" {
-		t.Errorf("Expected 'Token too short', Got '%v'", err)
-	}
-
 	uc.AddParam("token", "00000000-0000-0000-0000-000000000000")
-	_, err = uc.Run()
+	_, err := uc.Run()
 	if fmt.Sprintf("%v", err) != "ritho: User doesn't exists" {
 		t.Errorf("Expected 'ritho: User doesn't exists', Got '%v'", err)
 	}
@@ -78,7 +56,7 @@ func TestLogout(t *testing.T) {
 		t.Errorf("Expected 'ritho: User not logged in', Got '%v'", err)
 	}
 
-	err = uc.Datastore.Login("00000000-0000-0000-0000-000000000000", "ritho")
+	err = uc.Datastore.AddSession("00000000-0000-0000-0000-000000000000", "ritho")
 	if err != nil {
 		t.Errorf("Unexpected error %+v", err)
 	}

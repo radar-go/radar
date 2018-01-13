@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/goware/emailx"
 	"github.com/pkg/errors"
 
 	"github.com/radar-go/radar/datastore/user"
@@ -44,18 +45,18 @@ func TestDatastoreUserRegistered(t *testing.T) {
 	ds := New()
 
 	_, err := ds.UserRegistration("ritho", "ritho", "", "ritho")
-	if errors.Cause(err) != user.ErrEmailEmpty {
+	if errors.Cause(err) != emailx.ErrInvalidFormat {
 		t.Errorf("Expected '%v', Got '%v'", user.ErrEmailEmpty, err)
 	}
 
 	_, err = ds.UserRegistration("", "ritho", "palvarez@ritho.net", "ritho")
-	if errors.Cause(err) != user.ErrUsernameEmpty {
-		t.Errorf("Expected '%v', Got '%v'", user.ErrUsernameEmpty, err)
+	if errors.Cause(err) != user.ErrUsernameTooShort {
+		t.Errorf("Expected '%v', Got '%v'", user.ErrUsernameTooShort, err)
 	}
 
 	_, err = ds.UserRegistration("ritho", "ritho", "palvarez@ritho.net", "")
-	if errors.Cause(err) != user.ErrPasswordEmpty {
-		t.Errorf("Expected '%v', Got '%v'", user.ErrPasswordEmpty, err)
+	if errors.Cause(err) != user.ErrPasswordTooShort {
+		t.Errorf("Expected '%v', Got '%v'", user.ErrPasswordTooShort, err)
 	}
 
 	_, err = ds.UserRegistration("ritho", "ritho", "palvarez@ritho.net", "ritho")
@@ -87,18 +88,18 @@ func TestDatastoreGetUser(t *testing.T) {
 func TestDatastoreLogin(t *testing.T) {
 	ds := New()
 
-	err := ds.Login("1234", "ritho")
+	err := ds.AddSession("00000000-0000-0000-0000-000000000000", "ritho")
 	if fmt.Sprintf("%v", err) != "ritho: User doesn't exists" {
 		t.Errorf("Expected 'ritho: User doesn't exists', Got '%v'", err)
 	}
 
 	ds.users["ritho"] = &user.User{}
-	err = ds.Login("1234", "ritho")
+	err = ds.AddSession("00000000-0000-0000-0000-000000000000", "ritho")
 	if err != nil {
 		t.Errorf("Unexpected error %+v", err)
 	}
 
-	err = ds.Login("1234", "ritho")
+	err = ds.AddSession("00000000-0000-0000-0000-000000000000", "ritho")
 	if fmt.Sprintf("%v", err) != "ritho: User already logged in" {
 		t.Errorf("Expected 'ritho: User already logged in', Got '%v'", err)
 	}
@@ -108,22 +109,22 @@ func TestDatastoreLogout(t *testing.T) {
 	ds := New()
 
 	ds.users["ritho"] = &user.User{}
-	err := ds.Login("1234", "ritho")
+	err := ds.AddSession("00000000-0000-0000-0000-000000000000", "ritho")
 	if err != nil {
 		t.Errorf("Unexpected error %+v", err)
 	}
 
-	err = ds.Logout("1234", "ritho")
+	err = ds.DeleteSession("00000000-0000-0000-0000-000000000000", "ritho")
 	if err != nil {
 		t.Errorf("Unexpected error '%v'", err)
 	}
 
-	err = ds.Logout("1234", "ritho")
+	err = ds.DeleteSession("00000000-0000-0000-0000-000000000000", "ritho")
 	if fmt.Sprintf("%v", err) != "ritho: User not logged in" {
 		t.Errorf("Expected 'ritho: User not logged in', Got '%v'", err)
 	}
 
-	err = ds.Logout("1234", "rit")
+	err = ds.DeleteSession("00000000-0000-0000-0000-000000000000", "rit")
 	if fmt.Sprintf("%v", err) != "rit: User doesn't exists" {
 		t.Errorf("Expected 'rit: User doesn't exists', Got '%v'", err)
 	}

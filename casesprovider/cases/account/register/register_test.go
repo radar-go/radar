@@ -89,35 +89,35 @@ func TestRegisterError(t *testing.T) {
 		t.Errorf("Expected Use Case name to be AccountRegister, got %s", uc.Name)
 	}
 
+	uc.Datastore = datastore.New()
+	_ = uc.AddParam("name", "Ritho")
 	_, err := uc.Run()
-	if errCause.Cause(err) != emailx.ErrInvalidFormat {
-		t.Errorf("Unexpected error running the register use case: %+v", err)
+	if fmt.Sprintf("%v", err) != "Username too short" {
+		t.Errorf("Unexpected error running the register use case: %v", err)
 	}
 
-	uc.Datastore = datastore.New()
+	_ = uc.AddParam("username", "Ritho")
+	_, err = uc.Run()
+	if errCause.Cause(err) != emailx.ErrInvalidFormat {
+		t.Errorf("Unexpected error running the register use case: %v", err)
+	}
+
 	_ = uc.AddParam("email", "Ritho")
 	_, err = uc.Run()
 	if errCause.Cause(err) != emailx.ErrInvalidFormat {
-		t.Errorf("Unexpected error running the register use case: %+v", err)
+		t.Errorf("Unexpected error running the register use case: %v", err)
 	}
 
 	_ = uc.AddParam("email", "Ritho@invalid.es")
 	_, err = uc.Run()
 	if errCause.Cause(err) != emailx.ErrUnresolvableHost {
-		t.Errorf("Unexpected error running the register use case: %+v", err)
+		t.Errorf("Unexpected error running the register use case: %v", err)
 	}
 
 	_ = uc.AddParam("email", "palvarez@ritho.net")
-	_ = uc.AddParam("name", "Ritho")
-	_, err = uc.Run()
-	if fmt.Sprintf("%v", err) != "Username too short" {
-		t.Errorf("Unexpected error running the register use case: %+v", err)
-	}
-
-	_ = uc.AddParam("username", "Ritho")
 	_, err = uc.Run()
 	if fmt.Sprintf("%v", err) != "Password too short" {
-		t.Errorf("Unexpected error running the register use case: %+v", err)
+		t.Errorf("Unexpected error running the register use case: %v", err)
 	}
 
 	_ = uc.AddParam("password", "Ritho")

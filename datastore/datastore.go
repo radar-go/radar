@@ -106,7 +106,7 @@ func (d *Datastore) AddSession(session, username string) error {
 	var err error
 
 	cleanSession := radar.CleanString(session)
-	if len(cleanSession) != len(uuid.Nil) {
+	if len(cleanSession) != len(uuid.Nil.String()) {
 		return errors.New("Session id too short")
 	}
 
