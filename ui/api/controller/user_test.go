@@ -129,7 +129,7 @@ func TestPostHandler(t *testing.T) {
 		{
 			"RegisterUnresolvedHostError",
 			"/account/register",
-			`{"name": "ritho", "email": "palvarez@invalid.es", "password": "ritho"}`,
+			`{"username": "ritho", "name": "ritho", "email": "unknown@invalid.fake", "password": "ritho"}`,
 			400,
 			`Error validating the email: unresolvable host`,
 		},
@@ -159,7 +159,7 @@ func TestPostHandler(t *testing.T) {
 			"/account/register",
 			`{"username": "ritho", "name": "ritho", "email": "palvarez@ritho.net", "password": "ritho"}`,
 			400,
-			`palvarez@ritho.net: User already exists`,
+			`User ritho already registered`,
 		},
 		{
 			"LoginUnknownParam",
@@ -169,18 +169,11 @@ func TestPostHandler(t *testing.T) {
 			`Error adding the param passwerd, key doesn't exists: Unknown parameter for the use case`,
 		},
 		{
-			"LoginUsernameShort",
+			"LoginUserNotExists",
 			"/account/login",
 			`{"login": "rit", "password": "ritho"}`,
 			400,
-			`Username too short`,
-		},
-		{
-			"LoginPasswordShort",
-			"/account/login",
-			`{"login": "ritho", "password": "rit"}`,
-			400,
-			`Password too short`,
+			`User doesn't exists`,
 		},
 		{
 			"LoginWrongPassword",
@@ -202,20 +195,6 @@ func TestPostHandler(t *testing.T) {
 			`{"login": "ritho", "password": "ritho"}`,
 			400,
 			`ritho: User already logged in`,
-		},
-		{
-			"LogoutError",
-			"/account/logout",
-			`{"username": "ritho"}`,
-			400,
-			`Token too short`,
-		},
-		{
-			"LogoutError",
-			"/account/logout",
-			`{"username": "ritho", "token": "00000"}`,
-			400,
-			`Token too short`,
 		},
 		{
 			"LogoutError",

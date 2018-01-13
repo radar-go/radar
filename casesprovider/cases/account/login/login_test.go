@@ -33,31 +33,9 @@ func TestLogin(t *testing.T) {
 	}
 
 	uc.SetDatastore(datastore.New())
-	_, err := uc.Run()
-	if fmt.Sprintf("%v", err) != "Username too short" {
-		t.Errorf("Expected 'Username too short', Got '%v'", err)
-	}
-
-	uc.AddParam("login", "rit")
-	_, err = uc.Run()
-	if fmt.Sprintf("%v", err) != "Username too short" {
-		t.Errorf("Expected 'Username too short', Got '%v'", err)
-	}
-
 	uc.AddParam("login", "ritho")
-	_, err = uc.Run()
-	if fmt.Sprintf("%v", err) != "Password too short" {
-		t.Errorf("Expected 'Password too short', Got '%v'", err)
-	}
-
-	uc.AddParam("password", "1234")
-	_, err = uc.Run()
-	if fmt.Sprintf("%v", err) != "Password too short" {
-		t.Errorf("Expected 'Password too short', Got '%v'", err)
-	}
-
 	uc.AddParam("password", "12345")
-	_, err = uc.Run()
+	_, err := uc.Run()
 	if fmt.Sprintf("%v", err) != "ritho: User doesn't exists" {
 		t.Errorf("Expected 'ritho: User doesn't exists', Got '%v'", err)
 	}

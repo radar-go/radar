@@ -20,10 +20,16 @@ package user
 
 import (
 	"testing"
+
+	"github.com/goware/emailx"
+	"github.com/pkg/errors"
 )
 
 func TestUser(t *testing.T) {
-	usr := New("username", "name", "email", "password")
+	usr, err := New("username", "name", "email@ritho.net", "password")
+	if err != nil {
+		t.Errorf("Unexpected error: %s", err)
+	}
 
 	if usr.ID() != 1 {
 		t.Errorf("Expected user id 1, Got %d", usr.ID())
@@ -37,11 +43,33 @@ func TestUser(t *testing.T) {
 		t.Errorf("Expected name, got %s", usr.Name())
 	}
 
-	if usr.Email() != "email" {
-		t.Errorf("Expected email, Got %s", usr.email)
+	if usr.Email() != "email@ritho.net" {
+		t.Errorf("Expected 'email@ritho.net', Got %s", usr.email)
 	}
 
 	if usr.Password() != "password" {
 		t.Errorf("Expected password, Got %s", usr.password)
+	}
+}
+
+func TestUserFail(t *testing.T) {
+	_, err := New("use", "name", "email@ritho.net", "password")
+	if err != ErrUsernameTooShort {
+		t.Errorf("Unexpected error: %s", err)
+	}
+
+	_, err = New("username", "name", "email@ritho.net", "pass")
+	if err != ErrPasswordTooShort {
+		t.Errorf("Unexpected error: %s", err)
+	}
+
+	_, err = New("username", "name", "email", "password")
+	if errors.Cause(err) != emailx.ErrInvalidFormat {
+		t.Errorf("Unexpected error: %s", err)
+	}
+
+	_, err = New("username", "name", "email@unknown.fake", "password")
+	if errors.Cause(err) != emailx.ErrUnresolvableHost {
+		t.Errorf("Unexpected error: %s", err)
 	}
 }
