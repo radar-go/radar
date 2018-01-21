@@ -133,7 +133,7 @@ func TestDatastoreLogout(t *testing.T) {
 func TestEndpoints(t *testing.T) {
 	ds := New()
 
-	numEndpoints := 4
+	numEndpoints := 5
 	endpoints := ds.Endpoints()
 	if len(endpoints) != numEndpoints {
 		t.Errorf("Expected %d, Got %d", numEndpoints, len(endpoints))

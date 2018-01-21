@@ -1,5 +1,5 @@
-// Package cases register all the use cases to the case provider.
-package cases
+// Package account register all the account use cases to the case provider.
+package account
 
 /* Copyright (C) 2018 Radar team (see AUTHORS)
 
@@ -20,8 +20,18 @@ package cases
 */
 
 import (
-	_ "github.com/radar-go/radar/casesprovider/cases/account"
+	"github.com/radar-go/radar/casesprovider"
+	"github.com/radar-go/radar/casesprovider/cases/account/edit"
+	"github.com/radar-go/radar/casesprovider/cases/account/login"
+	"github.com/radar-go/radar/casesprovider/cases/account/logout"
+	"github.com/radar-go/radar/casesprovider/cases/account/register"
+	"github.com/radar-go/radar/casesprovider/cases/account/remove"
 )
 
 func init() {
+	casesprovider.Register(edit.New())
+	casesprovider.Register(login.New())
+	casesprovider.Register(logout.New())
+	casesprovider.Register(register.New())
+	casesprovider.Register(remove.New())
 }
