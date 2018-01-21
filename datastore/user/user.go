@@ -116,3 +116,10 @@ func (u *User) SetPassword(p string) error {
 
 	return nil
 }
+
+// Equals check that two users objects are equals.
+func (u *User) Equals(compare *User) bool {
+	return u.Member.Equals(compare.Member) && u.ID() == compare.ID() &&
+		u.Email() == compare.Email() && u.Username() == compare.Username() &&
+		u.Password() == compare.Password()
+}
