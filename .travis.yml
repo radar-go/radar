@@ -16,3 +16,4 @@ install:
 script:
   - make update-vendors
   - make tests
+  - make tests | go-junit-report > junit-report.xml
