@@ -139,7 +139,7 @@ tests: build-dirs
 	    $(BUILD_IMAGE)                                                     \
 	    /bin/sh -c "                                                       \
 	        ./build/test.sh $(SRC_DIRS)                                    \
-	    " | tee /dev/tty
+	    "
 
 build-dirs:
 	@mkdir -p bin/$(ARCH)
