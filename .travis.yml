@@ -11,7 +11,9 @@ before_install:
 - export GOROOT=$(go env GOROOT)
 
 install:
+- go get github.com/golang/dep/cmd/dep
 - go get -u github.com/jstemmer/go-junit-report
+- sudo start-docker-daemon
 
 script:
 - make update-vendors
