@@ -61,7 +61,7 @@ func (c *Controller) register() {
 	ds := datastore.New()
 	endpoints := ds.Endpoints()
 	for key := range endpoints {
-		c.Router.POST(key, c.postHandler)
+		c.Router.POST(key, c.apiHandler)
 	}
 }
 
