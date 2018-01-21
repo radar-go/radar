@@ -25,6 +25,7 @@ import (
 
 	errWrap "github.com/pkg/errors"
 
+	"github.com/radar-go/radar"
 	"github.com/radar-go/radar/casesprovider"
 	"github.com/radar-go/radar/casesprovider/errors"
 	"github.com/radar-go/radar/datastore"
@@ -89,7 +90,12 @@ func (uc *UseCase) AddParam(key string, value interface{}) error {
 			fmt.Sprintf("Error adding the param %s, key doesn't exists", key))
 	}
 
-	if reflect.TypeOf(uc.Params[key]) != reflect.TypeOf(value) {
+	/* Check if the param is from the same time or if they are numbers that we
+	can convert. */
+	paramType := reflect.TypeOf(uc.Params[key])
+	valueType := reflect.TypeOf(value)
+	if paramType != valueType && !(radar.IsNumber(uc.Params[key]) &&
+		radar.IsNumber(value)) {
 		return errWrap.Wrap(errors.ErrParamType,
 			fmt.Sprintf("Error adding the param %s", key))
 	}
@@ -99,7 +105,11 @@ func (uc *UseCase) AddParam(key string, value interface{}) error {
 			fmt.Sprintf("Error adding the param %s", key))
 	}
 
-	uc.Params[key] = value
+	if paramType == valueType {
+		uc.Params[key] = value
+	} else {
+		uc.Params[key] = reflect.ValueOf(value).Convert(paramType).Interface()
+	}
 
 	return nil
 }
