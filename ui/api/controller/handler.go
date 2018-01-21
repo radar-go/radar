@@ -40,11 +40,27 @@ func (c *Controller) checkRequestHeaders(ctx *fasthttp.RequestCtx) error {
 	return nil
 }
 
+func (c *Controller) apiHandler(ctx *fasthttp.RequestCtx) {
+	logPath(ctx.Path())
+
+	if bytes.Equal(ctx.Method(), []byte("GET")) {
+		c.getHandler(ctx)
+	} else if bytes.Equal(ctx.Method(), []byte("POST")) ||
+		bytes.Equal(ctx.Method(), []byte("PUT")) {
+		c.postHandler(ctx)
+	}
+}
+
+func (c *Controller) getHandler(ctx *fasthttp.RequestCtx) {
+	ctx.SetContentType("application/json; charset=utf-8")
+	ctx.SetStatusCode(fasthttp.StatusOK)
+	ctx.SetBodyString("{}")
+}
+
 func (c *Controller) postHandler(ctx *fasthttp.RequestCtx) {
 	var err error
 	var uc casesprovider.UseCase
 
-	logPath(ctx.Path())
 	ctx.SetContentType("application/json; charset=utf-8")
 
 	err = c.checkRequestHeaders(ctx)
