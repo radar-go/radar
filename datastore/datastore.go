@@ -49,6 +49,7 @@ func (d *Datastore) Endpoints() map[string]string {
 		"/account/login":    "AccountLogin",
 		"/account/logout":   "AccountLogout",
 		"/account/register": "AccountRegister",
+		"/account/remove":   "AccountRemove",
 	}
 }
 
@@ -182,4 +183,29 @@ func (d *Datastore) UpdateAccountData(acc *account.Account, session string) erro
 	}
 
 	return err
+}
+
+// RemoveAccount removes an account from the datastore.
+func (d *Datastore) RemoveAccount(acc *account.Account) error {
+	for sessionID, user := range d.sessions {
+		if user.ID() == acc.ID() {
+			delete(d.sessions, sessionID)
+			break
+		}
+	}
+
+	registered := false
+	for key, userReg := range d.accounts {
+		if acc.ID() == userReg.ID() {
+			delete(d.accounts, key)
+			registered = true
+			break
+		}
+	}
+
+	if !registered {
+		return errors.Wrap(account.ErrAccountNotExists, acc.Username())
+	}
+
+	return nil
 }
