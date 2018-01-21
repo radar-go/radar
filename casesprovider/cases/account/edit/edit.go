@@ -73,11 +73,11 @@ func (uc *UseCase) Run() (casesprovider.ResultPrinter, error) {
 	}
 
 	if user.ID() != uc.Params["id"].(int) {
-		return res, errors.New("The user id doesn't match with the user logged in.")
+		return res, errors.New("The user id doesn't match with the user logged in")
 	}
 
 	user.SetName(uc.Params["name"].(string))
-	err = user.SetEmail(uc.Params["username"].(string))
+	err = user.SetEmail(uc.Params["email"].(string))
 	if err != nil {
 		return res, err
 	}

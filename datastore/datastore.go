@@ -171,8 +171,8 @@ func (d *Datastore) UpdateUserData(usr *user.User, session string) error {
 	registered := false
 	for key, userReg := range d.users {
 		if usr.ID() == userReg.ID() {
-			delete(d.sessions, key)
-			d.sessions[usr.Username()] = usr
+			delete(d.users, key)
+			d.users[usr.Username()] = usr
 			registered = true
 			break
 		}
