@@ -139,7 +139,7 @@ tests: build-dirs
 	    $(BUILD_IMAGE)                                                     \
 	    /bin/sh -c "                                                       \
 	        ./build/test.sh $(SRC_DIRS)                                    \
-	    " | tee /dev/tty | go-junit-report > junit-report.xml
+	    "
 
 build-dirs:
 	@mkdir -p bin/$(ARCH)
