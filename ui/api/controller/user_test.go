@@ -107,7 +107,70 @@ func TestLoginLogout(t *testing.T) {
 	}
 
 	if !bytes.Contains(ctx.Response.Body(), []byte("User logout successfully")) {
-		t.Errorf(`Expected , Got %s`, ctx.Response.Body())
+		t.Errorf(`Expected 'User logout successfully', Got %s`, ctx.Response.Body())
+	}
+}
+
+func TestEditUser(t *testing.T) {
+	var body map[string]interface{}
+
+	ctx := &fasthttp.RequestCtx{}
+	ctx.Request.Header.Set("Content-Type", "application/json")
+	ctx.Request.Header.SetRequestURI("/account/login")
+	ctx.Request.SetBody([]byte(`{"login": "i02sopop", "password": "ritho"}`))
+	c.postHandler(ctx)
+	if ctx.Response.StatusCode() != 200 {
+		t.Errorf("Expected 200, Got %d", ctx.Response.StatusCode())
+	}
+
+	err := json.Unmarshal(ctx.Response.Body(), &body)
+	if err != nil {
+		t.Errorf("Unexpected error %v", err)
+	}
+
+	if _, ok := body["result"]; !ok || body["result"] != "User login successfully" {
+		t.Errorf(`Expected "result":"User login successfully", Got %s`,
+			ctx.Response.Body())
+	}
+
+	token, ok := body["token"]
+	if !ok {
+		t.Error("Token not found")
+	}
+
+	id, ok := body["id"]
+	if !ok {
+		t.Error("Expecting the id for the user registered.")
+	}
+
+	editBody := fmt.Sprintf(`{"id":%.0f, "name": "Pablo", "email": "i02sopop@gmail.com", "username": "i02sopop", "password": "ritho", "token": "%s"}`, id, token)
+
+	ctx = &fasthttp.RequestCtx{}
+	ctx.Request.Header.Set("Content-Type", "application/json")
+	ctx.Request.Header.SetRequestURI("/account/edit")
+	ctx.Request.SetBody([]byte(editBody))
+	c.postHandler(ctx)
+	if ctx.Response.StatusCode() != 200 {
+		t.Errorf("Expected 200, Got %d", ctx.Response.StatusCode())
+	}
+
+	if !bytes.Contains(ctx.Response.Body(), []byte("User data updated successfully")) {
+		t.Errorf(`Expected 'User data updated successfully', Got %s`, ctx.Response.Body())
+	}
+
+	logoutBody := fmt.Sprintf(`{"username": "i02sopop", "token": "%s"}`, token)
+
+	ctx = &fasthttp.RequestCtx{}
+	ctx.Request.Header.Set("Content-Type", "application/json")
+	ctx.Request.Header.SetRequestURI("/account/logout")
+	ctx.Request.SetBody([]byte(logoutBody))
+	c.postHandler(ctx)
+	if ctx.Response.StatusCode() != 200 {
+		t.Errorf("Expected 200, Got %d", ctx.Response.StatusCode())
+	}
+
+	if !bytes.Contains(ctx.Response.Body(), []byte("User logout successfully")) {
+		t.Errorf(`Expected 'User logout successfully', Got %s`, ctx.Response.Body())
 	}
 }
 
@@ -202,6 +265,13 @@ func TestPostHandler(t *testing.T) {
 			`{"username": "ritho", "token": "00000000-0000-0000-0000-000000000000"}`,
 			400,
 			`ritho: User not logged in`,
+		},
+		{
+			"EditError",
+			"/account/edit",
+			`{"id":1, "name":"ritho", "email": "i02sopop@gmail.com", "username": "ritho", "password": "ritho", "token": "00000000-0000-0000-0000-000000000000"}`,
+			400,
+			`User not logged in`,
 		},
 	}
 

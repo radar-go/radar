@@ -74,8 +74,8 @@ func (c *Controller) postHandler(ctx *fasthttp.RequestCtx) {
 		badRequest(ctx, fmt.Sprintf("Unknown path: %s.", ctx.Path()))
 		return
 	}
-	uc, err = casesprovider.GetUseCase(caseName)
 
+	uc, err = casesprovider.GetUseCase(caseName)
 	if err != nil {
 		internalServerError(ctx, fmt.Sprintf("Error obtaining the use case %s: %s.",
 			uc.GetName(), err))
