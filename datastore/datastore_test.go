@@ -25,15 +25,15 @@ import (
 	"github.com/goware/emailx"
 	"github.com/pkg/errors"
 
-	"github.com/radar-go/radar/datastore/user"
+	"github.com/radar-go/radar/datastore/account"
 )
 
-func TestDatastoreRegisterUser(t *testing.T) {
+func TestDatastoreRegisterAccountSuccess(t *testing.T) {
 	ds := New()
 
-	id, err := ds.UserRegistration("ritho", "ritho", "palvarez@ritho.net", "ritho")
+	id, err := ds.AccountRegistration("ritho", "ritho", "palvarez@ritho.net", "ritho")
 	if err != nil {
-		t.Errorf("Unexpected error registering an user: %+v", err)
+		t.Errorf("Unexpected error registering an account: %+v", err)
 	}
 
 	if id != 1 {
@@ -41,45 +41,45 @@ func TestDatastoreRegisterUser(t *testing.T) {
 	}
 }
 
-func TestDatastoreUserRegistered(t *testing.T) {
+func TestDatastoreAccountRegisterError(t *testing.T) {
 	ds := New()
 
-	_, err := ds.UserRegistration("ritho", "ritho", "", "ritho")
+	_, err := ds.AccountRegistration("ritho", "ritho", "", "ritho")
 	if errors.Cause(err) != emailx.ErrInvalidFormat {
-		t.Errorf("Expected '%v', Got '%v'", user.ErrEmailEmpty, err)
+		t.Errorf("Expected '%v', Got '%v'", account.ErrEmailEmpty, err)
 	}
 
-	_, err = ds.UserRegistration("", "ritho", "palvarez@ritho.net", "ritho")
-	if errors.Cause(err) != user.ErrUsernameTooShort {
-		t.Errorf("Expected '%v', Got '%v'", user.ErrUsernameTooShort, err)
+	_, err = ds.AccountRegistration("", "ritho", "palvarez@ritho.net", "ritho")
+	if errors.Cause(err) != account.ErrUsernameTooShort {
+		t.Errorf("Expected '%v', Got '%v'", account.ErrUsernameTooShort, err)
 	}
 
-	_, err = ds.UserRegistration("ritho", "ritho", "palvarez@ritho.net", "")
-	if errors.Cause(err) != user.ErrPasswordTooShort {
-		t.Errorf("Expected '%v', Got '%v'", user.ErrPasswordTooShort, err)
+	_, err = ds.AccountRegistration("ritho", "ritho", "palvarez@ritho.net", "")
+	if errors.Cause(err) != account.ErrPasswordTooShort {
+		t.Errorf("Expected '%v', Got '%v'", account.ErrPasswordTooShort, err)
 	}
 
-	_, err = ds.UserRegistration("ritho", "ritho", "palvarez@ritho.net", "ritho")
+	_, err = ds.AccountRegistration("ritho", "ritho", "palvarez@ritho.net", "ritho")
 	if err != nil {
-		t.Errorf("Unexpected error registering an user: %+v", err)
+		t.Errorf("Unexpected error registering an account: %+v", err)
 	}
 
-	_, err = ds.UserRegistration("ritho", "ritho", "palvarez@ritho.net", "ritho")
-	if errors.Cause(err) != user.ErrUserExists {
-		t.Errorf("Expected error %+v, Got %+v", user.ErrUserExists, err)
+	_, err = ds.AccountRegistration("ritho", "ritho", "palvarez@ritho.net", "ritho")
+	if errors.Cause(err) != account.ErrAccountExists {
+		t.Errorf("Expected error %+v, Got %+v", account.ErrAccountExists, err)
 	}
 }
 
-func TestDatastoreGetUser(t *testing.T) {
+func TestDatastoreGetAccount(t *testing.T) {
 	ds := New()
 
-	_, err := ds.GetUserByUsername("ritho")
-	if fmt.Sprintf("%v", err) != "ritho: User doesn't exists" {
-		t.Errorf("Expected 'ritho: User doesn't exists', Got '%v'", err)
+	_, err := ds.GetAccountByUsername("ritho")
+	if fmt.Sprintf("%v", err) != "ritho: Account doesn't exists" {
+		t.Errorf("Expected 'ritho: Account doesn't exists', Got '%v'", err)
 	}
 
-	ds.users["ritho"] = &user.User{}
-	_, err = ds.GetUserByUsername("ritho")
+	ds.accounts["ritho"] = &account.Account{}
+	_, err = ds.GetAccountByUsername("ritho")
 	if err != nil {
 		t.Errorf("Unexpected error %+v", err)
 	}
@@ -89,11 +89,11 @@ func TestDatastoreLogin(t *testing.T) {
 	ds := New()
 
 	err := ds.AddSession("00000000-0000-0000-0000-000000000000", "ritho")
-	if fmt.Sprintf("%v", err) != "ritho: User doesn't exists" {
-		t.Errorf("Expected 'ritho: User doesn't exists', Got '%v'", err)
+	if fmt.Sprintf("%v", err) != "ritho: Account doesn't exists" {
+		t.Errorf("Expected 'ritho: Account doesn't exists', Got '%v'", err)
 	}
 
-	ds.users["ritho"] = &user.User{}
+	ds.accounts["ritho"] = &account.Account{}
 	err = ds.AddSession("00000000-0000-0000-0000-000000000000", "ritho")
 	if err != nil {
 		t.Errorf("Unexpected error %+v", err)
@@ -108,7 +108,7 @@ func TestDatastoreLogin(t *testing.T) {
 func TestDatastoreLogout(t *testing.T) {
 	ds := New()
 
-	ds.users["ritho"] = &user.User{}
+	ds.accounts["ritho"] = &account.Account{}
 	err := ds.AddSession("00000000-0000-0000-0000-000000000000", "ritho")
 	if err != nil {
 		t.Errorf("Unexpected error %+v", err)
@@ -125,8 +125,8 @@ func TestDatastoreLogout(t *testing.T) {
 	}
 
 	err = ds.DeleteSession("00000000-0000-0000-0000-000000000000", "rit")
-	if fmt.Sprintf("%v", err) != "rit: User doesn't exists" {
-		t.Errorf("Expected 'rit: User doesn't exists', Got '%v'", err)
+	if fmt.Sprintf("%v", err) != "rit: Account doesn't exists" {
+		t.Errorf("Expected 'rit: Account doesn't exists', Got '%v'", err)
 	}
 }
 

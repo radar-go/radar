@@ -67,8 +67,8 @@ func TestRegister(t *testing.T) {
 		t.Errorf("Unexpected error obtaining the result: %+v", err)
 	}
 
-	if resStr != `{"id":1,"result":"User registered successfully"}` {
-		t.Errorf(`Expected {"id":1,"result":"User registered successfully"}, Got %s`,
+	if resStr != `{"id":1,"result":"Account registered successfully"}` {
+		t.Errorf(`Expected {"id":1,"result":"Account registered successfully"}, Got %s`,
 			resStr)
 	}
 
@@ -77,8 +77,8 @@ func TestRegister(t *testing.T) {
 		t.Errorf("Unexpected error obtaining the result: %+v", err)
 	}
 
-	if !bytes.Equal(resB, []byte(`{"id":1,"result":"User registered successfully"}`)) {
-		t.Errorf(`Expected {"id":1,"result":"User registered successfully"}, Got %s`,
+	if !bytes.Equal(resB, []byte(`{"id":1,"result":"Account registered successfully"}`)) {
+		t.Errorf(`Expected {"id":1,"result":"Account registered successfully"}, Got %s`,
 			resStr)
 	}
 }

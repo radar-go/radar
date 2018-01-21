@@ -29,7 +29,7 @@ import (
 
 var c *Controller = New()
 
-func TestUserControllerFormatError(t *testing.T) {
+func TestAccountControllerFormatError(t *testing.T) {
 	ctx := &fasthttp.RequestCtx{}
 	ctx.Request.Header.SetRequestURI("/account/register")
 
@@ -44,7 +44,7 @@ func TestUserControllerFormatError(t *testing.T) {
 	}
 }
 
-func TestUserControllerBodyError(t *testing.T) {
+func TestAccountControllerBodyError(t *testing.T) {
 	ctx := &fasthttp.RequestCtx{}
 	ctx.Request.Header.Set("Content-Type", "application/json")
 	ctx.Request.Header.SetRequestURI("/account/register")
@@ -111,7 +111,7 @@ func TestLoginLogout(t *testing.T) {
 	}
 }
 
-func TestEditUser(t *testing.T) {
+func TestEditAccount(t *testing.T) {
 	var body map[string]interface{}
 
 	ctx := &fasthttp.RequestCtx{}
@@ -140,7 +140,7 @@ func TestEditUser(t *testing.T) {
 
 	id, ok := body["id"]
 	if !ok {
-		t.Error("Expecting the id for the user registered.")
+		t.Error("Expecting the id for the account registered.")
 	}
 
 	editBody := fmt.Sprintf(`{"id":%.0f, "name": "Pablo", "email": "i02sopop@gmail.com", "username": "i02sopop", "password": "ritho", "token": "%s"}`, id, token)
@@ -154,8 +154,8 @@ func TestEditUser(t *testing.T) {
 		t.Errorf("Expected 200, Got %d", ctx.Response.StatusCode())
 	}
 
-	if !bytes.Contains(ctx.Response.Body(), []byte("User data updated successfully")) {
-		t.Errorf(`Expected 'User data updated successfully', Got %s`, ctx.Response.Body())
+	if !bytes.Contains(ctx.Response.Body(), []byte("Account data updated successfully")) {
+		t.Errorf(`Expected 'Account data updated successfully', Got %s`, ctx.Response.Body())
 	}
 
 	logoutBody := fmt.Sprintf(`{"username": "i02sopop", "token": "%s"}`, token)
@@ -215,10 +215,10 @@ func TestPostHandler(t *testing.T) {
 			"/account/register",
 			`{"username": "ritho", "name": "ritho", "email": "palvarez@ritho.net", "password": "ritho"}`,
 			200,
-			`"result":"User registered successfully"`,
+			`"result":"Account registered successfully"`,
 		},
 		{
-			"RegisterDuplicateUser",
+			"RegisterDuplicateAccount",
 			"/account/register",
 			`{"username": "ritho", "name": "ritho", "email": "palvarez@ritho.net", "password": "ritho"}`,
 			400,
@@ -232,11 +232,11 @@ func TestPostHandler(t *testing.T) {
 			`Error adding the param passwerd, key doesn't exists: Unknown parameter for the use case`,
 		},
 		{
-			"LoginUserNotExists",
+			"LoginAccountNotExists",
 			"/account/login",
 			`{"login": "rit", "password": "ritho"}`,
 			400,
-			`User doesn't exists`,
+			`Account doesn't exists`,
 		},
 		{
 			"LoginWrongPassword",

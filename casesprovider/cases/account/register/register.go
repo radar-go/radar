@@ -1,4 +1,4 @@
-// Package register implements the user registration use case.
+// Package register implements the account registration use case.
 package register
 
 /* Copyright (C) 2017-2018 Radar team (see AUTHORS)
@@ -26,12 +26,12 @@ import (
 	"github.com/radar-go/radar/casesprovider/cases/usecase"
 )
 
-// UseCase for the user registration.
+// UseCase for the account registration.
 type UseCase struct {
 	usecase.UseCase
 }
 
-// Result stores the result of the user registration.
+// Result stores the result of the account registration.
 type Result struct {
 	usecase.Result
 }
@@ -58,17 +58,17 @@ func (uc *UseCase) New() casesprovider.UseCase {
 	return New()
 }
 
-// Run tries to register a new user in the system.
+// Run tries to register a new account into the system.
 func (uc *UseCase) Run() (casesprovider.ResultPrinter, error) {
 	res := usecase.NewResult()
 
 	username := uc.Params["username"].(string)
-	_, err := uc.Datastore.GetUserByUsername(username)
+	_, err := uc.Datastore.GetAccountByUsername(username)
 	if err == nil {
 		return res, fmt.Errorf("User %s already registered", username)
 	}
 
-	userID, err := uc.Datastore.UserRegistration(
+	userID, err := uc.Datastore.AccountRegistration(
 		username,
 		uc.Params["name"].(string),
 		uc.Params["email"].(string),
@@ -76,10 +76,10 @@ func (uc *UseCase) Run() (casesprovider.ResultPrinter, error) {
 	)
 
 	if err != nil {
-		res.Res["result"] = "Error registering the user"
+		res.Res["result"] = "Error registering the account"
 		res.Res["error"] = fmt.Sprintf("%s", err)
 	} else {
-		res.Res["result"] = "User registered successfully"
+		res.Res["result"] = "Account registered successfully"
 		res.Res["id"] = userID
 	}
 

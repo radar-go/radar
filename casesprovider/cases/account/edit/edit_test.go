@@ -27,7 +27,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/radar-go/radar/datastore"
-	"github.com/radar-go/radar/datastore/user"
+	"github.com/radar-go/radar/datastore/account"
 )
 
 func TestEditCaseCreation(t *testing.T) {
@@ -52,16 +52,16 @@ func initializeTests(t *testing.T, session string) (*UseCase, int) {
 	uc := New()
 	uc.SetDatastore(datastore.New())
 
-	/* User data. */
+	/* Account data. */
 	user := "ritho"
 	name := "ritho"
 	email := "palvarez@ritho.net"
 	password := "121212"
 
-	/* Register the user. */
-	id, err := uc.Datastore.UserRegistration(user, name, email, password)
+	/* Register the account. */
+	id, err := uc.Datastore.AccountRegistration(user, name, email, password)
 	if err != nil {
-		t.Errorf("Unexpected error registering the user: %s", err)
+		t.Errorf("Unexpected error registering the account: %s", err)
 	}
 
 	/* Login the user. */
@@ -131,7 +131,7 @@ func TestEdit(t *testing.T) {
 			"senoritho",
 			"i02sopop@gmail.com",
 			"212121",
-			user.ErrUsernameTooShort,
+			account.ErrUsernameTooShort,
 			"{}",
 			false,
 		},
@@ -141,13 +141,13 @@ func TestEdit(t *testing.T) {
 			"senoritho",
 			"i02sopop@gmail.com",
 			"121",
-			user.ErrPasswordTooShort,
+			account.ErrPasswordTooShort,
 			"{}",
 			false,
 		},
 	}
 
-	/* Add the new user data to the edit use case as params. */
+	/* Add the new account data to the edit use case as params. */
 	err := uc.AddParam("idd", id)
 	if !strings.Contains(fmt.Sprintf("%s", err), "Unknown parameter for the use case") {
 		t.Errorf("Unexpected error adding the 'idd' param: %s", err)
@@ -162,7 +162,7 @@ func TestEdit(t *testing.T) {
 			addParam(t, uc, "email", tc.email)
 			addParam(t, uc, "password", tc.password)
 
-			/* Edit the user. */
+			/* Edit the account. */
 			res, err := uc.Run()
 			if errors.Cause(err) != tc.err {
 				t.Errorf("Unexpected error: %s", err)
@@ -179,40 +179,40 @@ func TestEdit(t *testing.T) {
 			}
 
 			if tc.compare {
-				/* Get the user from the session. */
-				userData, err := uc.Datastore.GetUserBySession(session)
+				/* Get the account from the session. */
+				accountData, err := uc.Datastore.GetAccountBySession(session)
 				if err != nil {
 					t.Errorf("User %s doesn't have session in the datastore", tc.username)
 				}
 
-				/* Check if the user fields have been properly modified. */
-				if userData.Name() != tc.name {
-					t.Errorf("Expected %s, Got %s", tc.name, userData.Name())
+				/* Check if the account fields have been properly modified. */
+				if accountData.Name() != tc.name {
+					t.Errorf("Expected %s, Got %s", tc.name, accountData.Name())
 				}
 
-				if userData.Username() != tc.username {
-					t.Errorf("Expected %s, Got %s", tc.username, userData.Username())
+				if accountData.Username() != tc.username {
+					t.Errorf("Expected %s, Got %s", tc.username, accountData.Username())
 				}
 
-				if userData.ID() != id {
-					t.Errorf("Expected %d, Got %d", id, userData.ID())
+				if accountData.ID() != id {
+					t.Errorf("Expected %d, Got %d", id, accountData.ID())
 				}
 
-				if userData.Email() != tc.email {
-					t.Errorf("Expected %s, Got %s", tc.email, userData.Email())
+				if accountData.Email() != tc.email {
+					t.Errorf("Expected %s, Got %s", tc.email, accountData.Email())
 				}
 
-				if userData.Password() != tc.password {
-					t.Errorf("Expected %s, Got %s", tc.password, userData.Password())
+				if accountData.Password() != tc.password {
+					t.Errorf("Expected %s, Got %s", tc.password, accountData.Password())
 				}
 
 				/* Get the user from the data stored. */
-				userDatastore, err := uc.Datastore.GetUserByUsername(tc.username)
+				accountDatastore, err := uc.Datastore.GetAccountByUsername(tc.username)
 				if err != nil {
 					t.Errorf("User %s is not registered in the datastore", tc.username)
 				}
 
-				if !userDatastore.Equals(userData) {
+				if !accountDatastore.Equals(accountData) {
 					t.Error("User from datastore and user from session are not the same.")
 				}
 			}
@@ -238,7 +238,7 @@ func TestEditLogoutError(t *testing.T) {
 	addParam(t, uc, "email", "i02sopop@gmail.com")
 	addParam(t, uc, "password", "212121")
 
-	/* Edit the user. */
+	/* Edit the account. */
 	res, err := uc.Run()
 	if !strings.Contains(fmt.Sprintf("%s", err), "User not logged in") {
 		t.Errorf("Unexpected error running the use case: %s", err)
@@ -254,4 +254,4 @@ func TestEditLogoutError(t *testing.T) {
 	}
 }
 
-/* XXX: Test removing the user from the datastore when implemented.*/
+/* XXX: Test removing the account from the datastore when implemented.*/

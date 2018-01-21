@@ -1,4 +1,4 @@
-package user
+package account
 
 /* Copyright (C) 2017-2018 Radar team (see AUTHORS)
 
@@ -22,11 +22,11 @@ import (
 	"github.com/pkg/errors"
 )
 
-// ErrUserExists raised when the user already exists in the datastore.
-var ErrUserExists = errors.New("User already exists")
+// ErrAccountExists raised when the account already exists in the datastore.
+var ErrAccountExists = errors.New("Account already exists")
 
-// ErrUserNotExists raised when the user doesn't exists in the datastore.
-var ErrUserNotExists = errors.New("User doesn't exists")
+// ErrAccountNotExists raised when the user doesn't exists in the datastore.
+var ErrAccountNotExists = errors.New("Account doesn't exists")
 
 // ErrEmailEmpty raised when the email is empty.
 var ErrEmailEmpty = errors.New("Email is empty")
