@@ -25,20 +25,20 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/radar-go/radar"
-	"github.com/radar-go/radar/datastore/user"
+	"github.com/radar-go/radar/datastore/account"
 )
 
 // Datastore struct to access to the datastore.
 type Datastore struct {
-	users    map[string]*user.User
-	sessions map[string]*user.User
+	accounts map[string]*account.Account
+	sessions map[string]*account.Account
 }
 
 // New creates and returns a new datastore object.
 func New() *Datastore {
 	return &Datastore{
-		users:    make(map[string]*user.User),
-		sessions: make(map[string]*user.User),
+		accounts: make(map[string]*account.Account),
+		sessions: make(map[string]*account.Account),
 	}
 }
 
@@ -52,56 +52,56 @@ func (d *Datastore) Endpoints() map[string]string {
 	}
 }
 
-// UserRegistration registers a new user in the datasore.
-func (d *Datastore) UserRegistration(username, name, email, password string) (int, error) {
+// AccountRegistration registers a new user in the datasore.
+func (d *Datastore) AccountRegistration(username, name, email, password string) (int, error) {
 	cleanUsername := radar.CleanString(username)
-	_, ok := d.users[cleanUsername]
+	_, ok := d.accounts[cleanUsername]
 	if ok {
-		return 0, errors.Wrap(user.ErrUserExists, email)
+		return 0, errors.Wrap(account.ErrAccountExists, email)
 	}
 
 	glog.Infof("Registering user '%s'", username)
-	usr, err := user.New(cleanUsername, name, email, password)
+	acc, err := account.New(cleanUsername, name, email, password)
 	if err != nil {
 		return 0, err
 	}
 
-	d.users[cleanUsername] = usr
+	d.accounts[cleanUsername] = acc
 
-	return usr.ID(), nil
+	return acc.ID(), nil
 }
 
-// GetUserByUsername returns an user stored in the datastore by its username or
+// GetAccountByUsername returns an user stored in the datastore by its username or
 // an error in case it doesn't exists.
-func (d *Datastore) GetUserByUsername(username string) (*user.User, error) {
+func (d *Datastore) GetAccountByUsername(username string) (*account.Account, error) {
 	var err error
 
 	cleanUsername := radar.CleanString(username)
-	usr, ok := d.users[cleanUsername]
+	acc, ok := d.accounts[cleanUsername]
 	if !ok {
-		err = errors.Wrap(user.ErrUserNotExists, username)
+		err = errors.Wrap(account.ErrAccountNotExists, username)
 		glog.Errorf("%+v", err)
 	}
 
-	return usr, err
+	return acc, err
 }
 
-// GetUserBySession returns an user by its session or an error in case the user
-// is not logged in.
-func (d *Datastore) GetUserBySession(session string) (*user.User, error) {
+// GetAccountBySession returns an account by its session id or an error in case
+// the account have not an active session.
+func (d *Datastore) GetAccountBySession(session string) (*account.Account, error) {
 	var err error
 
 	cleanSession := radar.CleanString(session)
-	usr, ok := d.sessions[cleanSession]
+	acc, ok := d.sessions[cleanSession]
 	if !ok {
-		err = errors.Wrap(user.ErrUserNotLoggedIn, session)
+		err = errors.Wrap(account.ErrUserNotLoggedIn, session)
 		glog.Errorf("%+v", err)
 	}
 
-	return usr, err
+	return acc, err
 }
 
-// AddSession adds an user session to the datastore.
+// AddSession adds an account session to the datastore.
 func (d *Datastore) AddSession(session, username string) error {
 	var err error
 
@@ -112,24 +112,24 @@ func (d *Datastore) AddSession(session, username string) error {
 
 	_, ok := d.sessions[cleanSession]
 	if ok {
-		return errors.Wrap(user.ErrUserAlreadyLogin, username)
+		return errors.Wrap(account.ErrUserAlreadyLogin, username)
 	}
 
 	cleanUsername := radar.CleanString(username)
-	usr, ok := d.users[cleanUsername]
+	acc, ok := d.accounts[cleanUsername]
 	if !ok {
-		err = errors.Wrap(user.ErrUserNotExists, username)
+		err = errors.Wrap(account.ErrAccountNotExists, username)
 		glog.Errorf("%+v", err)
 		return err
 	}
 
 	for _, value := range d.sessions {
-		if usr.ID() == value.ID() {
-			return errors.Wrap(user.ErrUserAlreadyLogin, username)
+		if acc.ID() == value.ID() {
+			return errors.Wrap(account.ErrUserAlreadyLogin, username)
 		}
 	}
 
-	d.sessions[cleanSession] = usr
+	d.sessions[cleanSession] = acc
 
 	return err
 }
@@ -140,14 +140,14 @@ func (d *Datastore) DeleteSession(session, username string) error {
 
 	cleanSession := radar.CleanString(session)
 	cleanUsername := radar.CleanString(username)
-	if _, ok := d.users[cleanUsername]; !ok {
-		err = errors.Wrap(user.ErrUserNotExists, username)
+	if _, ok := d.accounts[cleanUsername]; !ok {
+		err = errors.Wrap(account.ErrAccountNotExists, username)
 		glog.Errorf("%+v", err)
 		return err
 	}
 
 	if _, ok := d.sessions[cleanSession]; !ok {
-		return errors.Wrap(user.ErrUserNotLoggedIn, username)
+		return errors.Wrap(account.ErrUserNotLoggedIn, username)
 	}
 
 	delete(d.sessions, cleanSession)
@@ -155,31 +155,30 @@ func (d *Datastore) DeleteSession(session, username string) error {
 	return err
 }
 
-// UpdateUserData updates the user data information both in the users map and in
-// the sessions map.
-func (d *Datastore) UpdateUserData(usr *user.User, session string) error {
+// UpdateAccountData updates the account data information in the datastore.
+func (d *Datastore) UpdateAccountData(acc *account.Account, session string) error {
 	var err error
 
 	cleanSession := radar.CleanString(session)
 	if _, ok := d.sessions[cleanSession]; !ok {
-		return errors.Wrap(user.ErrUserNotLoggedIn, usr.Username())
+		return errors.Wrap(account.ErrUserNotLoggedIn, acc.Username())
 	}
 
 	delete(d.sessions, cleanSession)
-	d.sessions[cleanSession] = usr
+	d.sessions[cleanSession] = acc
 
 	registered := false
-	for key, userReg := range d.users {
-		if usr.ID() == userReg.ID() {
-			delete(d.users, key)
-			d.users[usr.Username()] = usr
+	for key, userReg := range d.accounts {
+		if acc.ID() == userReg.ID() {
+			delete(d.accounts, key)
+			d.accounts[acc.Username()] = acc
 			registered = true
 			break
 		}
 	}
 
 	if !registered {
-		return errors.Wrap(user.ErrUserNotExists, usr.Username())
+		return errors.Wrap(account.ErrAccountNotExists, acc.Username())
 	}
 
 	return err

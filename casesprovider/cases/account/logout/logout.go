@@ -61,7 +61,7 @@ func (uc *UseCase) Run() (casesprovider.ResultPrinter, error) {
 
 	username := uc.Params["username"].(string)
 	session := uc.Params["token"].(string)
-	user, err := uc.Datastore.GetUserByUsername(username)
+	acc, err := uc.Datastore.GetAccountByUsername(username)
 	if err != nil {
 		return res, err
 	}
@@ -72,8 +72,8 @@ func (uc *UseCase) Run() (casesprovider.ResultPrinter, error) {
 	}
 
 	res.Res["result"] = "User logout successfully"
-	res.Res["id"] = user.ID()
-	res.Res["username"] = user.Username()
+	res.Res["id"] = acc.ID()
+	res.Res["username"] = acc.Username()
 
 	return res, err
 }

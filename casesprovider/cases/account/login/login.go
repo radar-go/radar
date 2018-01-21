@@ -65,12 +65,12 @@ func (uc *UseCase) Run() (casesprovider.ResultPrinter, error) {
 
 	login := uc.Params["login"].(string)
 	password := uc.Params["password"].(string)
-	user, err := uc.Datastore.GetUserByUsername(login)
+	acc, err := uc.Datastore.GetAccountByUsername(login)
 	if err != nil {
 		return res, err
 	}
 
-	if user.Password() != password {
+	if acc.Password() != password {
 		return res, errors.New("Password missmatch")
 	}
 
@@ -85,10 +85,10 @@ func (uc *UseCase) Run() (casesprovider.ResultPrinter, error) {
 	}
 
 	res.Res["result"] = "User login successfully"
-	res.Res["id"] = user.ID()
-	res.Res["username"] = user.Username()
-	res.Res["name"] = user.Name()
-	res.Res["email"] = user.Email()
+	res.Res["id"] = acc.ID()
+	res.Res["username"] = acc.Username()
+	res.Res["name"] = acc.Name()
+	res.Res["email"] = acc.Email()
 	res.Res["token"] = uuid.String()
 
 	return res, err

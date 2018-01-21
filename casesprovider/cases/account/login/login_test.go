@@ -36,8 +36,8 @@ func TestLogin(t *testing.T) {
 	uc.AddParam("login", "ritho")
 	uc.AddParam("password", "12345")
 	_, err := uc.Run()
-	if fmt.Sprintf("%v", err) != "ritho: User doesn't exists" {
-		t.Errorf("Expected 'ritho: User doesn't exists', Got '%v'", err)
+	if fmt.Sprintf("%v", err) != "ritho: Account doesn't exists" {
+		t.Errorf("Expected 'ritho: Account doesn't exists', Got '%v'", err)
 	}
 
 	err = uc.AddParam("passwoed", "12345")
@@ -46,7 +46,8 @@ func TestLogin(t *testing.T) {
 			err)
 	}
 
-	id, err := uc.Datastore.UserRegistration("ritho", "ritho", "palvarez@ritho.net", "12345")
+	id, err := uc.Datastore.AccountRegistration("ritho", "ritho", "palvarez@ritho.net",
+		"12345")
 	if err != nil {
 		t.Errorf("Unexpected error: %+v", err)
 	}

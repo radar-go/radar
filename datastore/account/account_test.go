@@ -1,6 +1,6 @@
-package user
+package account
 
-/* Copyright (C) 2017 Radar team (see AUTHORS)
+/* Copyright (C) 2017-2018 Radar team (see AUTHORS)
 
    This file is part of radar.
 
@@ -25,34 +25,34 @@ import (
 	"github.com/pkg/errors"
 )
 
-func TestUser(t *testing.T) {
-	usr, err := New("username", "name", "email@ritho.net", "password")
+func TestAccount(t *testing.T) {
+	account, err := New("username", "name", "email@ritho.net", "password")
 	if err != nil {
 		t.Errorf("Unexpected error: %s", err)
 	}
 
-	if usr.ID() != 1 {
-		t.Errorf("Expected user id 1, Got %d", usr.ID())
+	if account.ID() != 1 {
+		t.Errorf("Expected user id 1, Got %d", account.ID())
 	}
 
-	if usr.Username() != "username" {
-		t.Errorf("Expected name, got %s", usr.Name())
+	if account.Username() != "username" {
+		t.Errorf("Expected name, got %s", account.Name())
 	}
 
-	if usr.Name() != "name" {
-		t.Errorf("Expected name, got %s", usr.Name())
+	if account.Name() != "name" {
+		t.Errorf("Expected name, got %s", account.Name())
 	}
 
-	if usr.Email() != "email@ritho.net" {
-		t.Errorf("Expected 'email@ritho.net', Got %s", usr.email)
+	if account.Email() != "email@ritho.net" {
+		t.Errorf("Expected 'email@ritho.net', Got %s", account.email)
 	}
 
-	if usr.Password() != "password" {
-		t.Errorf("Expected password, Got %s", usr.password)
+	if account.Password() != "password" {
+		t.Errorf("Expected password, Got %s", account.password)
 	}
 }
 
-func TestUserFail(t *testing.T) {
+func TestAccountFail(t *testing.T) {
 	_, err := New("use", "name", "email@ritho.net", "password")
 	if err != ErrUsernameTooShort {
 		t.Errorf("Unexpected error: %s", err)
@@ -64,6 +64,11 @@ func TestUserFail(t *testing.T) {
 	}
 
 	_, err = New("username", "name", "email", "password")
+	if errors.Cause(err) != emailx.ErrInvalidFormat {
+		t.Errorf("Unexpected error: %s", err)
+	}
+
+	_, err = New("username", "name", "email@unknown", "password")
 	if errors.Cause(err) != emailx.ErrInvalidFormat {
 		t.Errorf("Unexpected error: %s", err)
 	}

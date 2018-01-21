@@ -1,4 +1,4 @@
-// Package edit implements the user edition use case.
+// Package edit implements the account edition use case.
 package edit
 
 /* Copyright (C) 2018 Radar team (see AUTHORS)
@@ -28,12 +28,12 @@ import (
 	"github.com/radar-go/radar/casesprovider/cases/usecase"
 )
 
-// UseCase for the user edition.
+// UseCase for the account edition.
 type UseCase struct {
 	usecase.UseCase
 }
 
-// Result stores the result of the user edition.
+// Result stores the result of the account edition.
 type Result struct {
 	usecase.Result
 }
@@ -62,43 +62,43 @@ func (uc *UseCase) New() casesprovider.UseCase {
 	return New()
 }
 
-// Run tries to edit an user from the system.
+// Run tries to edit an account from the system.
 func (uc *UseCase) Run() (casesprovider.ResultPrinter, error) {
 	res := usecase.NewResult()
 
 	token := uc.Params["token"].(string)
-	user, err := uc.Datastore.GetUserBySession(token)
+	account, err := uc.Datastore.GetAccountBySession(token)
 	if err != nil {
 		return res, err
 	}
 
-	if user.ID() != uc.Params["id"].(int) {
-		return res, errors.New("The user id doesn't match with the user logged in")
+	if account.ID() != uc.Params["id"].(int) {
+		return res, errors.New("The account id doesn't match with the session information")
 	}
 
-	user.SetName(uc.Params["name"].(string))
-	err = user.SetEmail(uc.Params["email"].(string))
+	account.SetName(uc.Params["name"].(string))
+	err = account.SetEmail(uc.Params["email"].(string))
 	if err != nil {
 		return res, err
 	}
 
-	err = user.SetUsername(uc.Params["username"].(string))
+	err = account.SetUsername(uc.Params["username"].(string))
 	if err != nil {
 		return res, err
 	}
 
-	err = user.SetPassword(uc.Params["password"].(string))
+	err = account.SetPassword(uc.Params["password"].(string))
 	if err != nil {
 		return res, err
 	}
 
-	err = uc.Datastore.UpdateUserData(user, token)
+	err = uc.Datastore.UpdateAccountData(account, token)
 	if err != nil {
-		res.Res["result"] = "Error updating the user data"
+		res.Res["result"] = "Error updating the account data"
 		res.Res["error"] = fmt.Sprintf("%s", err)
 	} else {
-		res.Res["result"] = "User data updated successfully"
-		res.Res["id"] = user.ID()
+		res.Res["result"] = "Account data updated successfully"
+		res.Res["id"] = account.ID()
 	}
 
 	return res, nil
