@@ -1,5 +1,4 @@
- Contribute to radar project
-=============================
+# Contribute to radar project
 There are six main ways to contribute to this project. The first one is test the
 program and report the bugs founded. If you find any bug, please visit the
 Testers section of this document to know how to report it to us.
@@ -27,8 +26,7 @@ Developers section of this document.
 If you find another way to collaborate with the project, please contact with
 palvarez@ritho.net exposing your idea.
 
- Testers
-=========
+## Testers
 Tests, both manual and automatic ones, are a main part of the development process.
 We have a set of tests that try to cover the majority of the project, but if you
 want to help testing manually or writing new test suites it's always welcome.
@@ -43,22 +41,19 @@ to know who is working on which tests. Once you finish your test suite you can
 make a pull request through github or you can send the patch to palvarez@ritho.net
 in order to include it into the project.
 
- Donations
-===========
+## Donations
 Right now we don't have any donations mechanism, but if you want to make a donation
 (with money or hardware), please contact palvarez@ritho.net in order to check the
 different alternatives to make the donation.
 
- Translators
-=============
+## Translators
 The main language of this project is English, but translations are always
 important, that's why we maintain an Spanish translation of the project. If you
 want to collaborate with the translation of this project into Spanish or any
 other language, please contact palvarez@ritho.net and we will discuss the role
 you want to take in the project.
 
- Documenters
-=============
+## Documenters
 Documentation is one of the things that we usually miss in the free software
 projects, specially good user documentation. For now the technical documentation
 is based on godoc and comments, and we want to add more user and technical
@@ -66,8 +61,7 @@ documentation in the gitub wiki of the project, so if you are interested in
 writing some documentation please write to palvarez@ritho.net to coordinate how
 you want to help on the documentation part of the project.
 
- Administrators
-================
+## Administrators
 For now we don't have almost anything to administrate in the project, just the
 github project itself, but in the future, when the project grow, we want to have
 some mail lists, a proper site, one or more servers to build and test the project
@@ -75,8 +69,7 @@ and a lot more of things, so if you are interested on take part of these or othe
 tools for the project, please contact palvarez@ritho.net and we will find the way
 to do it.
 
- Developers
-============
+## Developers
 To help in the development part of the project you should start forking the
 repository and play with the project itself. Once you're a little bit confortable
 with it, you can chose to work on one of the issues on github, assigning it to
