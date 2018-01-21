@@ -14,10 +14,5 @@ install:
 - go get -u github.com/jstemmer/go-junit-report
 
 script:
-- make tests | tee /dev/tty |  go-junit-report > junit-report.xml
-
-after_failure:
-  - reports-publisher
-
-after_success:
-  - reports-publisher
+- make update-vendors
+- make tests | tee /dev/tty | go-junit-report > junit-report.xml
