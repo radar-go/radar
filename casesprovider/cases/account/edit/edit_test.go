@@ -48,38 +48,6 @@ func TestEditCaseCreation(t *testing.T) {
 	}
 }
 
-func initializeTests(t *testing.T, session string) (*UseCase, int) {
-	uc := New()
-	uc.SetDatastore(datastore.New())
-
-	/* Account data. */
-	user := "ritho"
-	name := "ritho"
-	email := "palvarez@ritho.net"
-	password := "121212"
-
-	/* Register the account. */
-	id, err := uc.Datastore.AccountRegistration(user, name, email, password)
-	if err != nil {
-		t.Errorf("Unexpected error registering the account: %s", err)
-	}
-
-	/* Login the user. */
-	err = uc.Datastore.AddSession(session, user)
-	if err != nil {
-		t.Errorf("Unexpected error setting a session for the user: %s", err)
-	}
-
-	return uc, id
-}
-
-func addParam(t *testing.T, uc *UseCase, name string, value interface{}) {
-	err := uc.AddParam(name, value)
-	if err != nil {
-		t.Errorf("Unexpected error adding the param '%s': %s", name, err)
-	}
-}
-
 func TestEdit(t *testing.T) {
 	/* Test initialization. */
 	session := "00000000-0000-0000-0000-000000000000"
@@ -255,3 +223,37 @@ func TestEditLogoutError(t *testing.T) {
 }
 
 /* XXX: Test removing the account from the datastore when implemented.*/
+
+func initializeTests(t *testing.T, session string) (*UseCase, int) {
+	t.Helper()
+	uc := New()
+	uc.SetDatastore(datastore.New())
+
+	/* Account data. */
+	user := "ritho"
+	name := "ritho"
+	email := "palvarez@ritho.net"
+	password := "121212"
+
+	/* Register the account. */
+	id, err := uc.Datastore.AccountRegistration(user, name, email, password)
+	if err != nil {
+		t.Errorf("Unexpected error registering the account: %s", err)
+	}
+
+	/* Login the user. */
+	err = uc.Datastore.AddSession(session, user)
+	if err != nil {
+		t.Errorf("Unexpected error setting a session for the user: %s", err)
+	}
+
+	return uc, id
+}
+
+func addParam(t *testing.T, uc *UseCase, name string, value interface{}) {
+	t.Helper()
+	err := uc.AddParam(name, value)
+	if err != nil {
+		t.Errorf("Unexpected error adding the param '%s': %s", name, err)
+	}
+}
