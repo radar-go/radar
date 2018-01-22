@@ -93,6 +93,10 @@ func (d *Datastore) GetAccountBySession(session string) (*account.Account, error
 	var err error
 
 	cleanSession := radar.CleanString(session)
+	if len(cleanSession) == 0 {
+		return nil, account.ErrUserNotLoggedIn
+	}
+
 	acc, ok := d.sessions[cleanSession]
 	if !ok {
 		err = errors.Wrap(account.ErrUserNotLoggedIn, session)
