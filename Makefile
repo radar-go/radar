@@ -185,3 +185,7 @@ check-tests:
 
 update-vendors:
 	@dep ensure
+
+PACKAGE?=github.com/radar-go/radar
+update-golden-files:
+	@go test $(PACKAGE) -update
