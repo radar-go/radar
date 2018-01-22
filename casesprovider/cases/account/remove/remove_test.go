@@ -19,10 +19,41 @@ package remove
 */
 
 import (
+	"bytes"
 	"testing"
+
+	"github.com/radar-go/radar/datastore"
+	"github.com/radar-go/radar/tests"
 )
 
+func TestRemoveAccountCreation(t *testing.T) {
+	uc := New()
+	if uc.Name != "AccountRemove" {
+		t.Errorf("Expected 'AccountRemove', Got '%s'", uc.Name)
+	}
+
+	ucNew := uc.New()
+	if ucNew.GetName() != "AccountRemove" {
+		t.Errorf("Expected 'AccountRemove', Got '%s'", ucNew.GetName())
+	}
+
+	uc.SetDatastore(datastore.New())
+	_, err := uc.Run()
+	tests.SaveGoldenData(t, "user_not_logged", []byte(err.Error()))
+	expected := tests.GetGoldenData(t, "user_not_logged")
+	if !bytes.Contains([]byte(err.Error()), expected) {
+		t.Error(err)
+	}
+}
+
 func TestRemoveAccountSuccess(t *testing.T) {
+	// Register an account.
+
+	// Add new session for the account.
+
+	// Remove the account.
+
+	// Check that the account doesn't exists anymore in the datastore.
 	t.Error("Test not yet implemented")
 }
 
