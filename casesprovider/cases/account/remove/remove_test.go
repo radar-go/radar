@@ -22,7 +22,10 @@ import (
 	"bytes"
 	"testing"
 
+	"github.com/pkg/errors"
+
 	"github.com/radar-go/radar/datastore"
+	"github.com/radar-go/radar/datastore/account"
 	"github.com/radar-go/radar/tests"
 )
 
@@ -47,16 +50,64 @@ func TestRemoveAccountCreation(t *testing.T) {
 }
 
 func TestRemoveAccountSuccess(t *testing.T) {
-	// Register an account.
+	uc := New()
+	uc.SetDatastore(datastore.New())
 
-	// Add new session for the account.
+	/* Account data. */
+	user := "ritho"
+	name := "ritho"
+	email := "palvarez@ritho.net"
+	password := "121212"
+
+	/* Register the account. */
+	id, err := uc.Datastore.AccountRegistration(user, name, email, password)
+	if err != nil {
+		t.Errorf("Unexpected error registering the account: %s", err)
+	}
+
+	/* Login the user. */
+	session := "00000000-0000-0000-0000-000000000000"
+	err = uc.Datastore.AddSession(session, user)
+	if err != nil {
+		t.Errorf("Unexpected error setting a session for the user: %s", err)
+	}
 
 	// Remove the account.
+	addParam(t, uc, "id", id)
+	addParam(t, uc, "token", session)
+	res, err := uc.Run()
+	if err != nil {
+		t.Error(err)
+	}
+
+	actual, err := res.Bytes()
+	if err != nil {
+		t.Errorf("Unexpected error:%s", err)
+	}
+
+	tests.SaveGoldenData(t, "remove_account_successfully", actual)
+	expected := tests.GetGoldenData(t, "remove_account_successfully")
+	if !bytes.Equal(actual, expected) {
+		t.Errorf("Expected %s, Got %s", expected, actual)
+	}
 
 	// Check that the account doesn't exists anymore in the datastore.
-	t.Error("Test not yet implemented")
+	_, err = uc.Datastore.GetAccountByUsername(user)
+	if err == nil {
+		t.Error("Expected error getting the account from the datastore")
+	} else if errors.Cause(err) != account.ErrAccountNotExists {
+		t.Errorf("Expected ErrAccountNotExists, Got %s", errors.Cause(err))
+	}
 }
 
 func TestRemoveAccountError(t *testing.T) {
 	t.Error("Test not yet implemented")
+}
+
+func addParam(t *testing.T, uc *UseCase, name string, value interface{}) {
+	t.Helper()
+	err := uc.AddParam(name, value)
+	if err != nil {
+		t.Errorf("Unexpected error adding the param '%s': %s", name, err)
+	}
 }
