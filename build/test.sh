@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2017 Radar team (see AUTHORS)
+# Copyright (C) 2017-2018 Radar team (see AUTHORS)
 #
 # This file is part of radar.
 #
@@ -23,26 +23,27 @@ set -o pipefail
 
 export CGO_ENABLED=0
 
+FLAGS="-installsuffix"
 TARGETS=$(for d in "$@"; do go list ./$d/... | grep -v /vendor/; done)
 
 echo "Running tests:"
-go test -i -installsuffix "static" ${TARGETS}
+go test -i ${FLAGS} "static" ${TARGETS}
 
 echo
 echo "Code coverage"
-go test -cover -covermode=count -installsuffix "static" ${TARGETS}
+go test -cover -covermode=count ${FLAGS} "static" ${TARGETS}
 
 echo
 echo "Tests"
-go test ${TARGETS} -installsuffix "static"
+go test ${TARGETS} ${FLAGS} "static"
 
 for TARGET in ${TARGETS}; do
 	echo
 	echo "Profiling for ${TARGET}"
 	LOG=`echo ${TARGET##*/}`
-	go test -v -run=XXX -bench=. ${TARGET} -benchmem -memprofile=mem-${LOG}.log -installsuffix "static"
-	go test -v -run=XXX -bench=. ${TARGET} -blockprofile=block-${LOG}.log -installsuffix "static"
-	go test -v -run=XXX -bench=. ${TARGET} -cpuprofile=cpu-${LOG}.log -installsuffix "static"
+	go test -v -run=XXX -bench=. ${TARGET} -benchmem -memprofile=mem-${LOG}.log ${FLAGS} "static"
+	go test -v -run=XXX -bench=. ${TARGET} -blockprofile=block-${LOG}.log ${FLAGS} "static"
+	go test -v -run=XXX -bench=. ${TARGET} -cpuprofile=cpu-${LOG}.log ${FLAGS} "static"
 done
 echo
 
