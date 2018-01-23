@@ -26,6 +26,8 @@ import (
 	"testing"
 
 	"github.com/valyala/fasthttp"
+
+	"github.com/radar-go/radar/tests"
 )
 
 var c *Controller = New()
@@ -82,7 +84,6 @@ func TestPostHandler(t *testing.T) {
 		endpoint  string
 		input     string
 		code      int
-		output    string
 		saveToken bool
 		saveID    bool
 		useToken  bool
@@ -93,7 +94,6 @@ func TestPostHandler(t *testing.T) {
 			endpoint:  "/account/register",
 			input:     `{"username": "ritho", "name": "ritho", "email": "palvarez@ritho.net", "password": "ritho"}`,
 			code:      200,
-			output:    `"result":"Account registered successfully"`,
 			saveToken: false,
 			saveID:    true,
 			useToken:  false,
@@ -104,7 +104,6 @@ func TestPostHandler(t *testing.T) {
 			endpoint:  "/account/login",
 			input:     `{"login": "ritho", "password": "ritho"}`,
 			code:      200,
-			output:    `"result":"User login successfully"`,
 			saveToken: true,
 			saveID:    false,
 			useToken:  false,
@@ -115,7 +114,6 @@ func TestPostHandler(t *testing.T) {
 			endpoint:  "/account/login",
 			input:     `{"login": "ritho", "password": "ritho"}`,
 			code:      400,
-			output:    `ritho: User already logged in`,
 			saveToken: false,
 			saveID:    false,
 			useToken:  false,
@@ -126,7 +124,6 @@ func TestPostHandler(t *testing.T) {
 			endpoint:  "/account/edit",
 			input:     `{"id": 1, "name": "Pablo", "email": "i02sopop@gmail.com", "username": "i02sopop", "password": "121212", "token": "00000000-0000-0000-0000-000000000000"}`,
 			code:      200,
-			output:    `"result":"Account data updated successfully"`,
 			saveToken: false,
 			saveID:    false,
 			useToken:  true,
@@ -137,7 +134,6 @@ func TestPostHandler(t *testing.T) {
 			endpoint:  "/account/logout",
 			input:     `{"username": "i02sopop", "token": "00000000-0000-0000-0000-000000000000"}`,
 			code:      200,
-			output:    `"result":"User logout successfully"`,
 			saveToken: false,
 			saveID:    false,
 			useToken:  true,
@@ -148,7 +144,6 @@ func TestPostHandler(t *testing.T) {
 			endpoint:  "/account/register",
 			input:     `{"username": "ritho", "name": "ritho", "email": "ritho", "password": "ritho"}`,
 			code:      400,
-			output:    `Error validating the email: invalid format`,
 			saveToken: false,
 			saveID:    false,
 			useToken:  false,
@@ -159,7 +154,6 @@ func TestPostHandler(t *testing.T) {
 			endpoint:  "/account/register",
 			input:     `{"username": "ritho", "name": "ritho", "email": "unknown@invalid.fake", "password": "ritho"}`,
 			code:      400,
-			output:    `Error validating the email: unresolvable host`,
 			saveToken: false,
 			saveID:    false,
 			useToken:  false,
@@ -170,7 +164,6 @@ func TestPostHandler(t *testing.T) {
 			endpoint:  "/account/register",
 			input:     `{"username": "rit", "name": "ritho", "email": "palvarez@ritho.net", "password": "ritho"}`,
 			code:      400,
-			output:    `Username too short`,
 			saveToken: false,
 			saveID:    false,
 			useToken:  false,
@@ -181,7 +174,6 @@ func TestPostHandler(t *testing.T) {
 			endpoint:  "/account/register",
 			input:     `{"username": "ritho", "name": "ritho", "email": "palvarez@ritho.net", "password": "1234"}`,
 			code:      400,
-			output:    `Password too short`,
 			saveToken: false,
 			saveID:    false,
 			useToken:  false,
@@ -192,7 +184,6 @@ func TestPostHandler(t *testing.T) {
 			endpoint:  "/account/register",
 			input:     `{"username": "i02sopop", "name": "ritho", "email": "palvarez@ritho.net", "password": "ritho"}`,
 			code:      400,
-			output:    `User i02sopop already registered`,
 			saveToken: false,
 			saveID:    false,
 			useToken:  false,
@@ -203,7 +194,6 @@ func TestPostHandler(t *testing.T) {
 			endpoint:  "/account/login",
 			input:     `{"login": "ritho", "passwerd": "ritho"}`,
 			code:      500,
-			output:    `Error adding the param passwerd, key doesn't exists: Unknown parameter for the use case`,
 			saveToken: false,
 			saveID:    false,
 			useToken:  false,
@@ -214,7 +204,6 @@ func TestPostHandler(t *testing.T) {
 			endpoint:  "/account/login",
 			input:     `{"login": "rit", "password": "ritho"}`,
 			code:      400,
-			output:    `Account doesn't exists`,
 			saveToken: false,
 			saveID:    false,
 			useToken:  false,
@@ -225,7 +214,6 @@ func TestPostHandler(t *testing.T) {
 			endpoint:  "/account/login",
 			input:     `{"login": "i02sopop", "password": "rithoo"}`,
 			code:      400,
-			output:    `Password missmatch`,
 			saveToken: false,
 			saveID:    false,
 			useToken:  false,
@@ -236,7 +224,6 @@ func TestPostHandler(t *testing.T) {
 			endpoint:  "/account/logout",
 			input:     `{"username": "ritho", "token": "00000000-0000-0000-0000-000000000000"}`,
 			code:      400,
-			output:    `ritho: Account doesn't exists`,
 			saveToken: false,
 			saveID:    false,
 			useToken:  false,
@@ -247,7 +234,6 @@ func TestPostHandler(t *testing.T) {
 			endpoint:  "/account/logout",
 			input:     `{"username": "i02sopop", "token": "00000000-0000-0000-0000-000000000000"}`,
 			code:      400,
-			output:    `i02sopop: User not logged in`,
 			saveToken: false,
 			saveID:    false,
 			useToken:  false,
@@ -258,7 +244,6 @@ func TestPostHandler(t *testing.T) {
 			endpoint:  "/account/edit",
 			input:     `{"id":1, "name":"ritho", "email": "i02sopop@gmail.com", "username": "ritho", "password": "ritho", "token": "00000000-0000-0000-0000-000000000000"}`,
 			code:      400,
-			output:    `User not logged in`,
 			saveToken: false,
 			saveID:    false,
 			useToken:  false,
@@ -269,7 +254,6 @@ func TestPostHandler(t *testing.T) {
 			endpoint:  "/account/remove",
 			input:     `{"id":1, "token": "00000000-0000-0000-0000-000000000000"}`,
 			code:      400,
-			output:    `User not logged in`,
 			saveToken: false,
 			saveID:    false,
 			useToken:  false,
@@ -280,7 +264,6 @@ func TestPostHandler(t *testing.T) {
 			endpoint:  "/account/login",
 			input:     `{"login": "i02sopop", "password": "121212"}`,
 			code:      200,
-			output:    `"result":"User login successfully"`,
 			saveToken: true,
 			saveID:    false,
 			useToken:  false,
@@ -291,7 +274,6 @@ func TestPostHandler(t *testing.T) {
 			endpoint:  "/account/remove",
 			input:     `{"id":1, "token": "00000000-0000-0000-0000-000000000000"}`,
 			code:      200,
-			output:    `Account removed successfully`,
 			saveToken: false,
 			saveID:    false,
 			useToken:  true,
@@ -321,8 +303,10 @@ func TestPostHandler(t *testing.T) {
 				t.Errorf("Expected %d, Got %d", tc.code, ctx.Response.StatusCode())
 			}
 
-			if !bytes.Contains(ctx.Response.Body(), []byte(tc.output)) {
-				t.Errorf(`Expected %s, Got %s`, tc.output, ctx.Response.Body())
+			tests.SaveGoldenData(t, tc.name, ctx.Response.Body())
+			expected := tests.GetGoldenData(t, tc.name)
+			if !bytes.Equal(ctx.Response.Body(), expected) {
+				t.Errorf(`Expected %s, Got %s`, expected, ctx.Response.Body())
 			}
 
 			if tc.saveToken {
