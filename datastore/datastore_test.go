@@ -194,7 +194,7 @@ func TestUpdateAccount(t *testing.T) {
 	ds.accounts[acc.Username()] = acc
 	err = ds.UpdateAccountData(acc, session)
 	if err != nil {
-		t.Errorf("Unexpected error updating the accoung data: $s", err)
+		t.Errorf("Unexpected error updating the accoung data: %s", err)
 	}
 }
 
