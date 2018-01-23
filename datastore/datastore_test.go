@@ -28,6 +28,16 @@ import (
 	"github.com/radar-go/radar/datastore/account"
 )
 
+func TestEndpoints(t *testing.T) {
+	ds := New()
+
+	numEndpoints := 5
+	endpoints := ds.Endpoints()
+	if len(endpoints) != numEndpoints {
+		t.Errorf("Expected %d, Got %d", numEndpoints, len(endpoints))
+	}
+}
+
 func TestDatastoreRegisterAccountSuccess(t *testing.T) {
 	ds := New()
 
@@ -85,6 +95,30 @@ func TestDatastoreGetAccount(t *testing.T) {
 	}
 }
 
+func TestGetAccountSession(t *testing.T) {
+	ds := New()
+
+	_, err := ds.GetAccountBySession(" ")
+	if err == nil {
+		t.Error("Expected error getting the account by session.")
+	} else if errors.Cause(err) != account.ErrUserNotLoggedIn {
+		t.Errorf("Expected %s, Got %s", account.ErrUserNotLoggedIn, errors.Cause(err))
+	}
+
+	_, err = ds.GetAccountBySession("00000000-0000-0000-0000-000000000000")
+	if err == nil {
+		t.Error("Expected error getting the account by session.")
+	} else if errors.Cause(err) != account.ErrUserNotLoggedIn {
+		t.Errorf("Expected %s, Got %s", account.ErrUserNotLoggedIn, errors.Cause(err))
+	}
+
+	ds.sessions["00000000-0000-0000-0000-000000000000"] = &account.Account{}
+	_, err = ds.GetAccountBySession("00000000-0000-0000-0000-000000000000")
+	if err != nil {
+		t.Errorf("Unexpected error: %s", err)
+	}
+}
+
 func TestDatastoreLogin(t *testing.T) {
 	ds := New()
 
@@ -130,12 +164,62 @@ func TestDatastoreLogout(t *testing.T) {
 	}
 }
 
-func TestEndpoints(t *testing.T) {
+func TestUpdateAccount(t *testing.T) {
+	acc := &account.Account{}
+	session := "00000000-0000-0000-0000-000000000000"
 	ds := New()
 
-	numEndpoints := 5
-	endpoints := ds.Endpoints()
-	if len(endpoints) != numEndpoints {
-		t.Errorf("Expected %d, Got %d", numEndpoints, len(endpoints))
+	err := ds.UpdateAccountData(acc, " ")
+	if err == nil {
+		t.Error("Expected error updating the account data")
+	} else if errors.Cause(err) != account.ErrUserNotLoggedIn {
+		t.Errorf("Expected %s, Got %s", account.ErrUserNotLoggedIn, errors.Cause(err))
+	}
+
+	err = ds.UpdateAccountData(acc, session)
+	if err == nil {
+		t.Error("Expected error updating the account data")
+	} else if errors.Cause(err) != account.ErrUserNotLoggedIn {
+		t.Errorf("Expected %s, Got %s", account.ErrUserNotLoggedIn, errors.Cause(err))
+	}
+
+	ds.sessions[session] = acc
+	err = ds.UpdateAccountData(acc, session)
+	if err == nil {
+		t.Error("Expected error updating the account data")
+	} else if errors.Cause(err) != account.ErrAccountNotExists {
+		t.Errorf("Expected %s, Got %s", account.ErrAccountNotExists, errors.Cause(err))
+	}
+
+	ds.accounts[acc.Username()] = acc
+	err = ds.UpdateAccountData(acc, session)
+	if err != nil {
+		t.Errorf("Unexpected error updating the accoung data: $s", err)
+	}
+}
+
+func TestRemoveAccount(t *testing.T) {
+	acc := &account.Account{}
+	session := "00000000-0000-0000-0000-000000000000"
+	ds := New()
+
+	err := ds.RemoveAccount(acc)
+	if err == nil {
+		t.Error("Expected error removing the account")
+	} else if errors.Cause(err) != account.ErrAccountNotExists {
+		t.Errorf("Expected %s, Got %s", account.ErrAccountNotExists, errors.Cause(err))
+	}
+
+	ds.accounts[acc.Username()] = acc
+	err = ds.RemoveAccount(acc)
+	if err != nil {
+		t.Errorf("Unexpected error removing the account: %s", err)
+	}
+
+	ds.accounts[acc.Username()] = acc
+	ds.sessions[session] = acc
+	err = ds.RemoveAccount(acc)
+	if err != nil {
+		t.Errorf("Unexpected error removing the account: %s", err)
 	}
 }
