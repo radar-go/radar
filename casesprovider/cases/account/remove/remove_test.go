@@ -135,8 +135,8 @@ func TestRemoveAccountError(t *testing.T) {
 
 			res, err := uc.Run()
 			if err != nil {
-				tests.SaveGoldenData(t, name+"_error", []byte(err.Error()))
-				expected := tests.GetGoldenData(t, name+"_error")
+				tests.SaveGoldenData(t, tc.testName+"_error", []byte(err.Error()))
+				expected := tests.GetGoldenData(t, tc.testName+"_error")
 				if !bytes.Equal([]byte(err.Error()), expected) {
 					t.Errorf("Expected %s, Got %s", expected, err)
 				}
@@ -153,8 +153,8 @@ func TestRemoveAccountError(t *testing.T) {
 				t.Errorf("Unexpected error: %s", err)
 			}
 
-			tests.SaveGoldenData(t, name+"_result", actual)
-			expected := tests.GetGoldenData(t, name+"_result")
+			tests.SaveGoldenData(t, tc.testName+"_result", actual)
+			expected := tests.GetGoldenData(t, tc.testName+"_result")
 			if !bytes.Equal(actual, expected) {
 				t.Errorf("Expected %s, Got %s", expected, actual)
 			}
