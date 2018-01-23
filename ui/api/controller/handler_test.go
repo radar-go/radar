@@ -22,6 +22,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/valyala/fasthttp"
@@ -60,218 +61,241 @@ func TestAccountControllerBodyError(t *testing.T) {
 	}
 }
 
-func TestLoginLogout(t *testing.T) {
-	ctx := &fasthttp.RequestCtx{}
-	ctx.Request.Header.Set("Content-Type", "application/json")
-	ctx.Request.Header.SetRequestURI("/account/register")
-	ctx.Request.SetBody([]byte(`{"username": "i02sopop", "name": "ritho", "email": "palvarez@ritho.net", "password": "ritho"}`))
-	c.postHandler(ctx)
-	if ctx.Response.StatusCode() != 200 {
-		t.Errorf("Expected 200, Got %d", ctx.Response.StatusCode())
-	}
+func obtainResponse(t *testing.T, ctx *fasthttp.RequestCtx) map[string]interface{} {
+	var response map[string]interface{}
+	t.Helper()
 
-	ctx = &fasthttp.RequestCtx{}
-	ctx.Request.Header.Set("Content-Type", "application/json")
-	ctx.Request.Header.SetRequestURI("/account/login")
-	ctx.Request.SetBody([]byte(`{"login": "i02sopop", "password": "ritho"}`))
-	c.postHandler(ctx)
-	if ctx.Response.StatusCode() != 200 {
-		t.Errorf("Expected 200, Got %d", ctx.Response.StatusCode())
-	}
-
-	var body map[string]interface{}
-	err := json.Unmarshal(ctx.Response.Body(), &body)
+	body := ctx.Response.Body()
+	err := json.Unmarshal(body, &response)
 	if err != nil {
-		t.Errorf("Unexpected error %v", err)
+		t.Errorf("Unexpected error unmarshaling the response: %s", err)
 	}
 
-	if _, ok := body["result"]; !ok || body["result"] != "User login successfully" {
-		t.Errorf(`Expected "result":"User login successfully", Got %s`,
-			ctx.Response.Body())
-	}
-
-	token, ok := body["token"]
-	if !ok {
-		t.Error("Token not found")
-	}
-
-	logoutBody := fmt.Sprintf(`{"username": "i02sopop", "token": "%s"}`, token)
-
-	ctx = &fasthttp.RequestCtx{}
-	ctx.Request.Header.Set("Content-Type", "application/json")
-	ctx.Request.Header.SetRequestURI("/account/logout")
-	ctx.Request.SetBody([]byte(logoutBody))
-	c.postHandler(ctx)
-	if ctx.Response.StatusCode() != 200 {
-		t.Errorf("Expected 200, Got %d", ctx.Response.StatusCode())
-	}
-
-	if !bytes.Contains(ctx.Response.Body(), []byte("User logout successfully")) {
-		t.Errorf(`Expected 'User logout successfully', Got %s`, ctx.Response.Body())
-	}
-}
-
-func TestEditAccount(t *testing.T) {
-	var body map[string]interface{}
-
-	ctx := &fasthttp.RequestCtx{}
-	ctx.Request.Header.Set("Content-Type", "application/json")
-	ctx.Request.Header.SetRequestURI("/account/login")
-	ctx.Request.SetBody([]byte(`{"login": "i02sopop", "password": "ritho"}`))
-	c.postHandler(ctx)
-	if ctx.Response.StatusCode() != 200 {
-		t.Errorf("Expected 200, Got %d", ctx.Response.StatusCode())
-	}
-
-	err := json.Unmarshal(ctx.Response.Body(), &body)
-	if err != nil {
-		t.Errorf("Unexpected error %v", err)
-	}
-
-	if _, ok := body["result"]; !ok || body["result"] != "User login successfully" {
-		t.Errorf(`Expected "result":"User login successfully", Got %s`,
-			ctx.Response.Body())
-	}
-
-	token, ok := body["token"]
-	if !ok {
-		t.Error("Token not found")
-	}
-
-	id, ok := body["id"]
-	if !ok {
-		t.Error("Expecting the id for the account registered.")
-	}
-
-	editBody := fmt.Sprintf(`{"id":%.0f, "name": "Pablo", "email": "i02sopop@gmail.com", "username": "i02sopop", "password": "ritho", "token": "%s"}`, id, token)
-
-	ctx = &fasthttp.RequestCtx{}
-	ctx.Request.Header.Set("Content-Type", "application/json")
-	ctx.Request.Header.SetRequestURI("/account/edit")
-	ctx.Request.SetBody([]byte(editBody))
-	c.postHandler(ctx)
-	if ctx.Response.StatusCode() != 200 {
-		t.Errorf("Expected 200, Got %d", ctx.Response.StatusCode())
-	}
-
-	if !bytes.Contains(ctx.Response.Body(), []byte("Account data updated successfully")) {
-		t.Errorf(`Expected 'Account data updated successfully', Got %s`, ctx.Response.Body())
-	}
-
-	logoutBody := fmt.Sprintf(`{"username": "i02sopop", "token": "%s"}`, token)
-
-	ctx = &fasthttp.RequestCtx{}
-	ctx.Request.Header.Set("Content-Type", "application/json")
-	ctx.Request.Header.SetRequestURI("/account/logout")
-	ctx.Request.SetBody([]byte(logoutBody))
-	c.postHandler(ctx)
-	if ctx.Response.StatusCode() != 200 {
-		t.Errorf("Expected 200, Got %d", ctx.Response.StatusCode())
-	}
-
-	if !bytes.Contains(ctx.Response.Body(), []byte("User logout successfully")) {
-		t.Errorf(`Expected 'User logout successfully', Got %s`, ctx.Response.Body())
-	}
+	return response
 }
 
 func TestPostHandler(t *testing.T) {
+	var token string
+	var id int
 	testCases := []struct {
-		name     string
-		endpoint string
-		input    string
-		code     int
-		output   string
+		name      string
+		endpoint  string
+		input     string
+		code      int
+		output    string
+		saveToken bool
+		saveID    bool
+		useToken  bool
+		useID     bool
 	}{
 		{
-			"RegisterInvalidEmailFormatError",
-			"/account/register",
-			`{"username": "ritho", "name": "ritho", "email": "ritho", "password": "ritho"}`,
-			400,
-			`Error validating the email: invalid format`,
+			name:      "RegisterSuccess",
+			endpoint:  "/account/register",
+			input:     `{"username": "ritho", "name": "ritho", "email": "palvarez@ritho.net", "password": "ritho"}`,
+			code:      200,
+			output:    `"result":"Account registered successfully"`,
+			saveToken: false,
+			saveID:    true,
+			useToken:  false,
+			useID:     false,
 		},
 		{
-			"RegisterUnresolvedHostError",
-			"/account/register",
-			`{"username": "ritho", "name": "ritho", "email": "unknown@invalid.fake", "password": "ritho"}`,
-			400,
-			`Error validating the email: unresolvable host`,
+			name:      "LoginSuccess",
+			endpoint:  "/account/login",
+			input:     `{"login": "ritho", "password": "ritho"}`,
+			code:      200,
+			output:    `"result":"User login successfully"`,
+			saveToken: true,
+			saveID:    false,
+			useToken:  false,
+			useID:     false,
 		},
 		{
-			"RegisterUsernameShort",
-			"/account/register",
-			`{"username": "rit", "name": "ritho", "email": "palvarez@ritho.net", "password": "ritho"}`,
-			400,
-			`Username too short`,
+			name:      "LoginAlreadyLogin",
+			endpoint:  "/account/login",
+			input:     `{"login": "ritho", "password": "ritho"}`,
+			code:      400,
+			output:    `ritho: User already logged in`,
+			saveToken: false,
+			saveID:    false,
+			useToken:  false,
+			useID:     false,
 		},
 		{
-			"RegisterPasswordShort",
-			"/account/register",
-			`{"username": "ritho", "name": "ritho", "email": "palvarez@ritho.net", "password": "1234"}`,
-			400,
-			`Password too short`,
+			name:      "EditSuccess",
+			endpoint:  "/account/edit",
+			input:     `{"id": 1, "name": "Pablo", "email": "i02sopop@gmail.com", "username": "i02sopop", "password": "121212", "token": "00000000-0000-0000-0000-000000000000"}`,
+			code:      200,
+			output:    `"result":"Account data updated successfully"`,
+			saveToken: false,
+			saveID:    false,
+			useToken:  true,
+			useID:     true,
 		},
 		{
-			"RegisterSuccess",
-			"/account/register",
-			`{"username": "ritho", "name": "ritho", "email": "palvarez@ritho.net", "password": "ritho"}`,
-			200,
-			`"result":"Account registered successfully"`,
+			name:      "LogoutSuccess",
+			endpoint:  "/account/logout",
+			input:     `{"username": "i02sopop", "token": "00000000-0000-0000-0000-000000000000"}`,
+			code:      200,
+			output:    `"result":"User logout successfully"`,
+			saveToken: false,
+			saveID:    false,
+			useToken:  true,
+			useID:     false,
 		},
 		{
-			"RegisterDuplicateAccount",
-			"/account/register",
-			`{"username": "ritho", "name": "ritho", "email": "palvarez@ritho.net", "password": "ritho"}`,
-			400,
-			`User ritho already registered`,
+			name:      "RegisterInvalidEmailFormatError",
+			endpoint:  "/account/register",
+			input:     `{"username": "ritho", "name": "ritho", "email": "ritho", "password": "ritho"}`,
+			code:      400,
+			output:    `Error validating the email: invalid format`,
+			saveToken: false,
+			saveID:    false,
+			useToken:  false,
+			useID:     false,
 		},
 		{
-			"LoginUnknownParam",
-			"/account/login",
-			`{"login": "ritho", "passwerd": "ritho"}`,
-			500,
-			`Error adding the param passwerd, key doesn't exists: Unknown parameter for the use case`,
+			name:      "RegisterUnresolvedHostError",
+			endpoint:  "/account/register",
+			input:     `{"username": "ritho", "name": "ritho", "email": "unknown@invalid.fake", "password": "ritho"}`,
+			code:      400,
+			output:    `Error validating the email: unresolvable host`,
+			saveToken: false,
+			saveID:    false,
+			useToken:  false,
+			useID:     false,
 		},
 		{
-			"LoginAccountNotExists",
-			"/account/login",
-			`{"login": "rit", "password": "ritho"}`,
-			400,
-			`Account doesn't exists`,
+			name:      "RegisterUsernameShort",
+			endpoint:  "/account/register",
+			input:     `{"username": "rit", "name": "ritho", "email": "palvarez@ritho.net", "password": "ritho"}`,
+			code:      400,
+			output:    `Username too short`,
+			saveToken: false,
+			saveID:    false,
+			useToken:  false,
+			useID:     false,
 		},
 		{
-			"LoginWrongPassword",
-			"/account/login",
-			`{"login": "ritho", "password": "rithoo"}`,
-			400,
-			`Password missmatch`,
+			name:      "RegisterPasswordShort",
+			endpoint:  "/account/register",
+			input:     `{"username": "ritho", "name": "ritho", "email": "palvarez@ritho.net", "password": "1234"}`,
+			code:      400,
+			output:    `Password too short`,
+			saveToken: false,
+			saveID:    false,
+			useToken:  false,
+			useID:     false,
 		},
 		{
-			"LoginSuccess",
-			"/account/login",
-			`{"login": "ritho", "password": "ritho"}`,
-			200,
-			`"result":"User login successfully"`,
+			name:      "RegisterDuplicateAccount",
+			endpoint:  "/account/register",
+			input:     `{"username": "i02sopop", "name": "ritho", "email": "palvarez@ritho.net", "password": "ritho"}`,
+			code:      400,
+			output:    `User i02sopop already registered`,
+			saveToken: false,
+			saveID:    false,
+			useToken:  false,
+			useID:     false,
 		},
 		{
-			"LoginAlreadyLogin",
-			"/account/login",
-			`{"login": "ritho", "password": "ritho"}`,
-			400,
-			`ritho: User already logged in`,
+			name:      "LoginUnknownParam",
+			endpoint:  "/account/login",
+			input:     `{"login": "ritho", "passwerd": "ritho"}`,
+			code:      500,
+			output:    `Error adding the param passwerd, key doesn't exists: Unknown parameter for the use case`,
+			saveToken: false,
+			saveID:    false,
+			useToken:  false,
+			useID:     false,
 		},
 		{
-			"LogoutError",
-			"/account/logout",
-			`{"username": "ritho", "token": "00000000-0000-0000-0000-000000000000"}`,
-			400,
-			`ritho: User not logged in`,
+			name:      "LoginAccountNotExists",
+			endpoint:  "/account/login",
+			input:     `{"login": "rit", "password": "ritho"}`,
+			code:      400,
+			output:    `Account doesn't exists`,
+			saveToken: false,
+			saveID:    false,
+			useToken:  false,
+			useID:     false,
 		},
 		{
-			"EditError",
-			"/account/edit",
-			`{"id":1, "name":"ritho", "email": "i02sopop@gmail.com", "username": "ritho", "password": "ritho", "token": "00000000-0000-0000-0000-000000000000"}`,
-			400,
-			`User not logged in`,
+			name:      "LoginWrongPassword",
+			endpoint:  "/account/login",
+			input:     `{"login": "i02sopop", "password": "rithoo"}`,
+			code:      400,
+			output:    `Password missmatch`,
+			saveToken: false,
+			saveID:    false,
+			useToken:  false,
+			useID:     false,
+		},
+		{
+			name:      "LogoutAccountNotExists",
+			endpoint:  "/account/logout",
+			input:     `{"username": "ritho", "token": "00000000-0000-0000-0000-000000000000"}`,
+			code:      400,
+			output:    `ritho: Account doesn't exists`,
+			saveToken: false,
+			saveID:    false,
+			useToken:  false,
+			useID:     false,
+		},
+		{
+			name:      "LogoutError",
+			endpoint:  "/account/logout",
+			input:     `{"username": "i02sopop", "token": "00000000-0000-0000-0000-000000000000"}`,
+			code:      400,
+			output:    `i02sopop: User not logged in`,
+			saveToken: false,
+			saveID:    false,
+			useToken:  false,
+			useID:     false,
+		},
+		{
+			name:      "EditError",
+			endpoint:  "/account/edit",
+			input:     `{"id":1, "name":"ritho", "email": "i02sopop@gmail.com", "username": "ritho", "password": "ritho", "token": "00000000-0000-0000-0000-000000000000"}`,
+			code:      400,
+			output:    `User not logged in`,
+			saveToken: false,
+			saveID:    false,
+			useToken:  false,
+			useID:     false,
+		},
+		{
+			name:      "RemoveAccountError",
+			endpoint:  "/account/remove",
+			input:     `{"id":1, "token": "00000000-0000-0000-0000-000000000000"}`,
+			code:      400,
+			output:    `User not logged in`,
+			saveToken: false,
+			saveID:    false,
+			useToken:  false,
+			useID:     false,
+		},
+		{
+			name:      "LoginSuccess",
+			endpoint:  "/account/login",
+			input:     `{"login": "i02sopop", "password": "121212"}`,
+			code:      200,
+			output:    `"result":"User login successfully"`,
+			saveToken: true,
+			saveID:    false,
+			useToken:  false,
+			useID:     false,
+		},
+		{
+			name:      "RemoveAccountError",
+			endpoint:  "/account/remove",
+			input:     `{"id":1, "token": "00000000-0000-0000-0000-000000000000"}`,
+			code:      200,
+			output:    `Account removed successfully`,
+			saveToken: false,
+			saveID:    false,
+			useToken:  true,
+			useID:     false,
 		},
 	}
 
@@ -280,6 +304,17 @@ func TestPostHandler(t *testing.T) {
 			ctx := &fasthttp.RequestCtx{}
 			ctx.Request.Header.Set("Content-Type", "application/json")
 			ctx.Request.Header.SetRequestURI(tc.endpoint)
+
+			if tc.useToken {
+				var re = regexp.MustCompile(`"token"[ ]*:[ ]*"[0-9]{8}-[0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9]{12}"`)
+				tc.input = re.ReplaceAllString(tc.input, `"token":"`+token+`"`)
+			}
+
+			if tc.useID {
+				var re = regexp.MustCompile(`"id"[ ]*:[ ]*[0-9]+`)
+				tc.input = re.ReplaceAllString(tc.input, fmt.Sprintf(`"id":%d`, id))
+			}
+
 			ctx.Request.SetBody([]byte(tc.input))
 			c.postHandler(ctx)
 			if ctx.Response.StatusCode() != tc.code {
@@ -288,6 +323,28 @@ func TestPostHandler(t *testing.T) {
 
 			if !bytes.Contains(ctx.Response.Body(), []byte(tc.output)) {
 				t.Errorf(`Expected %s, Got %s`, tc.output, ctx.Response.Body())
+			}
+
+			if tc.saveToken {
+				response := obtainResponse(t, ctx)
+				responseToken, ok := response["token"]
+				if !ok {
+					t.Error("Token not present in the response")
+					return
+				}
+
+				token = responseToken.(string)
+			}
+
+			if tc.saveID {
+				response := obtainResponse(t, ctx)
+				responseID, ok := response["id"]
+				if !ok {
+					t.Error("Token not present in the response")
+					return
+				}
+
+				id = int(responseID.(float64))
 			}
 		})
 	}
