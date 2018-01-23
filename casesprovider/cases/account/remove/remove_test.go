@@ -50,7 +50,8 @@ func TestRemoveAccountCreation(t *testing.T) {
 }
 
 func TestRemoveAccountError(t *testing.T) {
-	testCases := map[string]struct {
+	testCases := []struct {
+		testName     string
 		id           int
 		username     string
 		name         string
@@ -62,7 +63,8 @@ func TestRemoveAccountError(t *testing.T) {
 		login        bool
 		checkAccount bool
 	}{
-		"AccountNotExists": {
+		{
+			testName:     "AccountNotExists",
 			id:           1,
 			username:     "ritho",
 			name:         "ritho",
@@ -74,7 +76,8 @@ func TestRemoveAccountError(t *testing.T) {
 			login:        false,
 			checkAccount: false,
 		},
-		"AccountNotLogin": {
+		{
+			testName:     "AccountNotLogin",
 			id:           1,
 			username:     "ritho",
 			name:         "ritho",
@@ -86,7 +89,8 @@ func TestRemoveAccountError(t *testing.T) {
 			login:        false,
 			checkAccount: false,
 		},
-		"AccountRemoveSuccessful": {
+		{
+			testName:     "AccountRemoveSuccessful",
 			id:           2,
 			username:     "ritho",
 			name:         "ritho",
@@ -100,8 +104,8 @@ func TestRemoveAccountError(t *testing.T) {
 		},
 	}
 
-	for name, tc := range testCases {
-		t.Run(name, func(t *testing.T) {
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
 			var err error
 
 			uc := New()
