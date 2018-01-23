@@ -270,14 +270,14 @@ func TestPostHandler(t *testing.T) {
 			useID:     false,
 		},
 		{
-			name:      "RemoveAccountError",
+			name:      "RemoveAccountSuccess",
 			endpoint:  "/account/remove",
 			input:     `{"id":1, "token": "00000000-0000-0000-0000-000000000000"}`,
 			code:      200,
 			saveToken: false,
 			saveID:    false,
 			useToken:  true,
-			useID:     false,
+			useID:     true,
 		},
 	}
 
@@ -288,7 +288,7 @@ func TestPostHandler(t *testing.T) {
 			ctx.Request.Header.SetRequestURI(tc.endpoint)
 
 			if tc.useToken {
-				var re = regexp.MustCompile(`"token"[ ]*:[ ]*"[0-9]{8}-[0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9]{12}"`)
+				var re = regexp.MustCompile(`(?i)"token"[ ]*:[ ]*"[0-9e-f]{8}-[0-9e-f]{4}-[0-9e-f]{4}-[0-9e-f]{4}-[0-9e-f]{12}"`)
 				tc.input = re.ReplaceAllString(tc.input, `"token":"`+token+`"`)
 			}
 
@@ -305,7 +305,7 @@ func TestPostHandler(t *testing.T) {
 
 			tests.SaveGoldenData(t, tc.name, ctx.Response.Body())
 			expected := tests.GetGoldenData(t, tc.name)
-			if !bytes.Equal(ctx.Response.Body(), expected) {
+			if !bytes.Contains(ctx.Response.Body(), expected) {
 				t.Errorf(`Expected %s, Got %s`, expected, ctx.Response.Body())
 			}
 
