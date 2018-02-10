@@ -36,6 +36,7 @@ type Account struct {
 	username string
 	email    string
 	password string
+	active   bool
 }
 
 // New returns a new Account object.
