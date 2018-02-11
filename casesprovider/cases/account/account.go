@@ -21,6 +21,8 @@ package account
 
 import (
 	"github.com/radar-go/radar/casesprovider"
+	"github.com/radar-go/radar/casesprovider/cases/account/activate"
+	"github.com/radar-go/radar/casesprovider/cases/account/deactivate"
 	"github.com/radar-go/radar/casesprovider/cases/account/edit"
 	"github.com/radar-go/radar/casesprovider/cases/account/login"
 	"github.com/radar-go/radar/casesprovider/cases/account/logout"
@@ -29,6 +31,8 @@ import (
 )
 
 func init() {
+	casesprovider.Register(activate.New())
+	casesprovider.Register(deactivate.New())
 	casesprovider.Register(edit.New())
 	casesprovider.Register(login.New())
 	casesprovider.Register(logout.New())

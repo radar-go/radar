@@ -42,7 +42,7 @@ type Result struct {
 func New() *UseCase {
 	uc := &UseCase{
 		usecase.UseCase{
-			Name: "AccountEdit",
+			Name: "AccountActivate",
 			Params: map[string]interface{}{
 				"id":    0,
 				"token": "",

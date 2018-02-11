@@ -31,7 +31,7 @@ import (
 func TestEndpoints(t *testing.T) {
 	ds := New()
 
-	numEndpoints := 5
+	numEndpoints := 7
 	endpoints := ds.Endpoints()
 	if len(endpoints) != numEndpoints {
 		t.Errorf("Expected %d, Got %d", numEndpoints, len(endpoints))

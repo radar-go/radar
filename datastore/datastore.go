@@ -45,11 +45,13 @@ func New() *Datastore {
 // Endpoints returns a list of endpoints linked with their use case.
 func (d *Datastore) Endpoints() map[string]string {
 	return map[string]string{
-		"/account/edit":     "AccountEdit",
-		"/account/login":    "AccountLogin",
-		"/account/logout":   "AccountLogout",
-		"/account/register": "AccountRegister",
-		"/account/remove":   "AccountRemove",
+		"/account/activate":   "AccountActivate",
+		"/account/deactivate": "AccountDeactivate",
+		"/account/edit":       "AccountEdit",
+		"/account/login":      "AccountLogin",
+		"/account/logout":     "AccountLogout",
+		"/account/register":   "AccountRegister",
+		"/account/remove":     "AccountRemove",
 	}
 }
 

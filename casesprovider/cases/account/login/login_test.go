@@ -29,7 +29,7 @@ import (
 func TestLogin(t *testing.T) {
 	uc := New()
 	if uc.Name != "AccountLogin" {
-		t.Errorf("Expected Login, Got %s", uc.Name)
+		t.Errorf("Expected AccountLogin, Got %s", uc.Name)
 	}
 
 	uc.SetDatastore(datastore.New())
