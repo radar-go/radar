@@ -143,6 +143,7 @@ func TestDatastoreLogout(t *testing.T) {
 	ds := New()
 
 	ds.accounts["ritho"] = &account.Account{}
+	ds.accounts["ritho"].SetUsername("ritho")
 	err := ds.AddSession("00000000-0000-0000-0000-000000000000", "ritho")
 	if err != nil {
 		t.Errorf("Unexpected error %+v", err)
@@ -172,15 +173,15 @@ func TestUpdateAccount(t *testing.T) {
 	err := ds.UpdateAccountData(acc, " ")
 	if err == nil {
 		t.Error("Expected error updating the account data")
-	} else if errors.Cause(err) != account.ErrUserNotLoggedIn {
-		t.Errorf("Expected %s, Got %s", account.ErrUserNotLoggedIn, errors.Cause(err))
+	} else if errors.Cause(err) != account.ErrAccountNotExists {
+		t.Errorf("Expected %s, Got %s", account.ErrAccountNotExists, errors.Cause(err))
 	}
 
 	err = ds.UpdateAccountData(acc, session)
 	if err == nil {
 		t.Error("Expected error updating the account data")
-	} else if errors.Cause(err) != account.ErrUserNotLoggedIn {
-		t.Errorf("Expected %s, Got %s", account.ErrUserNotLoggedIn, errors.Cause(err))
+	} else if errors.Cause(err) != account.ErrAccountNotExists {
+		t.Errorf("Expected %s, Got %s", account.ErrAccountNotExists, errors.Cause(err))
 	}
 
 	ds.sessions[session] = acc

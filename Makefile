@@ -82,7 +82,6 @@ build: bin/$(ARCH)/$(BIN)
 
 bin/$(ARCH)/$(BIN): build-dirs
 	@echo "building: $@"
-	@if [ ! -d $(CURRENT_DIR)/vendors ]; then $(MAKE) update-vendors; fi
 	@docker run                                                            \
 	    -ti                                                                \
 	    --rm                                                               \
