@@ -74,6 +74,10 @@ func (uc *UseCase) Run() (casesprovider.ResultPrinter, error) {
 		return res, errors.New("Password missmatch")
 	}
 
+	if uc.Datastore.DoesAccountHaveSessionByUsername(login) {
+		return res, errors.New("User already logged in")
+	}
+
 	uuid, err := uuid.NewTimeBased()
 	if err != nil {
 		return res, err

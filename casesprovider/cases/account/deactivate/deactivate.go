@@ -20,6 +20,8 @@ package deactivate
 */
 
 import (
+	"fmt"
+
 	"github.com/pkg/errors"
 
 	"github.com/radar-go/radar/casesprovider"
@@ -70,14 +72,18 @@ func (uc *UseCase) Run() (casesprovider.ResultPrinter, error) {
 		return res, errors.New("The account id doesn't match with the session information")
 	}
 
-	// err = uc.Datastore.UpdateAccountData(account, token)
-	// if err != nil {
-	// 	res.Res["result"] = "Error updating the account data"
-	// 	res.Res["error"] = fmt.Sprintf("%s", err)
-	// } else {
-	// 	res.Res["result"] = "Account data updated successfully"
-	// 	res.Res["id"] = account.ID()
-	// }
+	err = uc.Datastore.DeleteSession(token, account.Username())
+	if err != nil {
+		return res, err
+	}
+
+	if uc.Datastore.DeactivateAccount(account.ID()) {
+		res.Res["result"] = "Account deactivated successfully"
+		res.Res["id"] = account.ID()
+	} else {
+		res.Res["result"] = "Error deactivating the account"
+		res.Res["error"] = fmt.Sprintf("%s", err)
+	}
 
 	return res, nil
 }

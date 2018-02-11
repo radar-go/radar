@@ -72,6 +72,39 @@ func (d *Datastore) AccountRegistration(username, name, email, password string) 
 	return acc.ID(), nil
 }
 
+// IsAccountRegisteredByUsername returns true if an account is registered by an
+// username, false otherwise.
+func (d *Datastore) IsAccountRegisteredByUsername(username string) bool {
+	cleanUsername := radar.CleanString(username)
+	_, ok := d.accounts[cleanUsername]
+
+	return ok
+}
+
+// IsAccountRegisteredByID returns true if an account is registered by an id,
+// false otherwise.
+func (d *Datastore) IsAccountRegisteredByID(id int) bool {
+	for _, acc := range d.accounts {
+		if acc.ID() == id {
+			return true
+		}
+	}
+
+	return false
+}
+
+// GetAccountByID returns an user stored in the datastore by its id or an error
+// in case it doesn't exists.
+func (d *Datastore) GetAccountByID(id int) (*account.Account, error) {
+	for _, acc := range d.accounts {
+		if acc.ID() == id {
+			return acc, nil
+		}
+	}
+
+	return nil, account.ErrAccountNotExists
+}
+
 // GetAccountByUsername returns an user stored in the datastore by its username or
 // an error in case it doesn't exists.
 func (d *Datastore) GetAccountByUsername(username string) (*account.Account, error) {
@@ -85,6 +118,48 @@ func (d *Datastore) GetAccountByUsername(username string) (*account.Account, err
 	}
 
 	return acc, err
+}
+
+// AddSession adds an account session to the datastore.
+func (d *Datastore) AddSession(session, username string) error {
+	var err error
+
+	cleanSession := radar.CleanString(session)
+	if len(cleanSession) != len(uuid.Nil.String()) {
+		return errors.New("Session id too short")
+	}
+
+	if _, ok := d.sessions[cleanSession]; ok {
+		return errors.Wrap(account.ErrUserAlreadyLogin, username)
+	}
+
+	cleanUsername := radar.CleanString(username)
+	if !d.IsAccountRegisteredByUsername(cleanUsername) {
+		return errors.Wrap(account.ErrAccountNotExists, username)
+	}
+
+	d.sessions[cleanSession] = d.accounts[username]
+
+	return err
+}
+
+// DeleteSession removes the user session from the datastore.
+func (d *Datastore) DeleteSession(session, username string) error {
+	var err error
+
+	cleanSession := radar.CleanString(session)
+	cleanUsername := radar.CleanString(username)
+	if !d.IsAccountRegisteredByUsername(cleanUsername) {
+		return errors.Wrap(account.ErrAccountNotExists, username)
+	}
+
+	if !d.DoesAccountHaveSessionByUsername(cleanUsername) {
+		return errors.Wrap(account.ErrUserNotLoggedIn, username)
+	}
+
+	delete(d.sessions, cleanSession)
+
+	return err
 }
 
 // GetAccountBySession returns an account by its session id or an error in case
@@ -106,110 +181,114 @@ func (d *Datastore) GetAccountBySession(session string) (*account.Account, error
 	return acc, err
 }
 
-// AddSession adds an account session to the datastore.
-func (d *Datastore) AddSession(session, username string) error {
-	var err error
-
-	cleanSession := radar.CleanString(session)
-	if len(cleanSession) != len(uuid.Nil.String()) {
-		return errors.New("Session id too short")
-	}
-
-	_, ok := d.sessions[cleanSession]
-	if ok {
-		return errors.Wrap(account.ErrUserAlreadyLogin, username)
-	}
-
-	cleanUsername := radar.CleanString(username)
-	acc, ok := d.accounts[cleanUsername]
-	if !ok {
-		err = errors.Wrap(account.ErrAccountNotExists, username)
-		glog.Errorf("%+v", err)
-		return err
-	}
-
-	for _, value := range d.sessions {
-		if acc.ID() == value.ID() {
-			return errors.Wrap(account.ErrUserAlreadyLogin, username)
+// GetSessionByID returns a session associated to an account id or error if it
+// doesn't exists.
+func (d *Datastore) GetSessionByID(id int) (string, error) {
+	for session, value := range d.sessions {
+		if value.ID() == id {
+			return session, nil
 		}
 	}
 
-	d.sessions[cleanSession] = acc
-
-	return err
+	return "", errors.New("No session associated to the account id")
 }
 
-// DeleteSession removes the user session from the datastore.
-func (d *Datastore) DeleteSession(session, username string) error {
-	var err error
-
-	cleanSession := radar.CleanString(session)
+// GetSessionByUsername returns a session associated to an username or error if
+// it doesn't exists.
+func (d *Datastore) GetSessionByUsername(username string) (string, error) {
 	cleanUsername := radar.CleanString(username)
-	if _, ok := d.accounts[cleanUsername]; !ok {
-		err = errors.Wrap(account.ErrAccountNotExists, username)
-		glog.Errorf("%+v", err)
-		return err
+	for session, value := range d.sessions {
+		if value.Username() == cleanUsername {
+			return session, nil
+		}
 	}
 
-	if _, ok := d.sessions[cleanSession]; !ok {
-		return errors.Wrap(account.ErrUserNotLoggedIn, username)
+	return "", errors.New("No session associated to the username")
+}
+
+// DoesAccountHaveSessionByID returns true if the account id have associated a
+// session and false otherwise.
+func (d *Datastore) DoesAccountHaveSessionByID(id int) bool {
+	for _, value := range d.sessions {
+		if value.ID() == id {
+			return true
+		}
 	}
 
-	delete(d.sessions, cleanSession)
+	return false
+}
 
-	return err
+// DoesAccountHaveSessionByUsername returns true if the username have associated
+// a session and false otherwise.
+func (d *Datastore) DoesAccountHaveSessionByUsername(username string) bool {
+	cleanUsername := radar.CleanString(username)
+	for _, value := range d.sessions {
+		if value.Username() == cleanUsername {
+			return true
+		}
+	}
+
+	return false
 }
 
 // UpdateAccountData updates the account data information in the datastore.
 func (d *Datastore) UpdateAccountData(acc *account.Account, session string) error {
 	var err error
 
-	cleanSession := radar.CleanString(session)
-	if _, ok := d.sessions[cleanSession]; !ok {
-		return errors.Wrap(account.ErrUserNotLoggedIn, acc.Username())
-	}
-
-	delete(d.sessions, cleanSession)
-	d.sessions[cleanSession] = acc
-
-	registered := false
-	for key, userReg := range d.accounts {
-		if acc.ID() == userReg.ID() {
-			delete(d.accounts, key)
-			d.accounts[acc.Username()] = acc
-			registered = true
-			break
-		}
-	}
-
-	if !registered {
+	if !d.IsAccountRegisteredByID(acc.ID()) {
 		return errors.Wrap(account.ErrAccountNotExists, acc.Username())
 	}
+
+	cleanSession := radar.CleanString(session)
+	if _, ok := d.sessions[cleanSession]; ok {
+		d.sessions[cleanSession] = acc
+	}
+
+	d.accounts[acc.Username()] = acc
 
 	return err
 }
 
 // RemoveAccount removes an account from the datastore.
 func (d *Datastore) RemoveAccount(acc *account.Account) error {
-	for sessionID, user := range d.sessions {
-		if user.ID() == acc.ID() {
-			delete(d.sessions, sessionID)
-			break
-		}
-	}
-
-	registered := false
-	for key, userReg := range d.accounts {
-		if acc.ID() == userReg.ID() {
-			delete(d.accounts, key)
-			registered = true
-			break
-		}
-	}
-
-	if !registered {
+	if !d.IsAccountRegisteredByID(acc.ID()) {
 		return errors.Wrap(account.ErrAccountNotExists, acc.Username())
 	}
 
+	if d.DoesAccountHaveSessionByID(acc.ID()) {
+		session, _ := d.GetSessionByID(acc.ID())
+		delete(d.sessions, session)
+	}
+
+	delete(d.accounts, acc.Username())
+
 	return nil
+}
+
+// ActivateAccount activates an account by its id.
+func (d *Datastore) ActivateAccount(id int) bool {
+	acc, err := d.GetAccountByID(id)
+	if err != nil {
+		glog.Errorf("Unexpected error: %s", err)
+		return false
+	}
+
+	acc.Activate()
+	d.accounts[acc.Username()] = acc
+
+	return true
+}
+
+// DeactivateAccount deactivates an account by its id.
+func (d *Datastore) DeactivateAccount(id int) bool {
+	acc, err := d.GetAccountByID(id)
+	if err != nil {
+		glog.Errorf("Unexpected error: %s", err)
+		return false
+	}
+
+	acc.Deactivate()
+	d.accounts[acc.Username()] = acc
+
+	return true
 }
