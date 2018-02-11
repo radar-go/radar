@@ -32,6 +32,11 @@ func TestLogin(t *testing.T) {
 		t.Errorf("Expected AccountLogin, Got %s", uc.Name)
 	}
 
+	newUC := uc.New()
+	if newUC.GetName() != "AccountLogin" {
+		t.Errorf("Expected AccountLogin, Got %s", newUC.GetName())
+	}
+
 	uc.SetDatastore(datastore.New())
 	uc.AddParam("login", "ritho")
 	uc.AddParam("password", "12345")

@@ -30,5 +30,10 @@ func TestAccountDeactivation(t *testing.T) {
 		t.Errorf("Expected AccountDeactivate, Got %s", uc.Name)
 	}
 
+	newUC := uc.New()
+	if newUC.GetName() != "AccountDeactivate" {
+		t.Errorf("Expected AccountDeactivate, Got %s", newUC.GetName())
+	}
+
 	uc.SetDatastore(datastore.New())
 }
