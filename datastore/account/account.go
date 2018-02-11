@@ -82,6 +82,11 @@ func (a *Account) Password() string {
 	return a.password
 }
 
+// IsActive returns true if the account is active or false otherwise.
+func (a *Account) IsActive() bool {
+	return a.active
+}
+
 // SetUsername sets the account username.
 func (a *Account) SetUsername(username string) error {
 	newUsername := radar.CleanString(username)
@@ -116,6 +121,16 @@ func (a *Account) SetPassword(p string) error {
 	a.password = newPassword
 
 	return nil
+}
+
+// Activate sets the account to active.
+func (a *Account) Activate() {
+	a.active = true
+}
+
+// Deactivate sets the account to not active.
+func (a *Account) Deactivate() {
+	a.active = false
 }
 
 // Equals check that two accounts are deep equal.
