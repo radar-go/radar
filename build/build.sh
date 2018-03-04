@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2017 Radar team (see AUTHORS)
+# Copyright (C) 2017-2018 Radar team (see AUTHORS)
 #
 # This file is part of radar.
 #
@@ -21,6 +21,10 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+if [ -z "${BIN}" ]; then
+    echo "BIN must be set"
+    exit 1
+fi
 if [ -z "${PKG}" ]; then
     echo "PKG must be set"
     exit 1
@@ -41,4 +45,4 @@ export GOCACHE=/go/.cache
 go install                                                         \
     -installsuffix "static"                                        \
     -ldflags "-X ${PKG}/pkg/version.VERSION=${VERSION}"            \
-    ./...
+    ./cmd/${BIN}/...

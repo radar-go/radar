@@ -97,6 +97,7 @@ bin/$(ARCH)/$(BIN): build-dirs
 	        ARCH=$(ARCH)                                                   \
 	        VERSION=$(VERSION)                                             \
 	        PKG=$(PKG)                                                     \
+	        BIN=$(BIN)                                                     \
 	        ./build/build.sh                                               \
 	    "
 
