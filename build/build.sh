@@ -36,6 +36,7 @@ fi
 
 export CGO_ENABLED=0
 export GOARCH="${ARCH}"
+export GOCACHE=/go/.cache
 
 go install                                                         \
     -installsuffix "static"                                        \
