@@ -26,23 +26,7 @@ import (
 	"github.com/radar-go/radar/datastore"
 )
 
-func addParam(t *testing.T, uc *UseCase, param string, value interface{}) {
-	t.Helper()
-
-	err := uc.AddParam(param, value)
-	if err != nil {
-		t.Errorf("Unknown param %s", param)
-	}
-}
-
-func unexpectedError(t *testing.T, err error) {
-	t.Helper()
-	if err != nil {
-		t.Errorf("Unexpected error: %s", err)
-	}
-}
-
-func TestAccountActivation(t *testing.T) {
+func TestCaseName(t *testing.T) {
 	uc := New()
 	if uc.Name != "AccountActivate" {
 		t.Errorf("Expected AccountActivate, Got %s", uc.Name)
@@ -52,13 +36,67 @@ func TestAccountActivation(t *testing.T) {
 	if newUC.GetName() != "AccountActivate" {
 		t.Errorf("Expected AccountActivate, Got %s", newUC.GetName())
 	}
+}
 
+func TestCaseParams(t *testing.T) {
+	uc := New()
 	uc.SetDatastore(datastore.New())
-	err := uc.AddParam("tokens", "12345")
-	if !strings.Contains(fmt.Sprintf("%v", err), "Error adding the param tokens") {
-		t.Errorf("Expected error to contain 'Error adding the param tokens', Got '%s'",
-			err)
+
+	testCases := map[string]struct {
+		params        map[string]interface{}
+		expected      string
+		expectedError bool
+	}{
+		"UnknownTokens": {
+			params: map[string]interface{}{
+				"tokens": "00000000-0000-0000-0000-000000000000",
+			},
+			expected:      "key doesn't exists: Unknown parameter for the use case",
+			expectedError: true,
+		},
+		"IdFormatError": {
+			params: map[string]interface{}{
+				"id": "00000000-0000-0000-0000-000000000000",
+			},
+			expected:      "id: Param is not from the right type",
+			expectedError: true,
+		},
+		"TokenFormatError": {
+			params: map[string]interface{}{
+				"token": 1,
+			},
+			expected:      "token: Param is not from the right type",
+			expectedError: true,
+		},
+		"AddParamsSuccessfully": {
+			params: map[string]interface{}{
+				"id":    1,
+				"token": "00000000-0000-0000-0000-000000000000",
+			},
+			expectedError: false,
+		},
 	}
+
+	for testName, tc := range testCases {
+		t.Run(testName, func(t *testing.T) {
+			for name, value := range tc.params {
+				if tc.expectedError {
+					err := uc.AddParam(name, value)
+					if err == nil {
+						t.Error("Expected error adding the tokens param.")
+					} else if !strings.Contains(fmt.Sprintf("%v", err), tc.expected) {
+						t.Errorf("Expected '%s', Got '%s'", tc.expected, err)
+					}
+				} else {
+					addParam(t, uc, name, value)
+				}
+			}
+		})
+	}
+}
+
+func TestAccountActivation(t *testing.T) {
+	uc := New()
 
 	testCases := map[string]struct {
 		params        map[string]interface{}
@@ -113,6 +151,8 @@ func TestAccountActivation(t *testing.T) {
 	for testName, tc := range testCases {
 		t.Run(testName, func(t *testing.T) {
 			var id int
+			var err error
+
 			uc.SetDatastore(datastore.New())
 			for name, value := range tc.params {
 				addParam(t, uc, name, value)
@@ -152,5 +192,21 @@ func TestAccountActivation(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func addParam(t *testing.T, uc *UseCase, param string, value interface{}) {
+	t.Helper()
+
+	err := uc.AddParam(param, value)
+	if err != nil {
+		t.Errorf("Unknown param %s", param)
+	}
+}
+
+func unexpectedError(t *testing.T, err error) {
+	t.Helper()
+	if err != nil {
+		t.Errorf("Unexpected error: %s", err)
 	}
 }
