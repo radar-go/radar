@@ -35,6 +35,13 @@ func addParam(t *testing.T, uc *UseCase, param string, value interface{}) {
 	}
 }
 
+func unexpectedError(t *testing.T, err error) {
+	t.Helper()
+	if err != nil {
+		t.Errorf("Unexpected error: %s", err)
+	}
+}
+
 func TestAccountActivation(t *testing.T) {
 	uc := New()
 	if uc.Name != "AccountActivate" {
@@ -47,56 +54,103 @@ func TestAccountActivation(t *testing.T) {
 	}
 
 	uc.SetDatastore(datastore.New())
-	addParam(t, uc, "id", 1)
-	addParam(t, uc, "token", "00000000-0000-0000-0000-000000000000")
-
-	_, err := uc.Run()
-	if err == nil {
-		t.Error("Expected error running the use case")
-	} else if fmt.Sprint(err) != "00000000-0000-0000-0000-000000000000: User not logged in" {
-		t.Errorf("Expected '00000000-0000-0000-0000-000000000000: User not logged in', got %s", err)
-	}
-
-	err = uc.AddParam("tokens", "12345")
+	err := uc.AddParam("tokens", "12345")
 	if !strings.Contains(fmt.Sprintf("%v", err), "Error adding the param tokens") {
-		t.Errorf("Expected error to contain 'Error adding the param tokens', Got '%v'",
+		t.Errorf("Expected error to contain 'Error adding the param tokens', Got '%s'",
 			err)
 	}
 
-	id, err := uc.Datastore.AccountRegistration("ritho", "ritho", "palvarez@ritho.net",
-		"12345")
-	if err != nil {
-		t.Errorf("Unexpected error: %+v", err)
+	testCases := map[string]struct {
+		params        map[string]interface{}
+		expected      string
+		expectedError bool
+
+		/* Data for user registration. */
+		username string
+		name     string
+		email    string
+		password string
+		register bool
+
+		/* Data for user login. */
+		token string
+		login bool
+	}{
+		"UserNotRegistered": {
+			params: map[string]interface{}{
+				"id":    1,
+				"token": "00000000-0000-0000-0000-000000000000",
+			},
+			expected:      "00000000-0000-0000-0000-000000000000: User not logged in",
+			expectedError: true,
+		},
+		"UserNotLogged": {
+			params: map[string]interface{}{
+				"token": "00000000-0000-0000-0000-000000000000",
+			},
+			expected:      "00000000-0000-0000-0000-000000000000: User not logged in",
+			expectedError: true,
+			username:      "ritho",
+			name:          "ritho",
+			email:         "palvarez@ritho.net",
+			password:      "121212",
+			register:      true,
+		},
+		"ActivationSuccess": {
+			params:        make(map[string]interface{}),
+			expected:      "Account activated successfully",
+			expectedError: false,
+			username:      "ritho",
+			name:          "ritho",
+			email:         "palvarez@ritho.net",
+			password:      "121212",
+			register:      true,
+			token:         "00000000-0000-0000-0000-000000000000",
+			login:         true,
+		},
 	}
 
-	addParam(t, uc, "id", id)
-	_, err = uc.Run()
-	if err == nil {
-		t.Error("Expected error running the use case")
-	} else if fmt.Sprint(err) != "00000000-0000-0000-0000-000000000000: User not logged in" {
-		t.Errorf("Expected '00000000-0000-0000-0000-000000000000: User not logged in', got %s", err)
-	}
+	for testName, tc := range testCases {
+		t.Run(testName, func(t *testing.T) {
+			var id int
+			uc.SetDatastore(datastore.New())
+			for name, value := range tc.params {
+				addParam(t, uc, name, value)
+			}
 
-	err = uc.Datastore.AddSession("00000000-0000-0000-0000-000000000000", "ritho")
-	if err != nil {
-		t.Errorf("Unexpected error %+v", err)
-	}
+			if tc.register {
+				id, err = uc.Datastore.AccountRegistration(tc.username, tc.name,
+					tc.email, tc.password)
+				unexpectedError(t, err)
+				addParam(t, uc, "id", id)
+			}
 
-	res, err := uc.Run()
-	if err != nil {
-		t.Errorf("Unexpected error %+v", err)
-	}
+			if tc.login {
+				err = uc.Datastore.AddSession(tc.token, tc.username)
+				unexpectedError(t, err)
+				addParam(t, uc, "token", tc.token)
+			}
 
-	plainResult, err := res.String()
-	if err != nil {
-		t.Errorf("Unexpected error: %s", err)
-	}
+			res, err := uc.Run()
+			if tc.expectedError {
+				if err == nil {
+					t.Error("Expected error running the use case")
+				} else if fmt.Sprint(err) != tc.expected {
+					t.Errorf("Expected '%s', Got '%s'", tc.expected, err)
+				}
+			} else {
+				unexpectedError(t, err)
+				plainResult, err := res.String()
+				unexpectedError(t, err)
 
-	if !strings.Contains(plainResult, fmt.Sprintf(`"id":%d`, id)) {
-		t.Errorf("Expected id %d in result '%s'", id, plainResult)
-	}
+				if !strings.Contains(plainResult, fmt.Sprintf(`"id":%d`, id)) {
+					t.Errorf("Expected id %d in result '%s'", id, plainResult)
+				}
 
-	if !strings.Contains(plainResult, `Account activated successfully`) {
-		t.Errorf("Expected to activate the account successfully, Got '%s'", plainResult)
+				if !strings.Contains(plainResult, tc.expected) {
+					t.Errorf("Expected '%s', Got '%s'", tc.expected, plainResult)
+				}
+			}
+		})
 	}
 }
