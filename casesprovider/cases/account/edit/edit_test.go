@@ -26,26 +26,89 @@ import (
 	"github.com/goware/emailx"
 	"github.com/pkg/errors"
 
+	"github.com/radar-go/radar/casesprovider/helper"
 	"github.com/radar-go/radar/datastore"
 	"github.com/radar-go/radar/datastore/account"
 )
 
 func TestEditCaseCreation(t *testing.T) {
 	uc := New()
-	if uc.Name != "AccountEdit" {
-		t.Errorf("Expected 'AccountEdit', got '%s'", uc.Name)
-	}
-
-	ucNew := uc.New()
-	if ucNew.GetName() != "AccountEdit" {
-		t.Errorf("Expected 'AccountEdit', got '%s'", ucNew.GetName())
-	}
+	helper.TestCaseName(t, uc, "AccountEdit")
 
 	uc.SetDatastore(datastore.New())
 	_, err := uc.Run()
 	if !strings.Contains(fmt.Sprintf("%s", err), "User not logged in") {
 		t.Error(err)
 	}
+}
+
+func TestCaseParams(t *testing.T) {
+	uc := New()
+	uc.SetDatastore(datastore.New())
+
+	testCases := map[string]helper.ParamsTestCases{
+		"UnknownParam": {
+			Params: map[string]interface{}{
+				"idd": 1,
+			},
+			Expected:      "key doesn't exists: Unknown parameter for the use case",
+			ExpectedError: true,
+		},
+		"IdFormatError": {
+			Params: map[string]interface{}{
+				"id": "00000000-0000-0000-0000-000000000000",
+			},
+			Expected:      "id: Param is not from the right type",
+			ExpectedError: true,
+		},
+		"TokenFormatError": {
+			Params: map[string]interface{}{
+				"token": 1,
+			},
+			Expected:      "token: Param is not from the right type",
+			ExpectedError: true,
+		},
+		"UsernameFormatError": {
+			Params: map[string]interface{}{
+				"username": 1,
+			},
+			Expected:      "username: Param is not from the right type",
+			ExpectedError: true,
+		},
+		"NameFormatError": {
+			Params: map[string]interface{}{
+				"name": 1,
+			},
+			Expected:      "name: Param is not from the right type",
+			ExpectedError: true,
+		},
+		"EmailFormatError": {
+			Params: map[string]interface{}{
+				"email": 1,
+			},
+			Expected:      "email: Param is not from the right type",
+			ExpectedError: true,
+		},
+		"PasswordFormatError": {
+			Params: map[string]interface{}{
+				"password": 1,
+			},
+			Expected:      "password: Param is not from the right type",
+			ExpectedError: true,
+		},
+		"AddParamsSuccessfully": {
+			Params: map[string]interface{}{
+				"id":       1,
+				"token":    "00000000-0000-0000-0000-000000000000",
+				"username": "ritho",
+				"name":     "ritho",
+				"email":    "palvarez@ritho.net",
+				"password": "121212",
+			},
+			ExpectedError: false,
+		},
+	}
+	helper.TestCaseParams(t, uc, testCases)
 }
 
 func TestEdit(t *testing.T) {
@@ -55,80 +118,78 @@ func TestEdit(t *testing.T) {
 
 	testCases := []struct {
 		testName string
-		username string
-		name     string
-		email    string
-		password string
+		params   map[string]interface{}
 		err      error
 		output   string
 		compare  bool
 	}{
 		{
 			"Success",
-			"senoritho",
-			"senoritho",
-			"i02sopop@gmail.com",
-			"212121",
+			map[string]interface{}{
+				"username": "senoritho",
+				"name":     "senoritho",
+				"email":    "i02sopop@gmail.com",
+				"password": "212121",
+			},
 			nil,
 			fmt.Sprintf(`"id":%d`, id),
 			true,
 		},
 		{
 			"ErrorEmailInvalidFormat",
-			"senoritho",
-			"senoritho",
-			"1@1",
-			"212121",
+			map[string]interface{}{
+				"username": "senoritho",
+				"name":     "senoritho",
+				"email":    "1@1",
+				"password": "212121",
+			},
 			emailx.ErrInvalidFormat,
 			"{}",
 			false,
 		},
 		{
 			"ErrorEmailUnresolvableHost",
-			"senoritho",
-			"senoritho",
-			"email@domain.fakedomain",
-			"212121",
+			map[string]interface{}{
+				"username": "senoritho",
+				"name":     "senoritho",
+				"email":    "email@domain.fakedomain",
+				"password": "212121",
+			},
 			emailx.ErrUnresolvableHost,
 			"{}",
 			false,
 		},
 		{
 			"ErrorUsernameShort",
-			"s",
-			"senoritho",
-			"i02sopop@gmail.com",
-			"212121",
+			map[string]interface{}{
+				"username": "s",
+				"name":     "senoritho",
+				"email":    "i02sopop@gmail.com",
+				"password": "212121",
+			},
 			account.ErrUsernameTooShort,
 			"{}",
 			false,
 		},
 		{
 			"ErrorPasswordShort",
-			"senoritho",
-			"senoritho",
-			"i02sopop@gmail.com",
-			"121",
+			map[string]interface{}{
+				"username": "senoritho",
+				"name":     "senoritho",
+				"email":    "i02sopop@gmail.com",
+				"password": "121",
+			},
 			account.ErrPasswordTooShort,
 			"{}",
 			false,
 		},
 	}
 
-	/* Add the new account data to the edit use case as params. */
-	err := uc.AddParam("idd", id)
-	if !strings.Contains(fmt.Sprintf("%s", err), "Unknown parameter for the use case") {
-		t.Errorf("Unexpected error adding the 'idd' param: %s", err)
-	}
-
 	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			addParam(t, uc, "id", id)
-			addParam(t, uc, "token", session)
-			addParam(t, uc, "username", tc.username)
-			addParam(t, uc, "name", tc.name)
-			addParam(t, uc, "email", tc.email)
-			addParam(t, uc, "password", tc.password)
+		t.Run(tc.testName, func(t *testing.T) {
+			helper.AddParam(t, uc, "id", id)
+			helper.AddParam(t, uc, "token", session)
+			helper.AddParams(t, uc, tc.params)
 
 			/* Edit the account. */
 			res, err := uc.Run()
@@ -150,34 +211,36 @@ func TestEdit(t *testing.T) {
 				/* Get the account from the session. */
 				accountData, err := uc.Datastore.GetAccountBySession(session)
 				if err != nil {
-					t.Errorf("User %s doesn't have session in the datastore", tc.username)
+					t.Errorf("User %s doesn't have session in the datastore", tc.params["username"])
 				}
 
 				/* Check if the account fields have been properly modified. */
-				if accountData.Name() != tc.name {
-					t.Errorf("Expected %s, Got %s", tc.name, accountData.Name())
+				if accountData.Name() != tc.params["name"] {
+					t.Errorf("Expected %s, Got %s", tc.params["name"], accountData.Name())
 				}
 
-				if accountData.Username() != tc.username {
-					t.Errorf("Expected %s, Got %s", tc.username, accountData.Username())
+				if accountData.Username() != tc.params["username"] {
+					t.Errorf("Expected %s, Got %s", tc.params["username"],
+						accountData.Username())
 				}
 
 				if accountData.ID() != id {
 					t.Errorf("Expected %d, Got %d", id, accountData.ID())
 				}
 
-				if accountData.Email() != tc.email {
-					t.Errorf("Expected %s, Got %s", tc.email, accountData.Email())
+				if accountData.Email() != tc.params["email"] {
+					t.Errorf("Expected %s, Got %s", tc.params["email"], accountData.Email())
 				}
 
-				if accountData.Password() != tc.password {
-					t.Errorf("Expected %s, Got %s", tc.password, accountData.Password())
+				if accountData.Password() != tc.params["password"] {
+					t.Errorf("Expected %s, Got %s", tc.params["password"],
+						accountData.Password())
 				}
 
 				/* Get the user from the data stored. */
-				accountDatastore, err := uc.Datastore.GetAccountByUsername(tc.username)
+				accountDatastore, err := uc.Datastore.GetAccountByUsername(tc.params["username"].(string))
 				if err != nil {
-					t.Errorf("User %s is not registered in the datastore", tc.username)
+					t.Errorf("User %s is not registered in the datastore", tc.params["username"])
 				}
 
 				if !accountDatastore.Equals(accountData) {
@@ -195,28 +258,21 @@ func TestEditLogoutError(t *testing.T) {
 
 	/* Logout the user. */
 	err := uc.Datastore.DeleteSession(session, "ritho")
-	if err != nil {
-		t.Errorf("Unexpected error removing a session for the user: %s", err)
-	}
+	helper.UnexpectedError(t, err)
 
-	addParam(t, uc, "id", id)
-	addParam(t, uc, "token", session)
-	addParam(t, uc, "username", "senoritho")
-	addParam(t, uc, "name", "senoritho")
-	addParam(t, uc, "email", "i02sopop@gmail.com")
-	addParam(t, uc, "password", "212121")
+	helper.AddParam(t, uc, "id", id)
+	helper.AddParam(t, uc, "token", session)
+	helper.AddParam(t, uc, "username", "senoritho")
+	helper.AddParam(t, uc, "name", "senoritho")
+	helper.AddParam(t, uc, "email", "i02sopop@gmail.com")
+	helper.AddParam(t, uc, "password", "212121")
 
 	/* Edit the account. */
 	res, err := uc.Run()
-	if !strings.Contains(fmt.Sprintf("%s", err), "User not logged in") {
-		t.Errorf("Unexpected error running the use case: %s", err)
-	}
+	helper.Contains(t, fmt.Sprintf("%s", err), "User not logged in")
 
 	ucRes, err := res.String()
-	if err != nil {
-		t.Errorf("Unexpected error: %s", err)
-	}
-
+	helper.UnexpectedError(t, err)
 	if ucRes != "{}" {
 		t.Error("Expected result to be empty")
 	}
@@ -236,24 +292,10 @@ func initializeTests(t *testing.T, session string) (*UseCase, int) {
 	password := "121212"
 
 	/* Register the account. */
-	id, err := uc.Datastore.AccountRegistration(user, name, email, password)
-	if err != nil {
-		t.Errorf("Unexpected error registering the account: %s", err)
-	}
+	id := helper.RegisterUser(t, uc.Datastore, user, name, email, password)
 
 	/* Login the user. */
-	err = uc.Datastore.AddSession(session, user)
-	if err != nil {
-		t.Errorf("Unexpected error setting a session for the user: %s", err)
-	}
+	helper.LoginUser(t, uc.Datastore, session, user)
 
 	return uc, id
-}
-
-func addParam(t *testing.T, uc *UseCase, name string, value interface{}) {
-	t.Helper()
-	err := uc.AddParam(name, value)
-	if err != nil {
-		t.Errorf("Unexpected error adding the param '%s': %s", name, err)
-	}
 }

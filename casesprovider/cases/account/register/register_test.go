@@ -19,152 +19,80 @@ package register
 */
 
 import (
-	"bytes"
 	"fmt"
 	"testing"
 
 	"github.com/goware/emailx"
-	errCause "github.com/pkg/errors"
 
 	"github.com/radar-go/radar/casesprovider/errors"
+	"github.com/radar-go/radar/casesprovider/helper"
 	"github.com/radar-go/radar/datastore"
 )
 
 func TestRegister(t *testing.T) {
 	uc := New()
-	if uc.Name != "AccountRegister" {
-		t.Errorf("Expected Use Case name to be AccountRegister, got %s", uc.Name)
-	}
-
+	helper.TestCaseName(t, uc, "AccountRegister")
 	uc.SetDatastore(datastore.New())
-	err := uc.AddParam("username", "ritho")
-	if err != nil {
-		t.Errorf("Unexpected error adding an ad param to the use case: %+v", err)
-	}
-
-	err = uc.AddParam("name", "Ritho")
-	if err != nil {
-		t.Errorf("Unexpected error adding an ad param to the use case: %+v", err)
-	}
-
-	err = uc.AddParam("email", "palvarez@ritho.net")
-	if err != nil {
-		t.Errorf("Unexpected error adding an ad param to the use case: %+v", err)
-	}
-
-	err = uc.AddParam("password", "Ritho")
-	if err != nil {
-		t.Errorf("Unexpected error adding an ad param to the use case: %+v", err)
-	}
-
+	helper.AddParam(t, uc, "username", "ritho")
+	helper.AddParam(t, uc, "name", "Ritho")
+	helper.AddParam(t, uc, "email", "palvarez@ritho.net")
+	helper.AddParam(t, uc, "password", "Ritho")
 	res, err := uc.Run()
-	if err != nil {
-		t.Errorf("Unexpected error running the register use case: %+v", err)
-	}
-
-	resStr, err := res.String()
-	if err != nil {
-		t.Errorf("Unexpected error obtaining the result: %+v", err)
-	}
-
-	if resStr != `{"id":1,"result":"Account registered successfully"}` {
-		t.Errorf(`Expected {"id":1,"result":"Account registered successfully"}, Got %s`,
-			resStr)
-	}
-
-	resB, err := res.Bytes()
-	if err != nil {
-		t.Errorf("Unexpected error obtaining the result: %+v", err)
-	}
-
-	if !bytes.Equal(resB, []byte(`{"id":1,"result":"Account registered successfully"}`)) {
-		t.Errorf(`Expected {"id":1,"result":"Account registered successfully"}, Got %s`,
-			resStr)
-	}
+	helper.UnexpectedError(t, err)
+	resultString := helper.GetResultString(t, res)
+	helper.Contains(t, resultString, `"id"`)
+	helper.Contains(t, resultString, `Account registered successfully`)
+	resultBytes := helper.GetResultBytes(t, res)
+	helper.ContainsBytes(t, resultBytes, []byte(`"id"`))
+	helper.ContainsBytes(t, resultBytes, []byte(`Account registered successfully`))
 }
 
 func TestRegisterError(t *testing.T) {
 	uc := New()
-	if uc.Name != "AccountRegister" {
-		t.Errorf("Expected Use Case name to be AccountRegister, got %s", uc.Name)
-	}
-
+	helper.TestCaseName(t, uc, "AccountRegister")
 	uc.Datastore = datastore.New()
-	_ = uc.AddParam("name", "Ritho")
+	helper.AddParam(t, uc, "name", "ritho")
 	_, err := uc.Run()
-	if fmt.Sprintf("%v", err) != "Username too short" {
-		t.Errorf("Unexpected error running the register use case: %v", err)
-	}
-
-	_ = uc.AddParam("username", "Ritho")
+	helper.Contains(t, fmt.Sprintf("%s", err), "Username too short")
+	helper.AddParam(t, uc, "username", "ritho")
 	_, err = uc.Run()
-	if errCause.Cause(err) != emailx.ErrInvalidFormat {
-		t.Errorf("Unexpected error running the register use case: %v", err)
-	}
-
-	_ = uc.AddParam("email", "Ritho")
+	helper.Contains(t, fmt.Sprintf("%s", err), fmt.Sprintf("%s", emailx.ErrInvalidFormat))
+	helper.AddParam(t, uc, "email", "Ritho")
 	_, err = uc.Run()
-	if errCause.Cause(err) != emailx.ErrInvalidFormat {
-		t.Errorf("Unexpected error running the register use case: %v", err)
-	}
-
-	_ = uc.AddParam("email", "Ritho@invalid.es")
+	helper.Contains(t, fmt.Sprintf("%s", err), fmt.Sprintf("%s", emailx.ErrInvalidFormat))
+	helper.AddParam(t, uc, "email", "Ritho@invalid.es")
 	_, err = uc.Run()
-	if errCause.Cause(err) != emailx.ErrUnresolvableHost {
-		t.Errorf("Unexpected error running the register use case: %v", err)
-	}
-
-	_ = uc.AddParam("email", "palvarez@ritho.net")
+	helper.Contains(t, fmt.Sprintf("%s", err), fmt.Sprintf("%s", emailx.ErrUnresolvableHost))
+	helper.AddParam(t, uc, "email", "palvarez@ritho.net")
 	_, err = uc.Run()
-	if fmt.Sprintf("%v", err) != "Password too short" {
-		t.Errorf("Unexpected error running the register use case: %v", err)
-	}
-
-	_ = uc.AddParam("password", "Ritho")
+	helper.Contains(t, fmt.Sprintf("%s", err), "Password too short")
+	helper.AddParam(t, uc, "password", "Ritho")
 	_, err = uc.Run()
-	if err != nil {
-		t.Errorf("Unexpected error running the register use case: %+v", err)
-	}
+	helper.UnexpectedError(t, err)
 }
 
 func TestAdParamErrors(t *testing.T) {
 	uc := New()
-	if uc.Name != "AccountRegister" {
-		t.Errorf("Expected Use Case name to be AccountRegister, got %s", uc.Name)
-	}
+	helper.TestCaseName(t, uc, "AccountRegister")
 
 	err := uc.AddParam("name", "")
-	if errCause.Cause(err) != errors.ErrParamEmpty {
-		t.Errorf("Unexpected error adding an ad param to the use case: %+v", err)
-	}
+	helper.Contains(t, fmt.Sprintf("%s", err), fmt.Sprintf("%s", errors.ErrParamEmpty))
 
 	err = uc.AddParam("email", "")
-	if errCause.Cause(err) != errors.ErrParamEmpty {
-		t.Errorf("Unexpected error adding an ad param to the use case: %+v", err)
-	}
+	helper.Contains(t, fmt.Sprintf("%s", err), fmt.Sprintf("%s", errors.ErrParamEmpty))
 
 	err = uc.AddParam("password", "")
-	if errCause.Cause(err) != errors.ErrParamEmpty {
-		t.Errorf("Unexpected error adding an ad param to the use case: %+v", err)
-	}
+	helper.Contains(t, fmt.Sprintf("%s", err), fmt.Sprintf("%s", errors.ErrParamEmpty))
 
 	err = uc.AddParam("name", 1)
-	if errCause.Cause(err) != errors.ErrParamType {
-		t.Errorf("Unexpected error adding an ad param to the use case: %+v", err)
-	}
+	helper.Contains(t, fmt.Sprintf("%s", err), fmt.Sprintf("%s", errors.ErrParamType))
 
 	err = uc.AddParam("email", 1)
-	if errCause.Cause(err) != errors.ErrParamType {
-		t.Errorf("Unexpected error adding an ad param to the use case: %+v", err)
-	}
+	helper.Contains(t, fmt.Sprintf("%s", err), fmt.Sprintf("%s", errors.ErrParamType))
 
 	err = uc.AddParam("password", 1)
-	if errCause.Cause(err) != errors.ErrParamType {
-		t.Errorf("Unexpected error adding an ad param to the use case: %+v", err)
-	}
+	helper.Contains(t, fmt.Sprintf("%s", err), fmt.Sprintf("%s", errors.ErrParamType))
 
 	err = uc.AddParam("unknown", "Ritho")
-	if errCause.Cause(err) != errors.ErrParamUnknown {
-		t.Errorf("Unexpected error adding an ad param to the use case: %+v", err)
-	}
+	helper.Contains(t, fmt.Sprintf("%s", err), fmt.Sprintf("%s", errors.ErrParamUnknown))
 }

@@ -20,61 +20,40 @@ package login
 
 import (
 	"fmt"
-	"strings"
 	"testing"
 
+	"github.com/radar-go/radar/casesprovider/helper"
 	"github.com/radar-go/radar/datastore"
 )
 
 func TestLogin(t *testing.T) {
 	uc := New()
-	if uc.Name != "AccountLogin" {
-		t.Errorf("Expected AccountLogin, Got %s", uc.Name)
-	}
-
-	newUC := uc.New()
-	if newUC.GetName() != "AccountLogin" {
-		t.Errorf("Expected AccountLogin, Got %s", newUC.GetName())
-	}
+	helper.TestCaseName(t, uc, "AccountLogin")
 
 	uc.SetDatastore(datastore.New())
-	uc.AddParam("login", "ritho")
-	uc.AddParam("password", "12345")
+	helper.AddParam(t, uc, "login", "ritho")
+	helper.AddParam(t, uc, "password", "12345")
 	_, err := uc.Run()
-	if fmt.Sprintf("%v", err) != "ritho: Account doesn't exists" {
-		t.Errorf("Expected 'ritho: Account doesn't exists', Got '%v'", err)
+	if err == nil {
+		t.Error("Expected error running the use case.")
 	}
 
+	helper.Contains(t, fmt.Sprintf("%s", err), "ritho: Account doesn't exists")
 	err = uc.AddParam("passwoed", "12345")
-	if !strings.Contains(fmt.Sprintf("%v", err), "Error adding the param passwoed") {
-		t.Errorf("Expected error to contain 'Error adding the param passwoed', Got '%v'",
-			err)
+	if err == nil {
+		t.Error("Expected error running the use case.")
 	}
 
-	id, err := uc.Datastore.AccountRegistration("ritho", "ritho", "palvarez@ritho.net",
-		"12345")
-	if err != nil {
-		t.Errorf("Unexpected error: %+v", err)
-	}
+	helper.Contains(t, fmt.Sprintf("%s", err), "Error adding the param passwoed")
+	id := helper.RegisterUser(t, uc.Datastore, "ritho", "ritho", "palvarez@ritho.net", "12345")
 
-	uc.AddParam("password", "123456")
+	helper.AddParam(t, uc, "password", "123456")
 	_, err = uc.Run()
-	if fmt.Sprintf("%v", err) != "Password missmatch" {
-		t.Errorf("Expected 'Password missmatch', Got '%v'", err)
-	}
-
-	uc.AddParam("password", "12345")
+	helper.Contains(t, fmt.Sprintf("%s", err), "Password missmatch")
+	helper.AddParam(t, uc, "password", "12345")
 	res, err := uc.Run()
-	if err != nil {
-		t.Errorf("Unexpected error %+v", err)
-	}
-
-	plainResult, _ := res.String()
-	if !strings.Contains(plainResult, fmt.Sprintf(`"id":%d`, id)) {
-		t.Errorf("Expected id %d in result '%s'", id, plainResult)
-	}
-
-	if !strings.Contains(plainResult, `"token":`) {
-		t.Errorf("Expected to have token in the result '%s'", plainResult)
-	}
+	helper.UnexpectedError(t, err)
+	plainResult := helper.GetResultString(t, res)
+	helper.Contains(t, plainResult, fmt.Sprintf(`"id":%d`, id))
+	helper.Contains(t, plainResult, `"token":`)
 }

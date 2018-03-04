@@ -27,7 +27,7 @@ import (
 
 	"github.com/valyala/fasthttp"
 
-	"github.com/radar-go/radar/tests"
+	"github.com/radar-go/radar/helper"
 )
 
 var c *Controller = New()
@@ -303,8 +303,8 @@ func TestPostHandler(t *testing.T) {
 				t.Errorf("Expected %d, Got %d", tc.code, ctx.Response.StatusCode())
 			}
 
-			tests.SaveGoldenData(t, tc.name, ctx.Response.Body())
-			expected := tests.GetGoldenData(t, tc.name)
+			helper.SaveGoldenData(t, tc.name, ctx.Response.Body())
+			expected := helper.GetGoldenData(t, tc.name)
 			if !bytes.Contains(ctx.Response.Body(), expected) {
 				t.Errorf(`Expected %s, Got %s`, expected, ctx.Response.Body())
 			}
