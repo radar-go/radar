@@ -19,34 +19,24 @@ package remove
 */
 
 import (
-	"bytes"
 	"testing"
 
 	"github.com/pkg/errors"
 
+	"github.com/radar-go/radar/casesprovider/helper"
 	"github.com/radar-go/radar/datastore"
 	"github.com/radar-go/radar/datastore/account"
-	"github.com/radar-go/radar/tests"
 )
 
 func TestRemoveAccountCreation(t *testing.T) {
 	uc := New()
-	if uc.Name != "AccountRemove" {
-		t.Errorf("Expected 'AccountRemove', Got '%s'", uc.Name)
-	}
-
-	ucNew := uc.New()
-	if ucNew.GetName() != "AccountRemove" {
-		t.Errorf("Expected 'AccountRemove', Got '%s'", ucNew.GetName())
-	}
+	helper.TestCaseName(t, New(), "AccountRemove")
 
 	uc.SetDatastore(datastore.New())
 	_, err := uc.Run()
-	tests.SaveGoldenData(t, "RemoveAccountCreation", []byte(err.Error()))
-	expected := tests.GetGoldenData(t, "RemoveAccountCreation")
-	if !bytes.Contains([]byte(err.Error()), expected) {
-		t.Error(err)
-	}
+	helper.SaveGoldenData(t, "RemoveAccountCreation", []byte(err.Error()))
+	expected := helper.GetGoldenData(t, "RemoveAccountCreation")
+	helper.ContainsBytes(t, []byte(err.Error()), expected)
 }
 
 func TestRemoveAccountError(t *testing.T) {
@@ -112,35 +102,24 @@ func TestRemoveAccountError(t *testing.T) {
 			uc.SetDatastore(datastore.New())
 
 			if tc.register {
-				id, err := uc.Datastore.AccountRegistration(tc.username, tc.name,
+				id := helper.RegisterUser(t, uc.Datastore, tc.username, tc.name,
 					tc.email, tc.password)
-				if err != nil {
-					t.Errorf("Unexpected error registering the account: %s", err)
-				}
-
 				if id != tc.id {
 					t.Errorf("Expected %d, Got %d", tc.id, id)
 				}
 			}
 
 			if tc.login {
-				err = uc.Datastore.AddSession(tc.session, tc.username)
-				if err != nil {
-					t.Errorf("Unexpected error setting a session for the user: %s", err)
-				}
+				helper.LoginUser(t, uc.Datastore, tc.session, tc.username)
 			}
 
-			addParam(t, uc, "token", tc.session)
-			addParam(t, uc, "id", tc.id)
-
+			helper.AddParam(t, uc, "token", tc.session)
+			helper.AddParam(t, uc, "id", tc.id)
 			res, err := uc.Run()
 			if err != nil {
-				tests.SaveGoldenData(t, tc.testName+"_error", []byte(err.Error()))
-				expected := tests.GetGoldenData(t, tc.testName+"_error")
-				if !bytes.Equal([]byte(err.Error()), expected) {
-					t.Errorf("Expected %s, Got %s", expected, err)
-				}
-
+				helper.SaveGoldenData(t, tc.testName+"_error", []byte(err.Error()))
+				expected := helper.GetGoldenData(t, tc.testName+"_error")
+				helper.ContainsBytes(t, []byte(err.Error()), expected)
 				if errors.Cause(err) != tc.err {
 					t.Errorf("Expect %s, Got %s", tc.err, errors.Cause(err))
 				}
@@ -148,17 +127,10 @@ func TestRemoveAccountError(t *testing.T) {
 				t.Errorf("Expected error to be %s, Got nil", tc.err)
 			}
 
-			actual, err := res.Bytes()
-			if err != nil {
-				t.Errorf("Unexpected error: %s", err)
-			}
-
-			tests.SaveGoldenData(t, tc.testName+"_result", actual)
-			expected := tests.GetGoldenData(t, tc.testName+"_result")
-			if !bytes.Equal(actual, expected) {
-				t.Errorf("Expected %s, Got %s", expected, actual)
-			}
-
+			actual := helper.GetResultBytes(t, res)
+			helper.SaveGoldenData(t, tc.testName+"_result", actual)
+			expected := helper.GetGoldenData(t, tc.testName+"_result")
+			helper.ContainsBytes(t, actual, expected)
 			if tc.checkAccount {
 				_, err = uc.Datastore.GetAccountByUsername(tc.username)
 				if err == nil {
@@ -168,13 +140,5 @@ func TestRemoveAccountError(t *testing.T) {
 				}
 			}
 		})
-	}
-}
-
-func addParam(t *testing.T, uc *UseCase, name string, value interface{}) {
-	t.Helper()
-	err := uc.AddParam(name, value)
-	if err != nil {
-		t.Errorf("Unexpected error adding the param '%s': %s", name, err)
 	}
 }

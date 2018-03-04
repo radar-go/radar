@@ -20,59 +20,37 @@ package logout
 
 import (
 	"fmt"
-	"strings"
 	"testing"
 
+	"github.com/radar-go/radar/casesprovider/helper"
 	"github.com/radar-go/radar/datastore"
 )
 
 func TestLogout(t *testing.T) {
 	uc := New()
-	if uc.Name != "AccountLogout" {
-		t.Errorf("Expected AccountLogout, Got %s", uc.Name)
-	}
-
+	helper.TestCaseName(t, uc, "AccountLogout")
 	uc.SetDatastore(datastore.New())
-	uc.AddParam("username", "ritho")
-	uc.AddParam("token", "00000000-0000-0000-0000-000000000000")
+	helper.AddParam(t, uc, "username", "ritho")
+	helper.AddParam(t, uc, "token", "00000000-0000-0000-0000-000000000000")
 	_, err := uc.Run()
-	if fmt.Sprintf("%v", err) != "ritho: Account doesn't exists" {
-		t.Errorf("Expected 'ritho: Account doesn't exists', Got '%v'", err)
+	if err == nil {
+		t.Error("Expected error running the use case.")
 	}
 
+	helper.Contains(t, fmt.Sprintf("%s", err), "ritho: Account doesn't exists")
 	err = uc.AddParam("tokens", "12345")
-	if !strings.Contains(fmt.Sprintf("%v", err), "Error adding the param tokens") {
-		t.Errorf("Expected error to contain 'Error adding the param tokens', Got '%v'",
-			err)
-	}
-
-	id, err := uc.Datastore.AccountRegistration("ritho", "ritho", "palvarez@ritho.net",
-		"12345")
-	if err != nil {
-		t.Errorf("Unexpected error: %+v", err)
-	}
-
+	helper.Contains(t, fmt.Sprintf("%s", err), "Error adding the param tokens")
+	id := helper.RegisterUser(t, uc.Datastore, "ritho", "ritho", "palvarez@ritho.net", "12345")
 	_, err = uc.Run()
-	if fmt.Sprintf("%v", err) != "ritho: User not logged in" {
-		t.Errorf("Expected 'ritho: User not logged in', Got '%v'", err)
+	if err == nil {
+		t.Error("Expected error running the use case.")
 	}
 
-	err = uc.Datastore.AddSession("00000000-0000-0000-0000-000000000000", "ritho")
-	if err != nil {
-		t.Errorf("Unexpected error %+v", err)
-	}
-
+	helper.Contains(t, fmt.Sprintf("%s", err), "ritho: User not logged in")
+	helper.LoginUser(t, uc.Datastore, "00000000-0000-0000-0000-000000000000", "ritho")
 	res, err := uc.Run()
-	if err != nil {
-		t.Errorf("Unexpected error %+v", err)
-	}
-
-	plainResult, _ := res.String()
-	if !strings.Contains(plainResult, fmt.Sprintf(`"id":%d`, id)) {
-		t.Errorf("Expected id %d in result '%s'", id, plainResult)
-	}
-
-	if !strings.Contains(plainResult, `User logout successfully`) {
-		t.Errorf("Expected to logout successfully, Got '%s'", plainResult)
-	}
+	helper.UnexpectedError(t, err)
+	plainResult := helper.GetResultString(t, res)
+	helper.Contains(t, plainResult, fmt.Sprintf(`"id":%d`, id))
+	helper.Contains(t, plainResult, `User logout successfully`)
 }

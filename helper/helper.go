@@ -1,5 +1,5 @@
-// Package tests implements helper functions for the tests of Radar.
-package tests
+// Package helper implements helper functions for the tests of Radar.
+package helper
 
 /* Copyright (C) 2018 Radar team (see AUTHORS)
 
