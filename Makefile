@@ -164,7 +164,7 @@ bin-clean:
 	@rm -rf .go bin
 
 files-clean:
-	@rm -fr cpu-*.log mem-*.log block-*.log radar.test
+	@rm -fr cpu-*.log mem-*.log block-*.log *.test
 
 check-cpu-tests:
 	@go tool pprof -text -nodecount=10 ./radar.test cpu-*.log
