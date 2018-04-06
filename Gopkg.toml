@@ -17,3 +17,6 @@
 
 [[constraint]]
   name = "github.com/golang-plus/uuid"
+
+[[constraint]]
+  name = "github.com/tdewolff/minify"

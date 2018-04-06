@@ -21,12 +21,16 @@ package config
 
 // Config structure to store the general configurations.
 type Config struct {
-	APIPort int
+	APIPort   int
+	WebPort   int
+	StaticDir string
 }
 
 // New creates and returns a new Config object.
 func New() *Config {
 	return &Config{
-		APIPort: 10000,
+		APIPort:   10000,
+		WebPort:   20000,
+		StaticDir: "static",
 	}
 }

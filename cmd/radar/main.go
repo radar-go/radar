@@ -1,7 +1,7 @@
 // Package main implements the radar command.
 package main
 
-/* Copyright (C) 2017 Radar team (see AUTHORS)
+/* Copyright (C) 2017-2018 Radar team (see AUTHORS)
 
    This file is part of radar.
 
@@ -21,20 +21,68 @@ package main
 
 import (
 	"flag"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/golang/glog"
 
 	"github.com/radar-go/radar/ui/api"
+	"github.com/radar-go/radar/ui/web"
 )
 
 func main() {
 	/* Parse the arguments. */
 	flag.Parse()
 
-	/* Starts the radar API. */
+	/* Start the radar API. */
 	a := api.New()
 	err := a.Start()
 	if err != nil {
 		glog.Exit(err)
 	}
+
+	/* Start the radar web interface. */
+	w := web.New()
+	err = w.Start()
+	if err != nil {
+		glog.Exit(err)
+	}
+
+	exit := make(chan os.Signal, 1)
+	reload := make(chan os.Signal, 1)
+	signal.Notify(exit, syscall.SIGINT, syscall.SIGTERM)
+	signal.Notify(reload, syscall.SIGUSR1)
+
+	for {
+		select {
+		case <-exit:
+			glog.Info("Stoping servers...")
+			err := a.Stop()
+			if err != nil {
+				glog.Exitf("Error stoping the api server: %s", err)
+			}
+
+			err = w.Stop()
+			if err != nil {
+				glog.Exitf("Error stoping the web server: %s", err)
+			}
+
+			os.Exit(0)
+		case <-reload:
+			glog.Info("Reloading servers...")
+			err := a.Reload()
+			if err != nil {
+				glog.Exitf("Error reloading the api server: %s", err)
+			}
+
+			err = w.Reload()
+			if err != nil {
+				glog.Exitf("Error reloading the web server: %s", err)
+			}
+
+			glog.Info("Servers reloaded")
+		}
+	}
+
 }

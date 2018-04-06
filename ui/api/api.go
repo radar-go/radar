@@ -46,6 +46,7 @@ func (a *API) Start() error {
 	var err error
 	cfg := config.New()
 	c := controller.New()
+
 	server := fasthttp.Server{
 		Handler:           fasthttp.CompressHandler(c.Router.Handler),
 		ReadBufferSize:    1024 * 64,
@@ -58,11 +59,18 @@ func (a *API) Start() error {
 		return err
 	}
 
-	glog.Infof("Starting api on port %d...", cfg.APIPort)
-	return server.Serve(a.listener)
+	go func() {
+		glog.Infof("Starting api on port %d...", cfg.APIPort)
+		err := server.Serve(a.listener)
+		if err != nil {
+			glog.Exit("Error starting the API: %s", err)
+		}
+	}()
+
+	return err
 }
 
-// Stop stops the API.
+// Stop the Radar API.
 func (a *API) Stop() error {
 	var err error
 
@@ -70,6 +78,22 @@ func (a *API) Stop() error {
 		err = a.listener.Close()
 		time.Sleep(time.Second)
 		a.listener = nil
+	}
+
+	return err
+}
+
+// Reload the Radar API.
+func (a *API) Reload() error {
+	err := a.Stop()
+	if err != nil {
+		glog.Errorf("Error stoping the api server: %s", err)
+		return err
+	}
+
+	err = a.Start()
+	if err != nil {
+		glog.Exitf("Error starting the api server: %s", err)
 	}
 
 	return err

@@ -144,14 +144,40 @@ tests: build-dirs
 build-dirs:
 	@mkdir -p bin/$(ARCH)
 	@mkdir -p .go/src/$(PKG) .go/pkg .go/bin .go/std/$(ARCH)
+	@qtc -dir $(CURRENT_DIR)/ui/web/templates
 
 clean: container-clean bin-clean files-clean
 
 container-clean:
 	@rm -rf .container-* .dockerfile-* .push-*
 
-run:
-	@bin/$(ARCH)/$(BIN) -alsologtostderr=true
+start:
+	@if [ ! -f $(CURRENT_DIR)/.radar.pid ]; then \
+		echo -n "\\033[1;35m+++ Startng radar\\033[39;0m "; \
+		$(CURRENT_DIR)/bin/$(ARCH)/$(BIN) -alsologtostderr=true 1> radar.log < /dev/null 2>&1 & \
+		echo $$! > $(CURRENT_DIR)/.radar.pid ; \
+		while ! curl localhost:20000/healthcheck > /dev/null 2>&1; do \
+			/bin/sleep 1; \
+			echo -n "\\033[1;35m.\\033[39;0m"; \
+		done; \
+		echo; \
+	fi
+
+stop:
+	@if [ -f $(CURRENT_DIR)/.radar.pid ]; then \
+		echo -n "\\033[1;35m+++ Stopping web\\033[39;0m "; \
+		kill -s 15 `cat $(CURRENT_DIR)/.radar.pid`; \
+		while curl localhost:20000/healthcheck > /dev/null 2>&1; do \
+			/bin/sleep 1; \
+			echo -n "\\033[1;35m.\\033[39;0m"; \
+		done; \
+		rm -f $(CURRENT_DIR)/.radar.pid; \
+		echo; \
+	fi
+
+restart:
+	$(MAKE) stop
+	$(MAKE) start
 
 build-local: build-dirs
 	@go build -o bin/$(ARCH)/$(BIN) cmd/mrrobot/main.go
@@ -165,6 +191,7 @@ bin-clean:
 
 files-clean:
 	@rm -fr cpu-*.log mem-*.log block-*.log *.test
+	@rm -fr radar.log
 
 check-cpu-tests:
 	@go tool pprof -text -nodecount=10 ./radar.test cpu-*.log

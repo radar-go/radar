@@ -7,3 +7,6 @@
 
 /Gopkg.lock
 /vendor
+
+/.radar.pid
+/radar.log

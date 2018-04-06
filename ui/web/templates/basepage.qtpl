@@ -1,0 +1,37 @@
+{% interface
+Page {
+	 Title()
+}
+%}
+
+{% func PageTemplate(p Page) %}
+<!DOCTYPE HTML>
+<html lang="es">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link href="/css/bootstrap.min.css" rel="stylesheet">
+		<title>{%= p.Title() %}</title>
+	</head>
+	<body id="radar">
+		  <div class="container-fluid">
+		  	   <div class="row">
+			   		<div class="col">
+		  	   			 <h1 class="text-center">{%= p.Title() %}</h1>
+					</div>
+		  	   </div>
+		  </div>
+		  <script src="/js/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"></script>
+		  <script src="/js/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"></script>
+		  <script src="/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"></script>
+	</body>
+</html>
+{% endfunc %}
+
+{% code type BasePage struct {
+   TemplateName string
+   TitleStr string
+}
+%}
+
+{% func (p *BasePage) Title() %}{%s p.TitleStr %}{% endfunc %}
