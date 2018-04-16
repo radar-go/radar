@@ -139,6 +139,27 @@ func (c *Controller) home(ctx *fasthttp.RequestCtx) {
 	p.JavascriptArr = append(p.JavascriptArr,
 		c.getSha386Sum("bootstrap.min.js", "js"))
 
+	p.SectionsArr = append(p.SectionsArr,
+		templates.Section{
+			Name:     "Home",
+			Link:     "/",
+			Active:   true,
+			Disabled: false,
+		},
+		templates.Section{
+			Name:     "Link",
+			Link:     "/",
+			Active:   false,
+			Disabled: false,
+		},
+		templates.Section{
+			Name:     "Disabled",
+			Link:     "/",
+			Active:   false,
+			Disabled: true,
+		},
+	)
+
 	templates.WritePageTemplate(writer, p)
 }
 

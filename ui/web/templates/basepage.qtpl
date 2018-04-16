@@ -4,6 +4,9 @@ Page {
 
 	 Header()
 	 Main()
+	 Sections()
+	 Login()
+	 Search()
 	 Footer()
 
 	 CSS()
@@ -35,9 +38,18 @@ Page {
    }
 %}
 
+{% code type Section struct {
+   Name string
+   Link string
+   Active bool
+   Disabled bool
+   }
+%}
+
 {% code type BasePage struct {
    TemplateName string
    TitleStr string
+   SectionsArr []Section
    Copyright string
 
    CSSArr []File
@@ -52,31 +64,39 @@ Page {
 	<nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
 		 <a class="navbar-brand" href="/">Radar</a>
 		 <div id="navbarCollapse" class="collapse navbar-collapse">
-			  <ul class="navbar-nav mr-auto">
-				  <li class="nav-item active">
-					  <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
-				  </li>
-				  <li class="nav-item">
-					  <a class="nav-link" href="/">Link</a>
-				  </li>
-				  <li class="nav-item">
-					  <a class="nav-link disabled" href="/">Disabled</a>
-				  </li>
-			  </ul>
-			  <div class="nav-item dropdown">
-				   <a class="nav-link dropdown-toggle login" href="/login" id="login" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Login</a>
-				   <div class="dropdown-menu" aria-labelledby="login">
-						<a class="dropdown-item" href="/login">login</a>
-						<a class="dropdown-item" href="/register">register</a>
-				   </div>
-			  </div>
-			  <form class="form-inline mt-2 mt-md-0">
-					<input class="form-control mr-sm-2" placeholder="Search" aria-label="Search" type="text">
-					<button class="btn btn-outline-success my-2 my-sm-0 bg-secondary" type="submit">Search</button>
-			  </form>
+			  {%= p.Sections() %}
+			  {%= p.Login() %}
+			  {%= p.Search() %}
 		 </div>
 	</nav>
 </header>
+{% endfunc %}
+
+{% func (p *BasePage) Sections() %}
+   <ul class="navbar-nav mr-auto">
+	   {% for _, section := range p.SectionsArr %}
+	   <li class="nav-item{% if section.Active %} active{% endif %}">
+		   <a class="nav-link{% if section.Disabled %} disabled{% endif %}"{% if !section.Disabled %} href="{%s section.Link %}"{% endif %}>{%s section.Name %}{% if section.Active %} <span class="sr-only">(current){% endif %}</span></a>
+	   </li>
+	   {% endfor %}
+   </ul>
+{% endfunc %}
+
+{% func (p *BasePage) Login() %}
+<div class="nav-item dropdown">
+	 <a class="nav-link dropdown-toggle login" href="/login" id="login" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Login</a>
+	 <div class="dropdown-menu" aria-labelledby="login">
+	 	  <a class="dropdown-item" href="/login">login</a>
+	 	  <a class="dropdown-item" href="/register">register</a>
+	 </div>
+</div>
+{% endfunc %}
+
+{% func (p *BasePage) Search() %}
+<form class="form-inline mt-2 mt-md-0">
+	  <input class="form-control mr-sm-2" placeholder="Search" aria-label="Search" type="text">
+	  <button class="btn btn-outline-success my-2 my-sm-0 bg-secondary" type="submit">Search</button>
+</form>
 {% endfunc %}
 
 {% func (p *BasePage) Main() %}
