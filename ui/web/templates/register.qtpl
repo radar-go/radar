@@ -1,0 +1,5 @@
+{% code
+type Register struct {
+	 BasePage
+}
+%}

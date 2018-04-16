@@ -83,11 +83,7 @@ func (p *Page) AddSection(section, link string, active, disabled bool) {
 	p.sections = append(p.sections, s)
 }
 
-// Get returns the template page instance with all the variables filled in order
-// to send it to a writer.
-func (p *Page) Get() *templates.BasePage {
-	page := &templates.BasePage{}
-	page.TemplateName = p.name
+func (p *Page) populate(page *templates.BasePage) *templates.BasePage {
 	page.TitleStr = p.title
 	page.Copyright = "2017-2018 Radar authors"
 
@@ -100,6 +96,30 @@ func (p *Page) Get() *templates.BasePage {
 	}
 
 	page.SectionsArr = append(page.SectionsArr, p.sections...)
+
+	return page
+}
+
+// Get returns the template page instance with all the variables filled in order
+// to send it to a writer.
+func (p *Page) Get() templates.Page {
+	switch p.name {
+	case "home":
+		page := &templates.Home{}
+		p.populate(&page.BasePage)
+		return page
+	case "login":
+		page := &templates.Login{}
+		p.populate(&page.BasePage)
+		return page
+	case "register":
+		page := &templates.Register{}
+		p.populate(&page.BasePage)
+		return page
+	}
+
+	page := &templates.BasePage{}
+	p.populate(page)
 
 	return page
 }

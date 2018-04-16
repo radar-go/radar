@@ -47,7 +47,6 @@ Page {
 %}
 
 {% code type BasePage struct {
-   TemplateName string
    TitleStr string
    SectionsArr []Section
    Copyright string
