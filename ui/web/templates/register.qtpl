@@ -3,3 +3,11 @@ type Register struct {
 	 BasePage
 }
 %}
+
+{% func (p *Register) Main() %}
+<main class="container" role="main">
+	  <h1 class="mt5 text-center">Register</h1>
+	  <p class="lead">Tech radar project</p>
+	  <p>This is the tech radar project.</p>
+</main>
+{% endfunc %}

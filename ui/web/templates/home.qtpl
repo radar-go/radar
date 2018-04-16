@@ -3,3 +3,11 @@ type Home struct {
 	 BasePage
 }
 %}
+
+{% func (p *Home) Main() %}
+<main class="container" role="main">
+	  <h1 class="mt5 text-center">{%= p.Title() %}</h1>
+	  <p class="lead">Tech radar project</p>
+	  <p>This is the tech radar project.</p>
+</main>
+{% endfunc %}
