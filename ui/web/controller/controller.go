@@ -20,6 +20,10 @@ package controller
 */
 
 import (
+	"crypto/sha512"
+	"encoding/base64"
+	"io/ioutil"
+
 	"github.com/buaazp/fasthttprouter"
 	"github.com/golang/glog"
 	"github.com/tdewolff/minify"
@@ -34,6 +38,7 @@ type Controller struct {
 	Router        *fasthttprouter.Router
 	minify        *minify.M
 	staticHandler fasthttp.RequestHandler
+	cfg           *config.Config
 }
 
 // New creates and return a new Controller object.
@@ -49,6 +54,7 @@ func New(cfg *config.Config, m *minify.M) *Controller {
 		Router:        fasthttprouter.New(),
 		minify:        m,
 		staticHandler: fs.NewRequestHandler(),
+		cfg:           cfg,
 	}
 	c.register()
 
@@ -121,5 +127,34 @@ func (c *Controller) home(ctx *fasthttp.RequestCtx) {
 	p := &templates.BasePage{}
 	p.TemplateName = "home"
 	p.TitleStr = "Radar"
+	p.Copyright = "2017-2018 Radar authors"
+
+	p.CSSArr = append(p.CSSArr, c.getSha386Sum("bootstrap.min.css", "css"))
+	p.CSSArr = append(p.CSSArr, c.getSha386Sum("radar.css", "css"))
+
+	p.JavascriptArr = append(p.JavascriptArr,
+		c.getSha386Sum("jquery-3.2.1.slim.min.js", "js"))
+	p.JavascriptArr = append(p.JavascriptArr,
+		c.getSha386Sum("popper.min.js", "js"))
+	p.JavascriptArr = append(p.JavascriptArr,
+		c.getSha386Sum("bootstrap.min.js", "js"))
+
 	templates.WritePageTemplate(writer, p)
+}
+
+func (c *Controller) getSha386Sum(file string, fileType string) templates.File {
+	b, err := ioutil.ReadFile(c.cfg.StaticDir + "/" + fileType + "/" + file)
+	if err != nil {
+		glog.Errorf("Error reading the file %s: %s", file, err)
+		return templates.File{
+			Name: file,
+		}
+	}
+
+	sum := sha512.Sum384(b)
+
+	return templates.File{
+		Name: file,
+		Sum:  base64.StdEncoding.EncodeToString(sum[:]),
+	}
 }
