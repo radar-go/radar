@@ -28,12 +28,20 @@ import (
 // accountLogin handler.
 func (c *Controller) accountLogin(ctx *fasthttp.RequestCtx) {
 	logPath(ctx.Path())
+	var p *page.Page
 	ctx.SetStatusCode(fasthttp.StatusOK)
 	ctx.SetContentType("text/html; charset=utf-8")
 
 	writer := c.minify.Writer("text/html", ctx)
 	defer writer.Close()
-	p := page.New("login", "Radar - Login", c.cfg)
+	if ctx.IsGet() {
+		p = page.New("login", "Radar - Login", c.cfg)
+	} else if ctx.IsPost() {
+		req := c.api.NewRequest()
+		req.Path("/login")
+		req.Method("POST")
+		p = page.New("login", "Radar - Login Post", c.cfg)
+	}
 
 	templates.WritePageTemplate(writer, p.Get())
 }

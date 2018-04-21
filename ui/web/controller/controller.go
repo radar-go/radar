@@ -26,6 +26,7 @@ import (
 	"github.com/valyala/fasthttp"
 
 	"github.com/radar-go/radar/config"
+	"github.com/radar-go/radar/ui/web/api"
 	"github.com/radar-go/radar/ui/web/controller/page"
 	"github.com/radar-go/radar/ui/web/templates"
 )
@@ -36,6 +37,7 @@ type Controller struct {
 	minify        *minify.M
 	staticHandler fasthttp.RequestHandler
 	cfg           *config.Config
+	api           *api.API
 }
 
 // New creates and return a new Controller object.
@@ -52,6 +54,7 @@ func New(cfg *config.Config, m *minify.M) *Controller {
 		minify:        m,
 		staticHandler: fs.NewRequestHandler(),
 		cfg:           cfg,
+		api:           api.New(cfg.APIHost, cfg.APIPort),
 	}
 	c.register()
 
@@ -74,6 +77,7 @@ func (c *Controller) register() {
 	c.Router.GET("/", c.home)
 	c.Router.GET("/login", c.accountLogin)
 	c.Router.GET("/register", c.accountRegister)
+	c.Router.POST("/login", c.accountLogin)
 }
 
 // panic handles when the server have a fatal error.

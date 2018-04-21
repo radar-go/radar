@@ -6,7 +6,7 @@ type Login struct {
 
 {% func (p *Login) Main() %}
 <main class="login-form text-center" role="main">
-	  <form class="form-sigin">
+	  <form class="form-sigin" method="post">
 	  		<img class="mb-4" src="/img/radar.png" alt="radar" width="72" height="72">
 			<h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
 			<label for="inputEmail" class="sr-only">Email address</label>
