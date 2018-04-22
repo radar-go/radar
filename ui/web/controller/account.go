@@ -19,6 +19,9 @@ package controller
 */
 
 import (
+	"fmt"
+
+	"github.com/golang/glog"
 	"github.com/valyala/fasthttp"
 
 	"github.com/radar-go/radar/ui/web/controller/page"
@@ -37,10 +40,35 @@ func (c *Controller) accountLogin(ctx *fasthttp.RequestCtx) {
 	if ctx.IsGet() {
 		p = page.New("login", "Radar - Login", c.cfg)
 	} else if ctx.IsPost() {
+		glog.Infof("%s", ctx.PostBody())
+		args := ctx.QueryArgs()
+		if args.Len() != 2 {
+			glog.Errorf("Not enough aruments in login: %d", args.Len())
+			ctx.Redirect("/404", 404)
+		} else if !args.Has("email") || !args.Has("password") {
+			glog.Errorf("Email or password missing")
+			ctx.Redirect("/404", 404)
+		}
+
 		req := c.api.NewRequest()
 		req.Path("/login")
-		req.Method("POST")
-		p = page.New("login", "Radar - Login Post", c.cfg)
+		err := req.Method("POST")
+		if err != nil {
+			glog.Errorf("Error setting the method: %s", err)
+		}
+
+		req.Referer(ctx.Referer())
+		req.Path("/account/login")
+		req.AddParameter("email", args.Peek("email"))
+		req.AddParameter("password", args.Peek("password"))
+		resp, err := req.Do()
+		if err != nil {
+			glog.Errorf("Error setting the method: %s", err)
+			ctx.Redirect("/404", 301)
+		}
+
+		title := fmt.Sprintf("Radar - Login - %s", resp.Raw())
+		p = page.New("login", title, c.cfg)
 	}
 
 	templates.WritePageTemplate(writer, p.Get())

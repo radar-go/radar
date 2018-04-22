@@ -2,6 +2,9 @@
 package api
 
 import (
+	"encoding/json"
+	"fmt"
+
 	"github.com/valyala/fasthttp"
 )
 
@@ -16,8 +19,9 @@ type API struct {
 type Request struct {
 	api        *API
 	method     string
-	parameters map[string]string
+	parameters map[string]interface{}
 	path       string
+	referer    []byte
 	req        *fasthttp.Request
 }
 
@@ -25,7 +29,7 @@ type Request struct {
 type Response struct {
 	code   int
 	parsed map[string]interface{}
-	raw    string
+	raw    []byte
 	resp   *fasthttp.Response
 }
 
@@ -48,25 +52,35 @@ func (a *API) NewRequest() *Request {
 		api:        a,
 		method:     "GET",
 		path:       "/",
-		parameters: make(map[string]string),
+		parameters: make(map[string]interface{}),
 		req:        fasthttp.AcquireRequest(),
 	}
 }
 
+func (r *Request) Referer(referer []byte) {
+	// XXX: Check the referer is well formed.
+	r.referer = referer
+}
+
 // Path sets the request path to the Radar API.
 func (r *Request) Path(p string) {
-	// XXX: Check the path is correct.
+	// XXX: Check the path is well formed.
 	r.path = p
 }
 
 // Method sets the method for the request to the Radar API.
-func (r *Request) Method(m string) {
-	// XXX: Check the method is correct.
+func (r *Request) Method(m string) error {
+	if m != "GET" && m != "POST" && m != "PUT" {
+		return fmt.Errorf("Unknown HTTP method: %s", m)
+	}
+
 	r.method = m
+
+	return nil
 }
 
 // AddParameter adds a new parameter to the request to the Radar API.
-func (r *Request) AddParameter(key, value string) {
+func (r *Request) AddParameter(key string, value interface{}) {
 	r.parameters[key] = value
 }
 
@@ -74,14 +88,30 @@ func (r *Request) AddParameter(key, value string) {
 func (r *Request) Do() (*Response, error) {
 	var err error
 
+	body, err := json.Marshal(r.parameters)
+	if err != nil {
+		return nil, err
+	}
+
 	resp := &Response{
 		parsed: make(map[string]interface{}),
 		resp:   fasthttp.AcquireResponse(),
 	}
 
-	// r.SetRequestURI(url)
+	r.req.Reset()
+	// XXX: Set web host
+	r.req.SetHost(r.api.host)
+	r.req.SetRequestURI(fmt.Sprintf("http://%s:%d/%s", r.api.host, r.api.port, r.path))
+	r.req.Header.SetContentType("application/json; charset=utf-8")
+	r.req.Header.SetMethod(r.method)
+	r.req.Header.SetRefererBytes(r.referer)
+	r.req.SetBody(body)
 	err = r.api.client.Do(r.req, resp.resp)
-	// bodyBytes := resp.Body()
+
+	// Get the response
+	resp.raw = resp.resp.Body()
+	resp.code = resp.resp.StatusCode()
+	json.Unmarshal(resp.raw, &resp.parsed)
 
 	return resp, err
 }
@@ -92,7 +122,7 @@ func (r *Response) Code() int {
 }
 
 // Raw returns the raw response from the Radar API.
-func (r *Response) Raw() string {
+func (r *Response) Raw() []byte {
 	return r.raw
 }
 
