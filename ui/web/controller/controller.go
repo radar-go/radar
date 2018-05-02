@@ -57,6 +57,7 @@ func New(cfg *config.Config, m *minify.M) *Controller {
 		api:           api.New(cfg.APIHost, cfg.APIPort),
 	}
 	c.register()
+	c.api.Connect()
 
 	return c
 }
