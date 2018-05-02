@@ -13,9 +13,6 @@
   name = "github.com/goware/emailx"
 
 [[constraint]]
-  name = "github.com/pkg/errors"
-
-[[constraint]]
   name = "github.com/golang-plus/uuid"
 
 [[constraint]]

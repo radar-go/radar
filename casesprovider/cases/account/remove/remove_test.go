@@ -21,8 +21,6 @@ package remove
 import (
 	"testing"
 
-	"github.com/pkg/errors"
-
 	"github.com/radar-go/radar/casesprovider/helper"
 	"github.com/radar-go/radar/datastore"
 	"github.com/radar-go/radar/datastore/account"
@@ -120,8 +118,8 @@ func TestRemoveAccountError(t *testing.T) {
 				helper.SaveGoldenData(t, tc.testName+"_error", []byte(err.Error()))
 				expected := helper.GetGoldenData(t, tc.testName+"_error")
 				helper.ContainsBytes(t, []byte(err.Error()), expected)
-				if errors.Cause(err) != tc.err {
-					t.Errorf("Expect %s, Got %s", tc.err, errors.Cause(err))
+				if err != tc.err {
+					t.Errorf("Expect %s, Got %s", tc.err, err)
 				}
 			} else if err != tc.err {
 				t.Errorf("Expected error to be %s, Got nil", tc.err)
@@ -135,8 +133,8 @@ func TestRemoveAccountError(t *testing.T) {
 				_, err = uc.Datastore.GetAccountByUsername(tc.username)
 				if err == nil {
 					t.Error("Expected error getting the account from the datastore")
-				} else if errors.Cause(err) != account.ErrAccountNotExists {
-					t.Errorf("Expected ErrAccountNotExists, Got %s", errors.Cause(err))
+				} else if err != account.ErrAccountNotExists {
+					t.Errorf("Expected ErrAccountNotExists, Got %s", err)
 				}
 			}
 		})

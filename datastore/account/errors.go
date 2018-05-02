@@ -19,7 +19,7 @@ package account
 */
 
 import (
-	"github.com/pkg/errors"
+	"errors"
 )
 
 // ErrAccountExists raised when the account already exists in the datastore.

@@ -20,9 +20,8 @@ package deactivate
 */
 
 import (
+	"errors"
 	"fmt"
-
-	"github.com/pkg/errors"
 
 	"github.com/radar-go/radar/casesprovider"
 	"github.com/radar-go/radar/casesprovider/cases/usecase"

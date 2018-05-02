@@ -21,7 +21,6 @@ package account
 
 import (
 	"github.com/goware/emailx"
-	"github.com/pkg/errors"
 
 	"github.com/radar-go/radar"
 	"github.com/radar-go/radar/entities/member"
@@ -103,7 +102,7 @@ func (a *Account) SetUsername(username string) error {
 func (a *Account) SetEmail(e string) error {
 	cleanEmail := emailx.Normalize(e)
 	if err := emailx.Validate(cleanEmail); err != nil {
-		return errors.Wrap(err, "Error validating the email")
+		return err
 	}
 
 	a.email = cleanEmail

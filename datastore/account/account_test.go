@@ -22,7 +22,6 @@ import (
 	"testing"
 
 	"github.com/goware/emailx"
-	"github.com/pkg/errors"
 )
 
 func TestAccount(t *testing.T) {
@@ -64,17 +63,17 @@ func TestAccountFail(t *testing.T) {
 	}
 
 	_, err = New("username", "name", "email", "password")
-	if errors.Cause(err) != emailx.ErrInvalidFormat {
+	if err != emailx.ErrInvalidFormat {
 		t.Errorf("Unexpected error: %s", err)
 	}
 
 	_, err = New("username", "name", "email@unknown", "password")
-	if errors.Cause(err) != emailx.ErrInvalidFormat {
+	if err != emailx.ErrInvalidFormat {
 		t.Errorf("Unexpected error: %s", err)
 	}
 
 	_, err = New("username", "name", "email@unknown.fake", "password")
-	if errors.Cause(err) != emailx.ErrUnresolvableHost {
+	if err != emailx.ErrUnresolvableHost {
 		t.Errorf("Unexpected error: %s", err)
 	}
 }

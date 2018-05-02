@@ -20,9 +20,10 @@ package datastore
 */
 
 import (
+	"errors"
+
 	"github.com/golang-plus/uuid"
 	"github.com/golang/glog"
-	"github.com/pkg/errors"
 
 	"github.com/radar-go/radar"
 	"github.com/radar-go/radar/datastore/account"
@@ -60,7 +61,7 @@ func (d *Datastore) AccountRegistration(username, name, email, password string) 
 	cleanUsername := radar.CleanString(username)
 	_, ok := d.accounts[cleanUsername]
 	if ok {
-		return 0, errors.Wrap(account.ErrAccountExists, email)
+		return 0, account.ErrAccountExists
 	}
 
 	glog.Infof("Registering user '%s'", username)
@@ -115,7 +116,7 @@ func (d *Datastore) GetAccountByUsername(username string) (*account.Account, err
 	cleanUsername := radar.CleanString(username)
 	acc, ok := d.accounts[cleanUsername]
 	if !ok {
-		err = errors.Wrap(account.ErrAccountNotExists, username)
+		err = account.ErrAccountNotExists
 		glog.Errorf("%+v", err)
 	}
 
@@ -132,12 +133,12 @@ func (d *Datastore) AddSession(session, username string) error {
 	}
 
 	if _, ok := d.sessions[cleanSession]; ok {
-		return errors.Wrap(account.ErrUserAlreadyLogin, username)
+		return account.ErrUserAlreadyLogin
 	}
 
 	cleanUsername := radar.CleanString(username)
 	if !d.IsAccountRegisteredByUsername(cleanUsername) {
-		return errors.Wrap(account.ErrAccountNotExists, username)
+		return account.ErrAccountNotExists
 	}
 
 	d.sessions[cleanSession] = d.accounts[username]
@@ -152,11 +153,11 @@ func (d *Datastore) DeleteSession(session, username string) error {
 	cleanSession := radar.CleanString(session)
 	cleanUsername := radar.CleanString(username)
 	if !d.IsAccountRegisteredByUsername(cleanUsername) {
-		return errors.Wrap(account.ErrAccountNotExists, username)
+		return account.ErrAccountNotExists
 	}
 
 	if !d.DoesAccountHaveSessionByUsername(cleanUsername) {
-		return errors.Wrap(account.ErrUserNotLoggedIn, username)
+		return account.ErrUserNotLoggedIn
 	}
 
 	delete(d.sessions, cleanSession)
@@ -176,7 +177,7 @@ func (d *Datastore) GetAccountBySession(session string) (*account.Account, error
 
 	acc, ok := d.sessions[cleanSession]
 	if !ok {
-		err = errors.Wrap(account.ErrUserNotLoggedIn, session)
+		err = account.ErrUserNotLoggedIn
 		glog.Errorf("%+v", err)
 	}
 
@@ -238,7 +239,7 @@ func (d *Datastore) UpdateAccountData(acc *account.Account, session string) erro
 	var err error
 
 	if !d.IsAccountRegisteredByID(acc.ID()) {
-		return errors.Wrap(account.ErrAccountNotExists, acc.Username())
+		return account.ErrAccountNotExists
 	}
 
 	cleanSession := radar.CleanString(session)
@@ -254,7 +255,7 @@ func (d *Datastore) UpdateAccountData(acc *account.Account, session string) erro
 // RemoveAccount removes an account from the datastore.
 func (d *Datastore) RemoveAccount(acc *account.Account) error {
 	if !d.IsAccountRegisteredByID(acc.ID()) {
-		return errors.Wrap(account.ErrAccountNotExists, acc.Username())
+		return account.ErrAccountNotExists
 	}
 
 	if d.DoesAccountHaveSessionByID(acc.ID()) {

@@ -23,7 +23,6 @@ import (
 	"testing"
 
 	"github.com/goware/emailx"
-	"github.com/pkg/errors"
 
 	"github.com/radar-go/radar/datastore/account"
 )
@@ -55,17 +54,17 @@ func TestDatastoreAccountRegisterError(t *testing.T) {
 	ds := New()
 
 	_, err := ds.AccountRegistration("ritho", "ritho", "", "ritho")
-	if errors.Cause(err) != emailx.ErrInvalidFormat {
+	if err != emailx.ErrInvalidFormat {
 		t.Errorf("Expected '%v', Got '%v'", account.ErrEmailEmpty, err)
 	}
 
 	_, err = ds.AccountRegistration("", "ritho", "palvarez@ritho.net", "ritho")
-	if errors.Cause(err) != account.ErrUsernameTooShort {
+	if err != account.ErrUsernameTooShort {
 		t.Errorf("Expected '%v', Got '%v'", account.ErrUsernameTooShort, err)
 	}
 
 	_, err = ds.AccountRegistration("ritho", "ritho", "palvarez@ritho.net", "")
-	if errors.Cause(err) != account.ErrPasswordTooShort {
+	if err != account.ErrPasswordTooShort {
 		t.Errorf("Expected '%v', Got '%v'", account.ErrPasswordTooShort, err)
 	}
 
@@ -75,7 +74,7 @@ func TestDatastoreAccountRegisterError(t *testing.T) {
 	}
 
 	_, err = ds.AccountRegistration("ritho", "ritho", "palvarez@ritho.net", "ritho")
-	if errors.Cause(err) != account.ErrAccountExists {
+	if err != account.ErrAccountExists {
 		t.Errorf("Expected error %+v, Got %+v", account.ErrAccountExists, err)
 	}
 }
@@ -101,15 +100,15 @@ func TestGetAccountSession(t *testing.T) {
 	_, err := ds.GetAccountBySession(" ")
 	if err == nil {
 		t.Error("Expected error getting the account by session.")
-	} else if errors.Cause(err) != account.ErrUserNotLoggedIn {
-		t.Errorf("Expected %s, Got %s", account.ErrUserNotLoggedIn, errors.Cause(err))
+	} else if err != account.ErrUserNotLoggedIn {
+		t.Errorf("Expected %s, Got %s", account.ErrUserNotLoggedIn, err)
 	}
 
 	_, err = ds.GetAccountBySession("00000000-0000-0000-0000-000000000000")
 	if err == nil {
 		t.Error("Expected error getting the account by session.")
-	} else if errors.Cause(err) != account.ErrUserNotLoggedIn {
-		t.Errorf("Expected %s, Got %s", account.ErrUserNotLoggedIn, errors.Cause(err))
+	} else if err != account.ErrUserNotLoggedIn {
+		t.Errorf("Expected %s, Got %s", account.ErrUserNotLoggedIn, err)
 	}
 
 	ds.sessions["00000000-0000-0000-0000-000000000000"] = &account.Account{}
@@ -173,23 +172,23 @@ func TestUpdateAccount(t *testing.T) {
 	err := ds.UpdateAccountData(acc, " ")
 	if err == nil {
 		t.Error("Expected error updating the account data")
-	} else if errors.Cause(err) != account.ErrAccountNotExists {
-		t.Errorf("Expected %s, Got %s", account.ErrAccountNotExists, errors.Cause(err))
+	} else if err != account.ErrAccountNotExists {
+		t.Errorf("Expected %s, Got %s", account.ErrAccountNotExists, err)
 	}
 
 	err = ds.UpdateAccountData(acc, session)
 	if err == nil {
 		t.Error("Expected error updating the account data")
-	} else if errors.Cause(err) != account.ErrAccountNotExists {
-		t.Errorf("Expected %s, Got %s", account.ErrAccountNotExists, errors.Cause(err))
+	} else if err != account.ErrAccountNotExists {
+		t.Errorf("Expected %s, Got %s", account.ErrAccountNotExists, err)
 	}
 
 	ds.sessions[session] = acc
 	err = ds.UpdateAccountData(acc, session)
 	if err == nil {
 		t.Error("Expected error updating the account data")
-	} else if errors.Cause(err) != account.ErrAccountNotExists {
-		t.Errorf("Expected %s, Got %s", account.ErrAccountNotExists, errors.Cause(err))
+	} else if err != account.ErrAccountNotExists {
+		t.Errorf("Expected %s, Got %s", account.ErrAccountNotExists, err)
 	}
 
 	ds.accounts[acc.Username()] = acc
@@ -207,8 +206,8 @@ func TestRemoveAccount(t *testing.T) {
 	err := ds.RemoveAccount(acc)
 	if err == nil {
 		t.Error("Expected error removing the account")
-	} else if errors.Cause(err) != account.ErrAccountNotExists {
-		t.Errorf("Expected %s, Got %s", account.ErrAccountNotExists, errors.Cause(err))
+	} else if err != account.ErrAccountNotExists {
+		t.Errorf("Expected %s, Got %s", account.ErrAccountNotExists, err)
 	}
 
 	ds.accounts[acc.Username()] = acc

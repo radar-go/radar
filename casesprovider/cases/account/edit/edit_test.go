@@ -24,7 +24,6 @@ import (
 	"testing"
 
 	"github.com/goware/emailx"
-	"github.com/pkg/errors"
 
 	"github.com/radar-go/radar/casesprovider/helper"
 	"github.com/radar-go/radar/datastore"
@@ -193,7 +192,7 @@ func TestEdit(t *testing.T) {
 
 			/* Edit the account. */
 			res, err := uc.Run()
-			if errors.Cause(err) != tc.err {
+			if err != tc.err {
 				t.Errorf("Unexpected error: %s", err)
 			}
 
