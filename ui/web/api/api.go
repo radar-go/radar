@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/golang/glog"
 	"github.com/valyala/fasthttp"
 )
 
@@ -93,25 +94,42 @@ func (r *Request) Do() (*Response, error) {
 		return nil, err
 	}
 
+	glog.Infof("%s", body)
 	resp := &Response{
 		parsed: make(map[string]interface{}),
 		resp:   fasthttp.AcquireResponse(),
 	}
 
+	glog.Info("response adquired")
 	r.req.Reset()
 	// XXX: Set web host
-	r.req.SetHost(r.api.host)
-	r.req.SetRequestURI(fmt.Sprintf("http://%s:%d/%s", r.api.host, r.api.port, r.path))
+	//r.req.SetHost(r.api.host)
+	uri := fmt.Sprintf("http://%s:%d/%s", r.api.host, r.api.port, r.path)
+	glog.Infof("Setting uri: %s", uri)
+	r.req.SetRequestURI(uri)
+	glog.Info("Setting content type")
 	r.req.Header.SetContentType("application/json; charset=utf-8")
+	glog.Infof("Setting method: %s", r.method)
 	r.req.Header.SetMethod(r.method)
-	r.req.Header.SetRefererBytes(r.referer)
+	//r.req.Header.SetRefererBytes(r.referer)
+	glog.Infof("Setting body: %s", body)
 	r.req.SetBody(body)
+	glog.Info("Calling the API")
 	err = r.api.client.Do(r.req, resp.resp)
+	if err != nil {
+		glog.Errorf("Error calling the API: %s", err)
+		return resp, err
+	}
 
 	// Get the response
 	resp.raw = resp.resp.Body()
 	resp.code = resp.resp.StatusCode()
-	json.Unmarshal(resp.raw, &resp.parsed)
+	glog.Infof("Code %d", resp.code)
+	glog.Infof("Code %s", resp.raw)
+	err = json.Unmarshal(resp.raw, &resp.parsed)
+	if err != nil {
+		glog.Errorf("Error unmarshaling the response: %s", err)
+	}
 
 	return resp, err
 }

@@ -32,16 +32,12 @@ import (
 func (c *Controller) accountLogin(ctx *fasthttp.RequestCtx) {
 	logPath(ctx.Path())
 	var p *page.Page
-	ctx.SetStatusCode(fasthttp.StatusOK)
-	ctx.SetContentType("text/html; charset=utf-8")
 
-	writer := c.minify.Writer("text/html", ctx)
-	defer writer.Close()
 	if ctx.IsGet() {
 		p = page.New("login", "Radar - Login", c.cfg)
 	} else if ctx.IsPost() {
 		glog.Infof("%s", ctx.PostBody())
-		args := ctx.QueryArgs()
+		args := ctx.PostArgs()
 		if args.Len() != 2 {
 			glog.Errorf("Not enough aruments in login: %d", args.Len())
 			ctx.Redirect("/404", 404)
@@ -51,26 +47,35 @@ func (c *Controller) accountLogin(ctx *fasthttp.RequestCtx) {
 		}
 
 		req := c.api.NewRequest()
-		req.Path("/login")
+		req.Path("/account/login")
 		err := req.Method("POST")
 		if err != nil {
 			glog.Errorf("Error setting the method: %s", err)
 		}
 
-		req.Referer(ctx.Referer())
-		req.Path("/account/login")
-		req.AddParameter("email", args.Peek("email"))
-		req.AddParameter("password", args.Peek("password"))
+		//req.Referer(ctx.Referer())
+		email := args.Peek("email")
+		pass := args.Peek("password")
+		glog.Infof("Email: %s, Password: %s", email, pass)
+		req.AddParameter("login", email)
+		req.AddParameter("password", pass)
 		resp, err := req.Do()
 		if err != nil {
-			glog.Errorf("Error setting the method: %s", err)
+			glog.Errorf("Error login: %s", err)
 			ctx.Redirect("/404", 301)
 		}
 
 		title := fmt.Sprintf("Radar - Login - %s", resp.Raw())
 		p = page.New("login", title, c.cfg)
+		if resp.Code() != 200 {
+			p.AddError("login", resp.Parsed()["error"].(string))
+		}
 	}
 
+	ctx.SetStatusCode(fasthttp.StatusOK)
+	ctx.SetContentType("text/html; charset=utf-8")
+	writer := c.minify.Writer("text/html", ctx)
+	defer writer.Close()
 	templates.WritePageTemplate(writer, p.Get())
 }
 

@@ -8,6 +8,7 @@ Page {
 	 Login()
 	 Search()
 	 Footer()
+	 GetError(err string)
 
 	 CSS()
 	 Javascripts()
@@ -49,6 +50,7 @@ Page {
 {% code type BasePage struct {
    TitleStr string
    SectionsArr []Section
+   Errors map[string]string
    Copyright string
 
    CSSArr []File
@@ -126,4 +128,12 @@ Page {
 	  <script src="/js/{%s jsFile.Name %}" integrity="sha384-{%s jsFile.Sum %}">
 	  </script>
    {% endfor %}
+{% endfunc %}
+
+{% func (p *BasePage) GetError(err string) %}
+   {% if len(p.Errors) > 0 %}
+   	  <div class="alert alert-danger">
+   	  	   {%s p.Errors[err] %}
+	  </div>
+   {% endif %}
 {% endfunc %}

@@ -39,14 +39,16 @@ type Page struct {
 	css      []string
 	sections []templates.Section
 	cfg      *config.Config
+	errors   map[string]string
 }
 
 // New creates and returns a new Page object.
 func New(name, title string, cfg *config.Config) *Page {
 	p := &Page{
-		name:  name,
-		title: title,
-		cfg:   cfg,
+		name:   name,
+		title:  title,
+		cfg:    cfg,
+		errors: make(map[string]string),
 	}
 
 	p.AddCSS("bootstrap.min.css")
@@ -83,21 +85,9 @@ func (p *Page) AddSection(section, link string, active, disabled bool) {
 	p.sections = append(p.sections, s)
 }
 
-func (p *Page) populate(page *templates.BasePage) *templates.BasePage {
-	page.TitleStr = p.title
-	page.Copyright = "2017-2018 Radar authors"
-
-	for _, css := range p.css {
-		page.CSSArr = append(page.CSSArr, p.getSha384Sum(css, "css"))
-	}
-
-	for _, js := range p.js {
-		page.JavascriptArr = append(page.JavascriptArr, p.getSha384Sum(js, "js"))
-	}
-
-	page.SectionsArr = append(page.SectionsArr, p.sections...)
-
-	return page
+// AddError adds a new error response to the web page.
+func (p *Page) AddError(name, value string) {
+	p.errors[name] = value
 }
 
 // Get returns the template page instance with all the variables filled in order
@@ -120,6 +110,27 @@ func (p *Page) Get() templates.Page {
 
 	page := &templates.BasePage{}
 	p.populate(page)
+
+	return page
+}
+
+func (p *Page) populate(page *templates.BasePage) *templates.BasePage {
+	page.TitleStr = p.title
+	page.Copyright = "2017-2018 Radar authors"
+
+	for _, css := range p.css {
+		page.CSSArr = append(page.CSSArr, p.getSha384Sum(css, "css"))
+	}
+
+	for _, js := range p.js {
+		page.JavascriptArr = append(page.JavascriptArr, p.getSha384Sum(js, "js"))
+	}
+
+	page.SectionsArr = append(page.SectionsArr, p.sections...)
+	page.Errors = make(map[string]string)
+	for error, value := range p.errors {
+		page.Errors[error] = value
+	}
 
 	return page
 }

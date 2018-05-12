@@ -12,6 +12,8 @@ before_install:
 install:
   - go get github.com/golang/dep/cmd/dep
   - go get -u github.com/jstemmer/go-junit-report
+  - go get -u github.com/valyala/quicktemplate
+  - go get -u github.com/valyala/quicktemplate/qtc
 
 script:
   - make update-vendors
