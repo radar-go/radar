@@ -21,9 +21,8 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-export GOROOT=$(go env GOROOT)
 export CGO_ENABLED=0
-export GOCACHE=${GOROOT}/.cache
+export GOCACHE=/go/.cache
 
 FLAGS="-installsuffix"
 TARGETS=$(for d in "$@"; do go list ./$d/... | grep -v /vendor/; done)
