@@ -17,3 +17,6 @@
 
 [[constraint]]
   name = "github.com/tdewolff/minify"
+
+[[constraint]]
+  name = "github.com/valyala/quicktemplate"
