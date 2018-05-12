@@ -17,5 +17,7 @@ install:
 
 script:
   - make update-vendors
+  - echo $GOPATH
+  - ls $GOPATH/*
   - make tests
   - make tests | tee /dev/tty | go-junit-report > junit-report.xml
