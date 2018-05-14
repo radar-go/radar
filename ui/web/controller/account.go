@@ -38,17 +38,17 @@ func (c *Controller) accountLogin(ctx *fasthttp.RequestCtx) {
 	} else if ctx.IsPost() {
 		glog.Infof("%s", ctx.PostBody())
 		args := ctx.PostArgs()
-		if args.Len() != 2 {
-			glog.Errorf("Not enough aruments in login: %d", args.Len())
-			ctx.Redirect("/404", 404)
-		} else if !args.Has("email") || !args.Has("password") {
-			glog.Errorf("Email or password missing")
-			ctx.Redirect("/404", 404)
+		err := c.checkParams(ctx, "email", "password")
+		if err != nil {
+			p.AddError("params", fmt.Sprint(err))
+			c.response(ctx, p)
+
+			return
 		}
 
 		req := c.api.NewRequest()
 		req.Path("/account/login")
-		err := req.Method("POST")
+		err = req.Method("POST")
 		if err != nil {
 			glog.Errorf("Error setting the method: %s", err)
 		}
@@ -72,11 +72,7 @@ func (c *Controller) accountLogin(ctx *fasthttp.RequestCtx) {
 		}
 	}
 
-	ctx.SetStatusCode(fasthttp.StatusOK)
-	ctx.SetContentType("text/html; charset=utf-8")
-	writer := c.minify.Writer("text/html", ctx)
-	defer writer.Close()
-	templates.WritePageTemplate(writer, p.Get())
+	c.response(ctx, p)
 }
 
 // accountRegister handler.

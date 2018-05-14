@@ -20,6 +20,8 @@ package controller
 */
 
 import (
+	"fmt"
+
 	"github.com/buaazp/fasthttprouter"
 	"github.com/golang/glog"
 	"github.com/tdewolff/minify"
@@ -129,5 +131,41 @@ func (c *Controller) home(ctx *fasthttp.RequestCtx) {
 	defer writer.Close()
 	p := page.New("home", "Radar", c.cfg)
 
+	templates.WritePageTemplate(writer, p.Get())
+}
+
+// checkParams checks the params of a request.
+func (c *Controller) checkParams(ctx *fasthttp.RequestCtx, params ...string) error {
+	var args *fasthttp.Args
+
+	if ctx.IsGet() {
+		args = ctx.QueryArgs()
+	} else if ctx.IsPost() {
+		args = ctx.PostArgs()
+	}
+
+	if args.Len() != len(params) {
+		err := fmt.Errorf("Not enough aruments: %d", args.Len())
+		glog.Error(err)
+		return err
+	}
+
+	for _, param := range params {
+		if !args.Has(param) {
+			err := fmt.Errorf("Missing parameter: %s", param)
+			glog.Error(err)
+			return err
+		}
+	}
+
+	return nil
+}
+
+// response to the client.
+func (c *Controller) response(ctx *fasthttp.RequestCtx, p *page.Page) {
+	ctx.SetStatusCode(fasthttp.StatusOK)
+	ctx.SetContentType("text/html; charset=utf-8")
+	writer := c.minify.Writer("text/html", ctx)
+	defer writer.Close()
 	templates.WritePageTemplate(writer, p.Get())
 }
