@@ -21,6 +21,7 @@ package controller
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/buaazp/fasthttprouter"
 	"github.com/golang/glog"
@@ -168,4 +169,16 @@ func (c *Controller) response(ctx *fasthttp.RequestCtx, p *page.Page) {
 	writer := c.minify.Writer("text/html", ctx)
 	defer writer.Close()
 	templates.WritePageTemplate(writer, p.Get())
+}
+
+// setCookie sets a new cookie in the client
+func (c *Controller) setCookie(ctx *fasthttp.RequestCtx, name, value string, t time.Duration) {
+	cookie := fasthttp.AcquireCookie()
+	cookie.SetKey(name)
+	cookie.SetValue(value)
+	// cookie.SetPath("/")
+	// cookie.SetDomain("mydomain.com")
+	cookie.SetExpire(time.Now().Add(t))
+	// cookie.SetSecure(true)
+	ctx.Response.Header.Cookie(cookie)
 }

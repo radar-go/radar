@@ -19,7 +19,9 @@ package controller
 */
 
 import (
+	"bytes"
 	"fmt"
+	"time"
 
 	"github.com/golang/glog"
 	"github.com/valyala/fasthttp"
@@ -60,10 +62,26 @@ func (c *Controller) accountLogin(ctx *fasthttp.RequestCtx) {
 			c.panic(ctx, "Error calling the API")
 		}
 
-		title := fmt.Sprintf("Radar - Login - %s", resp.Raw())
-		p = page.New("login", title, c.cfg)
 		if resp.Code() != 200 {
+			title := fmt.Sprintf("Radar - Login")
+			p = page.New("login", title, c.cfg)
 			p.AddError("login", resp.Parsed()["error"].(string))
+		} else {
+			c.setCookie(ctx, "id", resp.Parsed()["id"].(string), 24*time.Hour)
+			c.setCookie(ctx, "username", resp.Parsed()["username"].(string), 24*time.Hour)
+			c.setCookie(ctx, "name", resp.Parsed()["name"].(string), 24*time.Hour)
+			c.setCookie(ctx, "email", resp.Parsed()["email"].(string), 24*time.Hour)
+			c.setCookie(ctx, "session", resp.Parsed()["token"].(string), 24*time.Hour)
+
+			// If the user is in /login, redirect to /account.
+			// if the user is not in /login, redirect to the referer.
+			glog.Infof("Referer: %s", ctx.Referer())
+			if bytes.Contains(ctx.Referer(), []byte("/login")) {
+				redirect := bytes.Replace(ctx.Referer(), []byte("/login"), []byte("/account"), 1)
+				ctx.Redirect(fmt.Sprintf("%s", redirect), 301)
+			} else {
+				ctx.Redirect(fmt.Sprintf("%s", ctx.Referer()), 301)
+			}
 		}
 	}
 
