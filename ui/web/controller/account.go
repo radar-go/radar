@@ -73,8 +73,6 @@ func (c *Controller) accountLogin(ctx *fasthttp.RequestCtx) {
 			c.setCookie(ctx, "email", resp.Parsed()["email"].(string), 24*time.Hour)
 			c.setCookie(ctx, "session", resp.Parsed()["token"].(string), 24*time.Hour)
 
-			// If the user is in /login, redirect to /account.
-			// if the user is not in /login, redirect to the referer.
 			glog.Infof("Referer: %s", ctx.Referer())
 			if bytes.Contains(ctx.Referer(), []byte("/login")) {
 				redirect := bytes.Replace(ctx.Referer(), []byte("/login"), []byte("/account"), 1)
