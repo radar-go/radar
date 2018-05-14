@@ -36,7 +36,6 @@ func (c *Controller) accountLogin(ctx *fasthttp.RequestCtx) {
 	if ctx.IsGet() {
 		p = page.New("login", "Radar - Login", c.cfg)
 	} else if ctx.IsPost() {
-		glog.Infof("%s", ctx.PostBody())
 		args := ctx.PostArgs()
 		err := c.checkParams(ctx, "email", "password")
 		if err != nil {
@@ -46,23 +45,19 @@ func (c *Controller) accountLogin(ctx *fasthttp.RequestCtx) {
 			return
 		}
 
-		req := c.api.NewRequest()
-		req.Path("/account/login")
-		err = req.Method("POST")
+		req, err := c.api.NewRequest("/account/login", "POST")
 		if err != nil {
 			glog.Errorf("Error setting the method: %s", err)
+			c.panic(ctx, "Error calling the API")
 		}
 
-		//req.Referer(ctx.Referer())
-		email := args.Peek("email")
-		pass := args.Peek("password")
-		glog.Infof("Email: %s, Password: %s", email, pass)
-		req.AddParameter("login", email)
-		req.AddParameter("password", pass)
+		req.Referer(ctx.Referer())
+		req.AddParameter("login", args.Peek("email"))
+		req.AddParameter("password", args.Peek("password"))
 		resp, err := req.Do()
 		if err != nil {
 			glog.Errorf("Error login: %s", err)
-			ctx.Redirect("/404", 301)
+			c.panic(ctx, "Error calling the API")
 		}
 
 		title := fmt.Sprintf("Radar - Login - %s", resp.Raw())
