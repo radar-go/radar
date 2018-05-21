@@ -27,7 +27,6 @@ import (
 	"github.com/valyala/fasthttp"
 
 	"github.com/radar-go/radar/ui/web/controller/page"
-	"github.com/radar-go/radar/ui/web/templates"
 )
 
 // accountLogin handler.
@@ -89,12 +88,13 @@ func (c *Controller) accountLogin(ctx *fasthttp.RequestCtx) {
 // accountRegister handler.
 func (c *Controller) accountRegister(ctx *fasthttp.RequestCtx) {
 	logPath(ctx.Path())
-	ctx.SetStatusCode(fasthttp.StatusOK)
-	ctx.SetContentType("text/html; charset=utf-8")
+	var p *page.Page
 
-	writer := c.minify.Writer("text/html", ctx)
-	defer writer.Close()
-	p := page.New("register", "Radar - Register", c.cfg)
+	if ctx.IsGet() {
+		p = page.New("register", "Radar - Register", c.cfg)
+	} else if ctx.IsPost() {
+		p = page.New("register", "Radar - Register post", c.cfg)
+	}
 
-	templates.WritePageTemplate(writer, p.Get())
+	c.response(ctx, p)
 }

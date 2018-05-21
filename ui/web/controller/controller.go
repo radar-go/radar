@@ -82,6 +82,7 @@ func (c *Controller) register() {
 	c.Router.GET("/login", c.accountLogin)
 	c.Router.GET("/register", c.accountRegister)
 	c.Router.POST("/login", c.accountLogin)
+	c.Router.POST("/register", c.accountRegister)
 }
 
 // panic handles when the server have a fatal error.
