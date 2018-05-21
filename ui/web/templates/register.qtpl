@@ -10,6 +10,15 @@ type Register struct {
 			<img class="mb-4" src="/img/radar.png" alt="radar" width="72" height="72">
 			<h1 class="h3 mb-3 font-weight-normal">Register</h1>
 			{%= p.GetError("register") %}
+			{%= p.GetError("params") %}
+			<div class="form-group">
+				 <label for="username" class="sr-only">Username</label>
+				 <input name="username" id="username" class="form-control" placeholder="Username" required="true" autofocus="" type="text">
+			</div>
+			<div class="form-group">
+				 <label for="name" class="sr-only">Name</label>
+				 <input name="name" id="name" class="form-control" placeholder="Name" required="false" autofocus="" type="text">
+			</div>
 			<div class="form-group">
 				 <label for="email" class="sr-only">Email address</label>
 				 <input name="email" id="email" class="form-control" placeholder="Email address" required="true" autofocus="" type="email">

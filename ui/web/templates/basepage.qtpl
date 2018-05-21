@@ -131,9 +131,9 @@ Page {
 {% endfunc %}
 
 {% func (p *BasePage) GetError(err string) %}
-   {% if len(p.Errors) > 0 %}
+   {% if e, ok := p.Errors[err]; ok %}
    	  <div class="alert alert-danger">
-   	  	   {%s p.Errors[err] %}
+   	  	   {%s e %}
 	  </div>
    {% endif %}
 {% endfunc %}

@@ -174,6 +174,7 @@ func (c *Controller) response(ctx *fasthttp.RequestCtx, p *page.Page) {
 
 // setCookie sets a new cookie in the client
 func (c *Controller) setCookie(ctx *fasthttp.RequestCtx, name, value string, t time.Duration) {
+	glog.Infof("Getting cookie")
 	cookie := fasthttp.AcquireCookie()
 	cookie.SetKey(name)
 	cookie.SetValue(value)
@@ -182,4 +183,5 @@ func (c *Controller) setCookie(ctx *fasthttp.RequestCtx, name, value string, t t
 	cookie.SetExpire(time.Now().Add(t))
 	// cookie.SetSecure(true)
 	ctx.Response.Header.Cookie(cookie)
+	glog.Infof("Cookie %s setted to %s", name, value)
 }
