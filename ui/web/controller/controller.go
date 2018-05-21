@@ -20,16 +20,14 @@ package controller
 */
 
 import (
-	"fmt"
-	"time"
-
 	"github.com/buaazp/fasthttprouter"
 	"github.com/golang/glog"
 	"github.com/tdewolff/minify"
 	"github.com/valyala/fasthttp"
 
 	"github.com/radar-go/radar/config"
-	"github.com/radar-go/radar/ui/web/api"
+	"github.com/radar-go/radar/ui/web/actionsprovider"
+	_ "github.com/radar-go/radar/ui/web/actionsprovider/actions"
 	"github.com/radar-go/radar/ui/web/controller/page"
 	"github.com/radar-go/radar/ui/web/templates"
 )
@@ -40,7 +38,6 @@ type Controller struct {
 	minify        *minify.M
 	staticHandler fasthttp.RequestHandler
 	cfg           *config.Config
-	api           *api.API
 }
 
 // New creates and return a new Controller object.
@@ -57,10 +54,8 @@ func New(cfg *config.Config, m *minify.M) *Controller {
 		minify:        m,
 		staticHandler: fs.NewRequestHandler(),
 		cfg:           cfg,
-		api:           api.New(cfg.APIHost, cfg.APIPort),
 	}
 	c.register()
-	c.api.Connect()
 
 	return c
 }
@@ -70,7 +65,7 @@ func logPath(path []byte) {
 	glog.Infof("Request path: %s", path)
 }
 
-// register defines all the router paths the API implements.
+// register defines all the router paths the Web implements.
 func (c *Controller) register() {
 	c.Router.HandleMethodNotAllowed = true
 	c.Router.NotFound = c.static
@@ -79,10 +74,20 @@ func (c *Controller) register() {
 
 	c.Router.GET("/healthcheck", c.healthcheck)
 	c.Router.GET("/", c.home)
-	c.Router.GET("/login", c.accountLogin)
-	c.Router.GET("/register", c.accountRegister)
-	c.Router.POST("/login", c.accountLogin)
-	c.Router.POST("/register", c.accountRegister)
+
+	paths, err := actionsprovider.GetPaths("GET")
+	if err == nil {
+		for _, path := range paths {
+			c.Router.GET(path, c.webHandler)
+		}
+	}
+
+	paths, err = actionsprovider.GetPaths("POST")
+	if err == nil {
+		for _, path := range paths {
+			c.Router.POST(path, c.webHandler)
+		}
+	}
 }
 
 // panic handles when the server have a fatal error.
@@ -136,31 +141,37 @@ func (c *Controller) home(ctx *fasthttp.RequestCtx) {
 	templates.WritePageTemplate(writer, p.Get())
 }
 
-// checkParams checks the params of a request.
-func (c *Controller) checkParams(ctx *fasthttp.RequestCtx, params ...string) error {
+func (c *Controller) webHandler(ctx *fasthttp.RequestCtx) {
 	var args *fasthttp.Args
+	logPath(ctx.Path())
+
+	action, err := actionsprovider.GetAction(string(ctx.Path()[:]), c.cfg)
+	if err != nil {
+		glog.Error("Unknown action for path %s", ctx.Path())
+		return
+	}
 
 	if ctx.IsGet() {
 		args = ctx.QueryArgs()
-	} else if ctx.IsPost() {
+	} else if ctx.IsPost() || ctx.IsPut() {
 		args = ctx.PostArgs()
 	}
 
-	if args.Len() != len(params) {
-		err := fmt.Errorf("Not enough aruments: %d", args.Len())
-		glog.Error(err)
-		return err
+	args.VisitAll(action.AddParam)
+	resp, err := action.Run(ctx)
+	if err != nil {
+		glog.Errorf("Error running the action: %s", err)
+		c.panic(ctx, err)
 	}
 
-	for _, param := range params {
-		if !args.Has(param) {
-			err := fmt.Errorf("Missing parameter: %s", param)
-			glog.Error(err)
-			return err
-		}
+	glog.Infof("Redirecting enabled? %b", resp.IsRedirect())
+	if resp.IsRedirect() {
+		glog.Infof("Redirecting to %s", resp.RedirectionURL())
+		ctx.Redirect(resp.RedirectionURL(), 301)
+		return
 	}
 
-	return nil
+	c.response(ctx, resp.Page())
 }
 
 // response to the client.
@@ -170,18 +181,4 @@ func (c *Controller) response(ctx *fasthttp.RequestCtx, p *page.Page) {
 	writer := c.minify.Writer("text/html", ctx)
 	defer writer.Close()
 	templates.WritePageTemplate(writer, p.Get())
-}
-
-// setCookie sets a new cookie in the client
-func (c *Controller) setCookie(ctx *fasthttp.RequestCtx, name, value string, t time.Duration) {
-	glog.Infof("Getting cookie")
-	cookie := fasthttp.AcquireCookie()
-	cookie.SetKey(name)
-	cookie.SetValue(value)
-	// cookie.SetPath("/")
-	// cookie.SetDomain("mydomain.com")
-	cookie.SetExpire(time.Now().Add(t))
-	// cookie.SetSecure(true)
-	ctx.Response.Header.Cookie(cookie)
-	glog.Infof("Cookie %s setted to %s", name, value)
 }

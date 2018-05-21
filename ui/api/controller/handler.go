@@ -43,10 +43,9 @@ func (c *Controller) checkRequestHeaders(ctx *fasthttp.RequestCtx) error {
 func (c *Controller) apiHandler(ctx *fasthttp.RequestCtx) {
 	logPath(ctx.Path())
 
-	if bytes.Equal(ctx.Method(), []byte("GET")) {
+	if ctx.IsGet() {
 		c.getHandler(ctx)
-	} else if bytes.Equal(ctx.Method(), []byte("POST")) ||
-		bytes.Equal(ctx.Method(), []byte("PUT")) {
+	} else if ctx.IsPost() || ctx.IsPut() {
 		c.postHandler(ctx)
 	}
 }
