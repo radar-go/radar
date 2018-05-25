@@ -148,7 +148,7 @@ tests: build-dirs
 build-dirs:
 	@mkdir -p bin/$(ARCH)
 	@mkdir -p .go/src/$(PKG) .go/pkg .go/bin .go/std/$(ARCH)
-	@qtc -dir $(CURRENT_DIR)/ui/web/templates
+	@qtc -dir $(CURRENT_DIR)/web/templates
 
 clean: container-clean bin-clean files-clean
 

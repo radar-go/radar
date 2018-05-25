@@ -27,8 +27,8 @@ import (
 
 	"github.com/golang/glog"
 
-	"github.com/radar-go/radar/ui/api"
-	"github.com/radar-go/radar/ui/web"
+	"github.com/radar-go/radar/api"
+	"github.com/radar-go/radar/web"
 )
 
 func main() {

@@ -1,0 +1,3 @@
+Authorize.TemplateTag = csrf.TemplateField(r)
+    t.ExecuteTemplate(w, "signup_form.tmpl", Authorize)
+http.ListenAndServe(PORT, csrf.Protect([]byte("32-byte-long-auth-key"))(r))
