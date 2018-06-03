@@ -86,23 +86,14 @@ func (l *Login) Run(ctx *fasthttp.RequestCtx) (actionsprovider.ActionResponse, e
 			p.AddError("params", fmt.Sprint(err))
 			resp.SetPage(p)
 
-			return resp, nil
+			return resp, err
 		}
 
 		a := api.New(l.Cfg.APIHost, l.Cfg.APIPort)
-		req, err := a.NewRequest("/account/login", "POST")
+		apiResponse, err := a.Login(l.Params["username"], l.Params["password"],
+			ctx.Referer())
 		if err != nil {
-			glog.Errorf("Error creating a new request for the API: %s", err)
-			return nil, fmt.Errorf("Error calling the API: %s", err)
-		}
-
-		req.Referer(ctx.Referer())
-		req.AddParameter("login", l.Params["username"])
-		req.AddParameter("password", l.Params["password"])
-		apiResponse, err := req.Do()
-		if err != nil {
-			glog.Errorf("Login error from the API: %s", err)
-			return nil, fmt.Errorf("Error calling the API: %s", err)
+			return resp, err
 		}
 
 		if apiResponse.Code() != 200 {
@@ -111,12 +102,10 @@ func (l *Login) Run(ctx *fasthttp.RequestCtx) (actionsprovider.ActionResponse, e
 			p.AddError("login", apiResponse.Parsed()["error"].(string))
 			resp.SetPage(p)
 		} else {
-			l.setCookies(ctx, apiResponse.Parsed())
+			SetCookies(ctx, l.Cfg, apiResponse.Parsed())
 			redirection := l.getRedirection(ctx)
 			glog.Infof("Redirecting to %s", redirection)
 			resp.SetRedirectionURL(redirection)
-
-			return resp, err
 		}
 	}
 
@@ -147,16 +136,16 @@ func (l *Login) getRedirection(ctx *fasthttp.RequestCtx) string {
 	return string(redirection)
 }
 
-// setCookies set the login cookies from the data answered by the API.
-func (l *Login) setCookies(ctx *fasthttp.RequestCtx, data map[string]interface{}) {
-	actionsprovider.SetCookie(ctx, l.Cfg.WebHost, "id",
+// SetCookies set the login cookies from the data answered by the API.
+func SetCookies(ctx *fasthttp.RequestCtx, cfg *config.Config, data map[string]interface{}) {
+	actionsprovider.SetCookie(ctx, cfg.WebHost, "id",
 		fmt.Sprintf("%d", int(data["id"].(float64))), 24*time.Hour)
-	actionsprovider.SetCookie(ctx, l.Cfg.WebHost, "username",
+	actionsprovider.SetCookie(ctx, cfg.WebHost, "username",
 		data["username"].(string), 24*time.Hour)
-	actionsprovider.SetCookie(ctx, l.Cfg.WebHost, "name",
+	actionsprovider.SetCookie(ctx, cfg.WebHost, "name",
 		data["name"].(string), 24*time.Hour)
-	actionsprovider.SetCookie(ctx, l.Cfg.WebHost, "email",
+	actionsprovider.SetCookie(ctx, cfg.WebHost, "email",
 		data["email"].(string), 24*time.Hour)
-	actionsprovider.SetCookie(ctx, l.Cfg.WebHost, "session",
+	actionsprovider.SetCookie(ctx, cfg.WebHost, "session",
 		data["token"].(string), 24*time.Hour)
 }

@@ -29,6 +29,7 @@ import (
 
 	"github.com/radar-go/radar/config"
 	"github.com/radar-go/radar/web/actionsprovider"
+	"github.com/radar-go/radar/web/actionsprovider/actions/account/login"
 	"github.com/radar-go/radar/web/actionsprovider/actions/action"
 	"github.com/radar-go/radar/web/api"
 	"github.com/radar-go/radar/web/controller/page"
@@ -86,26 +87,15 @@ func (r *Register) Run(ctx *fasthttp.RequestCtx) (actionsprovider.ActionResponse
 			p.AddError("params", fmt.Sprint(err))
 			resp.SetPage(p)
 
-			return resp, nil
+			return resp, err
 		}
 
 		glog.Infof("Calling the API...")
 		a := api.New(r.Cfg.APIHost, r.Cfg.APIPort)
-		req, err := a.NewRequest("/account/register", "POST")
+		apiResponse, err := a.Register(r.Params["username"], r.Params["name"],
+			r.Params["email"], r.Params["password"], ctx.Referer())
 		if err != nil {
-			glog.Errorf("Error creating a new request for the API: %s", err)
-			return nil, fmt.Errorf("Error calling the API: %s", err)
-		}
-
-		req.Referer(ctx.Referer())
-		req.AddParameter("username", r.Params["username"])
-		req.AddParameter("name", r.Params["name"])
-		req.AddParameter("email", r.Params["email"])
-		req.AddParameter("password", r.Params["password"])
-		apiResponse, err := req.Do()
-		if err != nil {
-			glog.Errorf("Error registering an account: %s", err)
-			return nil, fmt.Errorf("Error calling the API: %s", err)
+			return resp, err
 		}
 
 		glog.Infof("API response: %s", apiResponse.Raw())
@@ -114,11 +104,22 @@ func (r *Register) Run(ctx *fasthttp.RequestCtx) (actionsprovider.ActionResponse
 			p.AddError("register", apiResponse.Parsed()["error"].(string))
 		} else {
 			glog.Infof("API response: %s", apiResponse.Raw())
-			glog.Infof("Referer: %s", ctx.Referer())
-			p = page.New("register", "Radar - Register", r.Cfg)
-		}
 
-		resp.SetPage(p)
+			apiResponse, err = a.Login(r.Params["username"], r.Params["password"],
+				ctx.Referer())
+			if err != nil {
+				return resp, err
+			}
+
+			if apiResponse.Code() == 200 {
+				login.SetCookies(ctx, r.Cfg, apiResponse.Parsed())
+			}
+
+			redirection := bytes.Replace(ctx.Request.RequestURI(),
+				[]byte("/register"), []byte("/login"), 1)
+			glog.Infof("Redirecting to %s", redirection)
+			resp.SetRedirectionURL(string(redirection[:]))
+		}
 	}
 
 	return resp, err

@@ -20,6 +20,7 @@ package api
 */
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/golang/glog"
@@ -69,10 +70,6 @@ func (a *API) NewRequest(path, method string) (*Request, error) {
 // SessionIsValid checks against the API if the session id is still valid and
 // belongs to the user.
 func (a *API) SessionIsValid(session, id []byte) bool {
-	if a.client == nil {
-		a.Connect()
-	}
-
 	req, err := a.NewRequest("/account/session", "POST")
 	if err != nil {
 		glog.Errorf("Error creating a new request for the API: %s", err)
@@ -96,4 +93,45 @@ func (a *API) SessionIsValid(session, id []byte) bool {
 	glog.Infof("Api response %d %s", apiResponse.Code(), apiResponse.Raw())
 
 	return apiResponse.Code() == 200
+}
+
+// Register calls the API to register an user.
+func (a *API) Register(username, name, email, password string, referer []byte) (*Response, error) {
+	req, err := a.NewRequest("/account/register", "POST")
+	if err != nil {
+		glog.Errorf("Error creating a new request for the API: %s", err)
+		return nil, fmt.Errorf("Error calling the API: %s", err)
+	}
+
+	req.Referer(referer)
+	req.AddParameter("username", username)
+	req.AddParameter("name", name)
+	req.AddParameter("email", email)
+	req.AddParameter("password", password)
+	apiResponse, err := req.Do()
+	if err != nil {
+		glog.Errorf("Error registering an account: %s", err)
+	}
+
+	return apiResponse, err
+}
+
+// Login calls the API to login an user.
+func (a *API) Login(username, password string, referer []byte) (*Response, error) {
+	req, err := a.NewRequest("/account/login", "POST")
+	if err != nil {
+		glog.Errorf("Error creating a new request for the API: %s", err)
+		return nil, fmt.Errorf("Error calling the API: %s", err)
+	}
+
+	req.Referer(referer)
+	req.AddParameter("login", username)
+	req.AddParameter("password", password)
+	apiResponse, err := req.Do()
+	if err != nil {
+		glog.Errorf("Login error from the API: %s", err)
+		return nil, fmt.Errorf("Error calling the API: %s", err)
+	}
+
+	return apiResponse, err
 }
