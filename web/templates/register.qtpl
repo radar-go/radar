@@ -7,8 +7,7 @@ type Register struct {
 {% func (p *Register) Main() %}
 <main class="login-form text-center" role="main">
 	  <form class="form-sigin" method="POST" action="/register">
-			<img class="mb-4" src="/img/radar.png" alt="radar" width="72" height="72">
-			<h1 class="h3 mb-3 font-weight-normal">Register</h1>
+			<h1 class="h3 mb-3 font-weight-bold">Register on Radar</h1>
 			{%= p.GetError("register") %}
 			{%= p.GetError("params") %}
 			<div class="form-group">
