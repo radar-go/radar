@@ -1,0 +1,12 @@
+{% code
+type Account struct {
+	 BasePage
+}
+%}
+
+{% func (p *Account) Main() %}
+<main class="container text-center" role="main">
+	  <h1>{%= p.Title() %}</h1>
+	  <p>Lolailo</p>
+</main>
+{% endfunc %}

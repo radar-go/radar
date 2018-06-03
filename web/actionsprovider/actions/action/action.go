@@ -102,3 +102,8 @@ func (a *Action) AddParam(newKey, newValue []byte) {
 func (a *Action) Run(ctx *fasthttp.RequestCtx) (actionsprovider.ActionResponse, error) {
 	return nil, fmt.Errorf("Function Run not implemented")
 }
+
+// ErrorURL returns the error (404) url.
+func (a *Action) ErrorURL() string {
+	return fmt.Sprintf("http://%s:%d/404", a.Cfg.WebHost, a.Cfg.WebPort)
+}

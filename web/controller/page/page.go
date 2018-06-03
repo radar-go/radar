@@ -102,6 +102,10 @@ func (p *Page) Get() templates.Page {
 		page := &templates.Login{}
 		p.populate(&page.BasePage)
 		return page
+	case "account":
+		page := &templates.Account{}
+		p.populate(&page.BasePage)
+		return page
 	case "register":
 		page := &templates.Register{}
 		p.populate(&page.BasePage)

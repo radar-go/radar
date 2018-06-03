@@ -1,5 +1,4 @@
-// Package account register all the account actions to the actions provider.
-package account
+package api
 
 /* Copyright (C) 2018 Radar team (see AUTHORS)
 
@@ -20,18 +19,28 @@ package account
 */
 
 import (
-	"github.com/radar-go/radar/config"
-	"github.com/radar-go/radar/web/actionsprovider"
-	"github.com/radar-go/radar/web/actionsprovider/actions/account/account"
-	"github.com/radar-go/radar/web/actionsprovider/actions/account/login"
-	"github.com/radar-go/radar/web/actionsprovider/actions/account/register"
+	"github.com/valyala/fasthttp"
 )
 
-func init() {
-	cfg := config.New()
-	actionsprovider.Register(account.New(cfg), "GET")
-	actionsprovider.Register(login.New(cfg), "GET")
-	actionsprovider.Register(login.New(cfg), "POST")
-	actionsprovider.Register(register.New(cfg), "GET")
-	actionsprovider.Register(register.New(cfg), "POST")
+// Response from the radar API.
+type Response struct {
+	code   int
+	parsed map[string]interface{}
+	raw    []byte
+	resp   *fasthttp.Response
+}
+
+// Code returns the response code from the request to the Radar API.
+func (r *Response) Code() int {
+	return r.code
+}
+
+// Raw returns the raw response from the Radar API.
+func (r *Response) Raw() []byte {
+	return r.raw
+}
+
+// Parsed returns the parsed response from the Radar API.
+func (r *Response) Parsed() map[string]interface{} {
+	return r.parsed
 }

@@ -28,6 +28,7 @@ import (
 	"github.com/radar-go/radar/api/casesprovider/cases/account/logout"
 	"github.com/radar-go/radar/api/casesprovider/cases/account/register"
 	"github.com/radar-go/radar/api/casesprovider/cases/account/remove"
+	"github.com/radar-go/radar/api/casesprovider/cases/account/session"
 )
 
 func init() {
@@ -38,4 +39,5 @@ func init() {
 	casesprovider.Register(logout.New())
 	casesprovider.Register(register.New())
 	casesprovider.Register(remove.New())
+	casesprovider.Register(session.New())
 }

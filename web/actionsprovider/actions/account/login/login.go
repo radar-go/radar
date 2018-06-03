@@ -65,10 +65,23 @@ func (l *Login) Run(ctx *fasthttp.RequestCtx) (actionsprovider.ActionResponse, e
 
 	if ctx.IsGet() {
 		resp.SetPage(page.New("login", "Radar - Login", l.Cfg))
+		if ctx.Request.Header.Cookie("session") != nil {
+			a := api.New(l.Cfg.APIHost, l.Cfg.APIPort)
+			session := ctx.Request.Header.Cookie("session")
+			id := ctx.Request.Header.Cookie("id")
+			if a.SessionIsValid(session, id) {
+				redirection := bytes.Replace(ctx.Request.RequestURI(), []byte("/login"),
+					[]byte("/account"), 1)
+				glog.Infof("Redirecting to %s", redirection)
+				resp.SetRedirectionURL(string(redirection[:]))
+			} else {
+				l.cleanCookies(ctx)
+			}
+		}
 	} else if ctx.IsPost() {
 		err := l.checkParams()
 		if err != nil {
-			p := page.New("login", "Radar - Register", l.Cfg)
+			p := page.New("login", "Radar - Login", l.Cfg)
 			p.AddError("params", fmt.Sprint(err))
 			resp.SetPage(p)
 
@@ -76,7 +89,6 @@ func (l *Login) Run(ctx *fasthttp.RequestCtx) (actionsprovider.ActionResponse, e
 		}
 
 		a := api.New(l.Cfg.APIHost, l.Cfg.APIPort)
-		a.Connect()
 		req, err := a.NewRequest("/account/login", "POST")
 		if err != nil {
 			glog.Errorf("Error creating a new request for the API: %s", err)
@@ -98,32 +110,10 @@ func (l *Login) Run(ctx *fasthttp.RequestCtx) (actionsprovider.ActionResponse, e
 			p.AddError("login", apiResponse.Parsed()["error"].(string))
 			resp.SetPage(p)
 		} else {
-			parsed := apiResponse.Parsed()
-			actionsprovider.SetCookie(ctx, "id",
-				fmt.Sprintf("%f", parsed["id"].(float64)), 24*time.Hour)
-			actionsprovider.SetCookie(ctx, "username", parsed["username"].(string),
-				24*time.Hour)
-			actionsprovider.SetCookie(ctx, "name", parsed["name"].(string),
-				24*time.Hour)
-			actionsprovider.SetCookie(ctx, "email", parsed["email"].(string),
-				24*time.Hour)
-			actionsprovider.SetCookie(ctx, "session", parsed["token"].(string),
-				24*time.Hour)
-
-			glog.Infof("Referer: %s", ctx.Referer())
-			if bytes.Contains(ctx.Referer(), []byte("/login")) {
-				redirection := bytes.Replace(ctx.Referer(), []byte("/login"),
-					[]byte("/account"), 1)
-				glog.Infof("Redirecting to %s", redirection)
-				resp.SetRedirectionURL(string(redirection[:]))
-
-				return resp, err
-			}
-
-			glog.Infof("Redirecting to the referer page: %s", ctx.Referer())
-			redirection := ctx.Referer()
+			l.setCookies(ctx, apiResponse.Parsed())
+			redirection := l.getRedirection(ctx)
 			glog.Infof("Redirecting to %s", redirection)
-			resp.SetRedirectionURL(string(redirection[:]))
+			resp.SetRedirectionURL(redirection)
 
 			return resp, err
 		}
@@ -143,4 +133,38 @@ func (l *Login) checkParams() error {
 	}
 
 	return err
+}
+
+// getRedirection obtains the page to redirect from the login
+func (l *Login) getRedirection(ctx *fasthttp.RequestCtx) string {
+	redirection := ctx.Referer()
+	if bytes.Contains(ctx.Referer(), []byte("/login")) {
+		redirection = bytes.Replace(ctx.Referer(), []byte("/login"),
+			[]byte("/account"), 1)
+	}
+
+	return string(redirection)
+}
+
+// setCookies set the login cookies from the data answered by the API.
+func (l *Login) setCookies(ctx *fasthttp.RequestCtx, data map[string]interface{}) {
+	actionsprovider.SetCookie(ctx, l.Cfg.WebHost, "id",
+		fmt.Sprintf("%d", int(data["id"].(float64))), 24*time.Hour)
+	actionsprovider.SetCookie(ctx, l.Cfg.WebHost, "username",
+		data["username"].(string), 24*time.Hour)
+	actionsprovider.SetCookie(ctx, l.Cfg.WebHost, "name",
+		data["name"].(string), 24*time.Hour)
+	actionsprovider.SetCookie(ctx, l.Cfg.WebHost, "email",
+		data["email"].(string), 24*time.Hour)
+	actionsprovider.SetCookie(ctx, l.Cfg.WebHost, "session",
+		data["token"].(string), 24*time.Hour)
+}
+
+// cleanCookies remove from the client the login cookies.
+func (l *Login) cleanCookies(ctx *fasthttp.RequestCtx) {
+	ctx.Response.Header.DelClientCookie("id")
+	ctx.Response.Header.DelClientCookie("username")
+	ctx.Response.Header.DelClientCookie("name")
+	ctx.Response.Header.DelClientCookie("email")
+	ctx.Response.Header.DelClientCookie("session")
 }

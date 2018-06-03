@@ -53,6 +53,7 @@ func (d *Datastore) Endpoints() map[string]string {
 		"/account/logout":     "AccountLogout",
 		"/account/register":   "AccountRegister",
 		"/account/remove":     "AccountRemove",
+		"/account/session":    "AccountSession",
 	}
 }
 

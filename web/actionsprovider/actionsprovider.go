@@ -41,6 +41,7 @@ type ActionResponse interface {
 type Action interface {
 	AddParam([]byte, []byte)
 	GetPath() string
+	ErrorURL() string
 	New(*config.Config) Action
 	Run(*fasthttp.RequestCtx) (ActionResponse, error)
 }
@@ -81,8 +82,8 @@ func GetAction(name string, cfg *config.Config) (Action, error) {
 	return action.New(cfg), nil
 }
 
-// GetPaths return the list of paths based on a method (GET, POST, PUT, ...).
-func GetPaths(method string) ([]string, error) {
+// Paths return the list of paths based on a method (GET, POST, PUT, ...).
+func Paths(method string) ([]string, error) {
 	paths, ok := actions.method[method]
 	if !ok {
 		return nil, fmt.Errorf("No actions registered for the method %s", method)
@@ -102,15 +103,15 @@ func ActionsList() []string {
 }
 
 // SetCookie sets a new cookie in the client.
-func SetCookie(ctx *fasthttp.RequestCtx, name, value string, t time.Duration) {
+func SetCookie(ctx *fasthttp.RequestCtx, host, name, value string, t time.Duration) {
 	glog.Infof("Getting cookie")
 	cookie := fasthttp.AcquireCookie()
 	cookie.SetKey(name)
 	cookie.SetValue(value)
-	// cookie.SetPath("/")
-	// cookie.SetDomain("mydomain.com")
+	cookie.SetPath("/")
+	cookie.SetDomain(host)
 	cookie.SetExpire(time.Now().Add(t))
 	// cookie.SetSecure(true)
-	ctx.Response.Header.Cookie(cookie)
+	ctx.Response.Header.SetCookie(cookie)
 	glog.Infof("Cookie %s setted to %s", name, value)
 }

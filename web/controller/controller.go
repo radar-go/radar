@@ -75,14 +75,14 @@ func (c *Controller) register() {
 	c.Router.GET("/healthcheck", c.healthcheck)
 	c.Router.GET("/", c.home)
 
-	paths, err := actionsprovider.GetPaths("GET")
+	paths, err := actionsprovider.Paths("GET")
 	if err == nil {
 		for _, path := range paths {
 			c.Router.GET(path, c.webHandler)
 		}
 	}
 
-	paths, err = actionsprovider.GetPaths("POST")
+	paths, err = actionsprovider.Paths("POST")
 	if err == nil {
 		for _, path := range paths {
 			c.Router.POST(path, c.webHandler)
