@@ -20,6 +20,7 @@ package register
 */
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 
@@ -64,6 +65,20 @@ func (r *Register) Run(ctx *fasthttp.RequestCtx) (actionsprovider.ActionResponse
 
 	if ctx.IsGet() {
 		resp.SetPage(page.New("register", "Radar - Register", r.Cfg))
+		if ctx.Request.Header.Cookie("session") != nil {
+			a := api.New(r.Cfg.APIHost, r.Cfg.APIPort)
+			session := ctx.Request.Header.Cookie("session")
+			id := ctx.Request.Header.Cookie("id")
+			if a.SessionIsValid(session, id) {
+				redirection := bytes.Replace(ctx.Request.RequestURI(),
+					[]byte("/register"), []byte("/account"), 1)
+				glog.Infof("Redirecting to %s", redirection)
+				resp.SetRedirectionURL(string(redirection[:]))
+			} else {
+				actionsprovider.CleanCookies(ctx, "id", "username", "name", "email",
+					"session")
+			}
+		}
 	} else if ctx.IsPost() {
 		err := r.checkParams()
 		if err != nil {
@@ -76,7 +91,6 @@ func (r *Register) Run(ctx *fasthttp.RequestCtx) (actionsprovider.ActionResponse
 
 		glog.Infof("Calling the API...")
 		a := api.New(r.Cfg.APIHost, r.Cfg.APIPort)
-		a.Connect()
 		req, err := a.NewRequest("/account/register", "POST")
 		if err != nil {
 			glog.Errorf("Error creating a new request for the API: %s", err)

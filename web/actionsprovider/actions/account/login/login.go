@@ -75,7 +75,8 @@ func (l *Login) Run(ctx *fasthttp.RequestCtx) (actionsprovider.ActionResponse, e
 				glog.Infof("Redirecting to %s", redirection)
 				resp.SetRedirectionURL(string(redirection[:]))
 			} else {
-				l.cleanCookies(ctx)
+				actionsprovider.CleanCookies(ctx, "id", "username", "name", "email",
+					"session")
 			}
 		}
 	} else if ctx.IsPost() {
@@ -158,13 +159,4 @@ func (l *Login) setCookies(ctx *fasthttp.RequestCtx, data map[string]interface{}
 		data["email"].(string), 24*time.Hour)
 	actionsprovider.SetCookie(ctx, l.Cfg.WebHost, "session",
 		data["token"].(string), 24*time.Hour)
-}
-
-// cleanCookies remove from the client the login cookies.
-func (l *Login) cleanCookies(ctx *fasthttp.RequestCtx) {
-	ctx.Response.Header.DelClientCookie("id")
-	ctx.Response.Header.DelClientCookie("username")
-	ctx.Response.Header.DelClientCookie("name")
-	ctx.Response.Header.DelClientCookie("email")
-	ctx.Response.Header.DelClientCookie("session")
 }

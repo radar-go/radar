@@ -115,3 +115,10 @@ func SetCookie(ctx *fasthttp.RequestCtx, host, name, value string, t time.Durati
 	ctx.Response.Header.SetCookie(cookie)
 	glog.Infof("Cookie %s setted to %s", name, value)
 }
+
+// CleanCookies remove a set of cookies from the client.
+func CleanCookies(ctx *fasthttp.RequestCtx, cookies ...string) {
+	for _, cookie := range cookies {
+		ctx.Response.Header.DelClientCookie(cookie)
+	}
+}
