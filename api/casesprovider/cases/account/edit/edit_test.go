@@ -50,49 +50,49 @@ func TestCaseParams(t *testing.T) {
 			Params: map[string]interface{}{
 				"idd": 1,
 			},
-			Expected:      "key doesn't exists: Unknown parameter for the use case",
+			Expected:      "Unknown parameter for the use case",
 			ExpectedError: true,
 		},
 		"IdFormatError": {
 			Params: map[string]interface{}{
 				"id": "00000000-0000-0000-0000-000000000000",
 			},
-			Expected:      "id: Param is not from the right type",
+			Expected:      "Param is not from the right type",
 			ExpectedError: true,
 		},
 		"TokenFormatError": {
 			Params: map[string]interface{}{
 				"token": 1,
 			},
-			Expected:      "token: Param is not from the right type",
+			Expected:      "Param is not from the right type",
 			ExpectedError: true,
 		},
 		"UsernameFormatError": {
 			Params: map[string]interface{}{
 				"username": 1,
 			},
-			Expected:      "username: Param is not from the right type",
+			Expected:      "Param is not from the right type",
 			ExpectedError: true,
 		},
 		"NameFormatError": {
 			Params: map[string]interface{}{
 				"name": 1,
 			},
-			Expected:      "name: Param is not from the right type",
+			Expected:      "Param is not from the right type",
 			ExpectedError: true,
 		},
 		"EmailFormatError": {
 			Params: map[string]interface{}{
 				"email": 1,
 			},
-			Expected:      "email: Param is not from the right type",
+			Expected:      "Param is not from the right type",
 			ExpectedError: true,
 		},
 		"PasswordFormatError": {
 			Params: map[string]interface{}{
 				"password": 1,
 			},
-			Expected:      "password: Param is not from the right type",
+			Expected:      "Param is not from the right type",
 			ExpectedError: true,
 		},
 		"AddParamsSuccessfully": {

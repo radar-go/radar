@@ -39,21 +39,21 @@ func TestCaseParams(t *testing.T) {
 			Params: map[string]interface{}{
 				"tokens": "00000000-0000-0000-0000-000000000000",
 			},
-			Expected:      "key doesn't exists: Unknown parameter for the use case",
+			Expected:      "Unknown parameter for the use case",
 			ExpectedError: true,
 		},
 		"IdFormatError": {
 			Params: map[string]interface{}{
 				"id": "00000000-0000-0000-0000-000000000000",
 			},
-			Expected:      "id: Param is not from the right type",
+			Expected:      "Param is not from the right type",
 			ExpectedError: true,
 		},
 		"TokenFormatError": {
 			Params: map[string]interface{}{
 				"token": 1,
 			},
-			Expected:      "token: Param is not from the right type",
+			Expected:      "Param is not from the right type",
 			ExpectedError: true,
 		},
 		"AddParamsSuccessfully": {
@@ -91,14 +91,14 @@ func TestAccountDeactivation(t *testing.T) {
 				"id":    1,
 				"token": "00000000-0000-0000-0000-000000000000",
 			},
-			expected:      "00000000-0000-0000-0000-000000000000: User not logged in",
+			expected:      "User not logged in",
 			expectedError: true,
 		},
 		"UserNotLogged": {
 			params: map[string]interface{}{
 				"token": "00000000-0000-0000-0000-000000000000",
 			},
-			expected:      "00000000-0000-0000-0000-000000000000: User not logged in",
+			expected:      "User not logged in",
 			expectedError: true,
 			username:      "ritho",
 			name:          "ritho",

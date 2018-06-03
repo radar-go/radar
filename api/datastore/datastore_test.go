@@ -30,7 +30,7 @@ import (
 func TestEndpoints(t *testing.T) {
 	ds := New()
 
-	numEndpoints := 7
+	numEndpoints := 8
 	endpoints := ds.Endpoints()
 	if len(endpoints) != numEndpoints {
 		t.Errorf("Expected %d, Got %d", numEndpoints, len(endpoints))
@@ -83,8 +83,8 @@ func TestDatastoreGetAccount(t *testing.T) {
 	ds := New()
 
 	_, err := ds.GetAccountByUsername("ritho")
-	if fmt.Sprintf("%v", err) != "ritho: Account doesn't exists" {
-		t.Errorf("Expected 'ritho: Account doesn't exists', Got '%v'", err)
+	if fmt.Sprintf("%v", err) != "Account doesn't exists" {
+		t.Errorf("Expected 'Account doesn't exists', Got '%v'", err)
 	}
 
 	ds.accounts["ritho"] = &account.Account{}
@@ -122,8 +122,8 @@ func TestDatastoreLogin(t *testing.T) {
 	ds := New()
 
 	err := ds.AddSession("00000000-0000-0000-0000-000000000000", "ritho")
-	if fmt.Sprintf("%v", err) != "ritho: Account doesn't exists" {
-		t.Errorf("Expected 'ritho: Account doesn't exists', Got '%v'", err)
+	if fmt.Sprintf("%v", err) != "Account doesn't exists" {
+		t.Errorf("Expected 'Account doesn't exists', Got '%v'", err)
 	}
 
 	ds.accounts["ritho"] = &account.Account{}
@@ -133,8 +133,8 @@ func TestDatastoreLogin(t *testing.T) {
 	}
 
 	err = ds.AddSession("00000000-0000-0000-0000-000000000000", "ritho")
-	if fmt.Sprintf("%v", err) != "ritho: User already logged in" {
-		t.Errorf("Expected 'ritho: User already logged in', Got '%v'", err)
+	if fmt.Sprintf("%v", err) != "User already logged in" {
+		t.Errorf("Expected 'User already logged in', Got '%v'", err)
 	}
 }
 
@@ -154,13 +154,13 @@ func TestDatastoreLogout(t *testing.T) {
 	}
 
 	err = ds.DeleteSession("00000000-0000-0000-0000-000000000000", "ritho")
-	if fmt.Sprintf("%v", err) != "ritho: User not logged in" {
-		t.Errorf("Expected 'ritho: User not logged in', Got '%v'", err)
+	if fmt.Sprintf("%v", err) != "User not logged in" {
+		t.Errorf("Expected 'User not logged in', Got '%v'", err)
 	}
 
 	err = ds.DeleteSession("00000000-0000-0000-0000-000000000000", "rit")
-	if fmt.Sprintf("%v", err) != "rit: Account doesn't exists" {
-		t.Errorf("Expected 'rit: Account doesn't exists', Got '%v'", err)
+	if fmt.Sprintf("%v", err) != "Account doesn't exists" {
+		t.Errorf("Expected 'Account doesn't exists', Got '%v'", err)
 	}
 }
 

@@ -37,16 +37,16 @@ func TestLogout(t *testing.T) {
 		t.Error("Expected error running the use case.")
 	}
 
-	helper.Contains(t, fmt.Sprintf("%s", err), "ritho: Account doesn't exists")
+	helper.Contains(t, fmt.Sprintf("%s", err), "Account doesn't exists")
 	err = uc.AddParam("tokens", "12345")
-	helper.Contains(t, fmt.Sprintf("%s", err), "Error adding the param tokens")
+	helper.Contains(t, fmt.Sprintf("%s", err), "Unknown parameter for the use case")
 	id := helper.RegisterUser(t, uc.Datastore, "ritho", "ritho", "palvarez@ritho.net", "12345")
 	_, err = uc.Run()
 	if err == nil {
 		t.Error("Expected error running the use case.")
 	}
 
-	helper.Contains(t, fmt.Sprintf("%s", err), "ritho: User not logged in")
+	helper.Contains(t, fmt.Sprintf("%s", err), "User not logged in")
 	helper.LoginUser(t, uc.Datastore, "00000000-0000-0000-0000-000000000000", "ritho")
 	res, err := uc.Run()
 	helper.UnexpectedError(t, err)

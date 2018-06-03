@@ -38,13 +38,13 @@ func TestLogin(t *testing.T) {
 		t.Error("Expected error running the use case.")
 	}
 
-	helper.Contains(t, fmt.Sprintf("%s", err), "ritho: Account doesn't exists")
+	helper.Contains(t, fmt.Sprintf("%s", err), "Account doesn't exists")
 	err = uc.AddParam("passwoed", "12345")
 	if err == nil {
 		t.Error("Expected error running the use case.")
 	}
 
-	helper.Contains(t, fmt.Sprintf("%s", err), "Error adding the param passwoed")
+	helper.Contains(t, fmt.Sprintf("%s", err), "Unknown parameter for the use case")
 	id := helper.RegisterUser(t, uc.Datastore, "ritho", "ritho", "palvarez@ritho.net", "12345")
 
 	helper.AddParam(t, uc, "password", "123456")
